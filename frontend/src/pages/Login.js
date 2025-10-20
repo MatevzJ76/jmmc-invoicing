@@ -98,10 +98,18 @@ const Login = () => {
           </form>
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs text-blue-700 font-medium mb-2">Default Users (OTPs in backend logs):</p>
-            <div className="space-y-1 text-xs font-mono">
-              <div>Admin: admin@local</div>
-              <div>User: user@local</div>
+            <p className="text-xs text-blue-700 font-bold mb-3">🔑 Test Credentials:</p>
+            <div className="space-y-3 text-xs">
+              <div className="bg-white p-2 rounded border border-blue-300">
+                <div className="font-semibold text-blue-800">Admin Account:</div>
+                <div className="font-mono text-slate-700">Email: admin@local</div>
+                <div className="font-mono text-slate-700">Password: Admin2025!</div>
+              </div>
+              <div className="bg-white p-2 rounded border border-blue-300">
+                <div className="font-semibold text-blue-800">User Account:</div>
+                <div className="font-mono text-slate-700">Email: user@local</div>
+                <div className="font-mono text-slate-700">Password: User2025!</div>
+              </div>
             </div>
           </div>
         </div>
