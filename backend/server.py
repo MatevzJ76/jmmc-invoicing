@@ -53,12 +53,12 @@ login_attempts = defaultdict(list)
 
 # ============ MODELS ============
 class User(BaseModel):
-    email: EmailStr
+    email: str
     role: str  # ADMIN or USER
     mustReset: bool = False
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class ChangePasswordRequest(BaseModel):
