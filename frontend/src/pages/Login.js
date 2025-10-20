@@ -42,7 +42,9 @@ const Login = () => {
         navigate('/dashboard');
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      const errorMsg = error.response?.data?.detail || 
+                       (typeof error.response?.data === 'string' ? error.response.data : 'Login failed');
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
