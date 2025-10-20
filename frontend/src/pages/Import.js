@@ -127,9 +127,9 @@ const Import = () => {
                   className="hidden"
                   data-testid="file-input"
                 />
-                <Button type="button" variant="outline" className="rounded-full" asChild>
-                  <span>Browse Files</span>
-                </Button>
+                <span className="px-4 py-2 bg-white border border-slate-300 rounded-full cursor-pointer hover:bg-slate-50 transition-colors text-sm font-medium">
+                  Browse Files
+                </span>
               </label>
               {file && (
                 <p className="mt-4 text-sm font-medium text-green-600" data-testid="selected-file">
