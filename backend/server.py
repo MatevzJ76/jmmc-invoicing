@@ -239,38 +239,67 @@ async def import_xlsx(
         }
         await db.importBatches.insert_one(batch_doc)
         
-        # Parse rows
+        # Parse rows - handle grouped structure where Projekt/Stranka are section headers
         entries = []
+        current_project = "General"
+        current_customer = "General"
+        
         for row in sheet.iter_rows(min_row=2, values_only=True):
-            # Skip empty rows
+            # Skip completely empty rows
             if not row or all(cell is None or cell == '' for cell in row):
                 continue
             
             # Handle rows with leading # column
-            if row[0] == '#' or (isinstance(row[0], (int, float)) and len(row) > 9):
-                # Row has # column, skip it
-                row_data = row[1:10]
+            if row[0] and (str(row[0]).endswith('.') or row[0] == '#'):
+                # Data row - skip # column if present
+                row_data = row[1:11] if row[0] == '#' else row[0:10]
             else:
-                row_data = row[0:9]
+                row_data = row[0:10]
             
-            if len(row_data) < 9 or not row_data[0]:  # Skip if not enough data or no project name
+            # Check if this is a section header row (has Projekt but no date)
+            projekt_val = row_data[0]
+            stranka_val = row_data[1]
+            datum_val = row_data[2]
+            
+            # If Projekt and/or Stranka have values but no date, it's a section header
+            if (projekt_val or stranka_val) and not datum_val:
+                if projekt_val:
+                    current_project = str(projekt_val)
+                if stranka_val:
+                    current_customer = str(stranka_val)
                 continue
             
-            project_name, customer_name, date_str, tariff, employee, notes, hours, value, invoice_num = row_data
+            # Skip if no date (not a data row)
+            if not datum_val:
+                continue
+            
+            # Parse data row
+            tariff = row_data[3]
+            employee = row_data[4]
+            notes = row_data[5]
+            hours = row_data[6]
+            value_str = row_data[7]
+            invoice_num = row_data[8]
+            
+            # Parse value (handle comma as decimal separator)
+            try:
+                value = float(str(value_str).replace(',', '.')) if value_str else 0.0
+            except:
+                value = 0.0
             
             # Find or create customer
-            customer = await db.customers.find_one({"name": customer_name})
+            customer = await db.customers.find_one({"name": current_customer})
             if not customer:
                 customer_id = str(uuid.uuid4())
-                await db.customers.insert_one({"id": customer_id, "name": customer_name})
+                await db.customers.insert_one({"id": customer_id, "name": current_customer})
             else:
                 customer_id = customer["id"]
             
             # Find or create project
-            project = await db.projects.find_one({"name": project_name, "customerId": customer_id})
+            project = await db.projects.find_one({"name": current_project, "customerId": customer_id})
             if not project:
                 project_id = str(uuid.uuid4())
-                await db.projects.insert_one({"id": project_id, "name": project_name, "customerId": customer_id})
+                await db.projects.insert_one({"id": project_id, "name": current_project, "customerId": customer_id})
             else:
                 project_id = project["id"]
             
@@ -280,11 +309,11 @@ async def import_xlsx(
                 "projectId": project_id,
                 "customerId": customer_id,
                 "employeeName": employee or "Unknown",
-                "date": date_str.isoformat() if hasattr(date_str, 'isoformat') else str(date_str),
+                "date": datum_val.isoformat() if hasattr(datum_val, 'isoformat') else str(datum_val),
                 "hours": float(hours) if hours else 0.0,
-                "tariff": tariff or "N/A",
-                "notes": notes or "",
-                "value": float(value) if value else 0.0
+                "tariff": str(tariff) if tariff else "N/A",
+                "notes": str(notes) if notes else "",
+                "value": value
             }
             entries.append(entry)
         
