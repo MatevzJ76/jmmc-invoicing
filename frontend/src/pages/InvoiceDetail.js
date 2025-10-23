@@ -157,7 +157,7 @@ const InvoiceDetail = () => {
       <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="rounded-full">
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="rounded-full">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
