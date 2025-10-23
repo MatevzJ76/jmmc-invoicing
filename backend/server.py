@@ -215,10 +215,11 @@ async def import_xlsx(
         
         # Validate headers
         expected_headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št. računa"]
+        alternative_headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št.računa"]
         headers = [cell.value for cell in sheet[1]]
         
-        if headers != expected_headers:
-            raise HTTPException(status_code=400, detail="Invalid XLSX headers")
+        if headers != expected_headers and headers != alternative_headers:
+            raise HTTPException(status_code=400, detail=f"Invalid XLSX headers. Expected: {expected_headers}, Got: {headers}")
         
         # Create batch
         batch_id = str(uuid.uuid4())
