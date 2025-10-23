@@ -254,52 +254,46 @@ async def import_xlsx(
         }
         await db.importBatches.insert_one(batch_doc)
         
-        # Parse rows - handle grouped structure where Projekt/Stranka are section headers
+        # Parse rows - Stranka (customer) appears on each data row, not as section headers
         entries = []
         current_project = "General"
-        current_customer = "General"
         
         for row in sheet.iter_rows(min_row=2, values_only=True):
             # Skip completely empty rows
             if not row or all(cell is None or cell == '' for cell in row):
                 continue
             
-            # Handle rows with leading # column
+            # Handle rows with leading # column (row numbers)
             if row[0] and (str(row[0]).endswith('.') or row[0] == '#'):
-                # Data row - skip # column if present
-                row_data = row[1:11] if row[0] == '#' else row[0:10]
+                # Data row - skip # column
+                row_data = row[1:11]
             else:
                 row_data = row[0:10]
             
-            # Check if this is a section header row (has Projekt/Stranka but no date)
+            # Extract values
             projekt_val = row_data[0]
-            stranka_val = row_data[1]
-            datum_val = row_data[2]
-            
-            # If Stranka has a value but no date, it's a customer section header
-            if stranka_val and not datum_val:
-                current_customer = str(stranka_val).strip()
-                # If there's also a Projekt value, update it
-                if projekt_val:
-                    current_project = str(projekt_val).strip()
-                continue
-            
-            # If only Projekt has a value but no date, it's a project section header
-            if projekt_val and not stranka_val and not datum_val:
-                current_project = str(projekt_val).strip()
-                continue
-            
-            # Skip if no date (not a data row)
-            if not datum_val:
-                continue
-            
-            # Parse data row
+            stranka_val = row_data[1]  # Customer name
+            datum_val = row_data[2]    # Date
             tariff = row_data[3]
             employee = row_data[4]
             notes = row_data[5]
             hours_val = row_data[6]
             value_str = row_data[7]
             invoice_num = row_data[8]
+            
+            # Skip if no date (not a data row)
+            if not datum_val:
+                continue
+            
+            # Determine customer name - use Stranka if available, otherwise use current/general
+            if stranka_val and str(stranka_val).strip():
+                current_customer = str(stranka_val).strip()
+            else:
+                current_customer = "General"
+            
+            # Update project if specified
+            if projekt_val and str(projekt_val).strip():
+                current_project = str(projekt_val).strip()
             
             # Parse hours (handle text and various formats)
             try:
