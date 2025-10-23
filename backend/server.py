@@ -588,23 +588,44 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
 
 @api_router.post("/ai/suggest")
 async def ai_suggest(request: AIRequest, current_user: User = Depends(get_current_user)):
-    if not EMERGENT_LLM_KEY:
-        return {"suggestion": request.text, "message": "AI not configured"}
+    # Get user's AI settings
+    user_settings = await db.aiSettings.find_one({"userId": current_user.email})
+    
+    if not user_settings:
+        user_settings = AISettings().model_dump()
+    
+    # Determine API key and model
+    if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
+        api_key = user_settings["customApiKey"]
+        model = user_settings.get("customModel", "gpt-4o")
+    else:
+        if not EMERGENT_LLM_KEY:
+            return {"suggestion": request.text, "message": "AI not configured"}
+        api_key = EMERGENT_LLM_KEY
+        model = "gpt-4o-mini"
     
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
+            api_key=api_key,
             session_id=f"ai-{current_user.email}",
             system_message="You are an AI assistant for invoice processing."
-        ).with_model("openai", "gpt-4o-mini")
+        ).with_model("openai", model)
         
+        # Get custom prompts
         prompts = {
-            "grammar": f"Fix grammar and spelling errors in this invoice text, return only the corrected text: {request.text}",
-            "fraud": f"Analyze this invoice description for potential fraud indicators: {request.text}. Return a brief risk assessment.",
-            "gdpr": f"Identify and mask any personal data (names, emails, IDs) in this text: {request.text}. Return the masked version."
+            "grammar": user_settings.get("grammarPrompt", f"Fix grammar and spelling errors in this invoice text, return only the corrected text: {request.text}"),
+            "fraud": user_settings.get("fraudPrompt", f"Analyze this invoice description for potential fraud indicators: {request.text}. Return a brief risk assessment."),
+            "gdpr": user_settings.get("gdprPrompt", f"Identify and mask any personal data (names, emails, IDs) in this text: {request.text}. Return the masked version.")
         }
         
-        message = UserMessage(text=prompts.get(request.feature, request.text))
+        # Format prompt with text
+        base_prompt = prompts.get(request.feature, request.text)
+        if "{text}" in base_prompt:
+            prompt_text = base_prompt.replace("{text}", request.text)
+        else:
+            prompt_text = f"{base_prompt}\n\nText: {request.text}"
+        
+        message = UserMessage(text=prompt_text)
         response = await chat.send_message(message)
         
         return {"suggestion": response, "original": request.text}
