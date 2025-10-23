@@ -44,7 +44,12 @@ const Login = () => {
     } catch (error) {
       const errorMsg = error.response?.data?.detail || 
                        (typeof error.response?.data === 'string' ? error.response.data : 'Login failed');
-      toast.error(errorMsg);
+      
+      if (error.response?.status === 429) {
+        toast.error('Too many login attempts. Please wait 15 minutes and try again.', { duration: 10000 });
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
