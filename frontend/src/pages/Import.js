@@ -79,7 +79,7 @@ const Import = () => {
       );
 
       toast.success(`Created ${composeResponse.data.invoiceIds.length} invoices`);
-      navigate('/dashboard');
+      navigate('/batches');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Import failed');
     } finally {
