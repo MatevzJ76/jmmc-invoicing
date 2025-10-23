@@ -242,10 +242,21 @@ async def import_xlsx(
         # Parse rows
         entries = []
         for row in sheet.iter_rows(min_row=2, values_only=True):
-            if not row[0]:  # Skip empty rows
+            # Skip empty rows
+            if not row or all(cell is None or cell == '' for cell in row):
                 continue
             
-            project_name, customer_name, date_str, tariff, employee, notes, hours, value, invoice_num = row
+            # Handle rows with leading # column
+            if row[0] == '#' or (isinstance(row[0], (int, float)) and len(row) > 9):
+                # Row has # column, skip it
+                row_data = row[1:10]
+            else:
+                row_data = row[0:9]
+            
+            if len(row_data) < 9 or not row_data[0]:  # Skip if not enough data or no project name
+                continue
+            
+            project_name, customer_name, date_str, tariff, employee, notes, hours, value, invoice_num = row_data
             
             # Find or create customer
             customer = await db.customers.find_one({"name": customer_name})
@@ -268,11 +279,11 @@ async def import_xlsx(
                 "batchId": batch_id,
                 "projectId": project_id,
                 "customerId": customer_id,
-                "employeeName": employee,
+                "employeeName": employee or "Unknown",
                 "date": date_str.isoformat() if hasattr(date_str, 'isoformat') else str(date_str),
                 "hours": float(hours) if hours else 0.0,
-                "tariff": tariff,
-                "notes": notes,
+                "tariff": tariff or "N/A",
+                "notes": notes or "",
                 "value": float(value) if value else 0.0
             }
             entries.append(entry)
