@@ -277,9 +277,15 @@ async def import_xlsx(
             tariff = row_data[3]
             employee = row_data[4]
             notes = row_data[5]
-            hours = row_data[6]
+            hours_val = row_data[6]
             value_str = row_data[7]
             invoice_num = row_data[8]
+            
+            # Parse hours (handle text and various formats)
+            try:
+                hours = float(str(hours_val).replace(',', '.')) if hours_val else 0.0
+            except:
+                hours = 0.0
             
             # Parse value (handle comma as decimal separator)
             try:
