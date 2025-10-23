@@ -7,6 +7,7 @@ import BatchDetail from './pages/BatchDetail';
 import Import from './pages/Import';
 import InvoiceDetail from './pages/InvoiceDetail';
 import ChangePassword from './pages/ChangePassword';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/import" element={<Import />} />
           <Route path="/invoices/:id" element={<InvoiceDetail />} />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </BrowserRouter>
     </div>
