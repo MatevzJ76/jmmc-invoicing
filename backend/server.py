@@ -213,10 +213,13 @@ async def import_xlsx(
         wb = openpyxl.load_workbook(BytesIO(contents))
         sheet = wb.active
         
-        # Validate headers
+        # Validate headers - strip None values and check
         expected_headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št. računa"]
         alternative_headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št.računa"]
-        headers = [cell.value for cell in sheet[1]]
+        raw_headers = [cell.value for cell in sheet[1]]
+        
+        # Remove leading # if present and filter out None values
+        headers = [h for h in raw_headers if h is not None and h != '#']
         
         if headers != expected_headers and headers != alternative_headers:
             raise HTTPException(status_code=400, detail=f"Invalid XLSX headers. Expected: {expected_headers}, Got: {headers}")
