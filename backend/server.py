@@ -143,18 +143,22 @@ def check_rate_limit(email: str) -> bool:
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(request: LoginRequest):
     if not check_rate_limit(request.email):
-        raise HTTPException(status_code=429, detail="Too many login attempts")
-    
-    login_attempts[request.email].append(datetime.now(timezone.utc))
+        raise HTTPException(status_code=429, detail="Too many login attempts. Please try again in 15 minutes.")
     
     user_doc = await db.users.find_one({"email": request.email})
     if not user_doc:
+        login_attempts[request.email].append(datetime.now(timezone.utc))  # Only count failed attempts
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     try:
         ph.verify(user_doc["passwordHash"], request.password)
     except VerifyMismatchError:
+        login_attempts[request.email].append(datetime.now(timezone.utc))  # Only count failed attempts
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Successful login - clear attempts for this email
+    if request.email in login_attempts:
+        login_attempts[request.email] = []
     
     access_token = create_token({"sub": request.email}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     refresh_token = create_token({"sub": request.email}, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
