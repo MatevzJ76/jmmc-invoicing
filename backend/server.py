@@ -316,7 +316,7 @@ async def import_xlsx(
                 "customerId": customer_id,
                 "employeeName": employee or "Unknown",
                 "date": datum_val.isoformat() if hasattr(datum_val, 'isoformat') else str(datum_val),
-                "hours": float(hours) if hours else 0.0,
+                "hours": hours,
                 "tariff": str(tariff) if tariff else "N/A",
                 "notes": str(notes) if notes else "",
                 "value": value
