@@ -39,7 +39,7 @@ const Login = () => {
         navigate('/change-password');
       } else {
         toast.success('Login successful!');
-        navigate('/dashboard');
+        navigate('/batches');
       }
     } catch (error) {
       const errorMsg = error.response?.data?.detail || 
