@@ -48,7 +48,7 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
-# Rate limiting store (simple in-memory)
+# Rate limiting store (simple in-memory) - 10 attempts per 15 minutes
 login_attempts = defaultdict(list)
 
 # ============ MODELS ============
