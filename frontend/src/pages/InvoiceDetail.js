@@ -168,7 +168,7 @@ const InvoiceDetail = () => {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2">
               <Sparkles className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-medium text-slate-700">AI Suggestions</span>
+              <span className="text-sm font-medium text-slate-700">AI Agent</span>
               <Switch checked={aiEnabled} onCheckedChange={setAiEnabled} data-testid="ai-toggle" />
             </div>
             <Button onClick={handleSave} disabled={saving} className="rounded-full bg-blue-600 hover:bg-blue-700" data-testid="save-invoice-button">
