@@ -80,6 +80,9 @@ const Batches = () => {
           </h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-600">{user?.email}</span>
+            <Button variant="outline" size="sm" onClick={() => navigate('/settings')} className="rounded-full">
+              Settings
+            </Button>
             <Button variant="outline" size="sm" onClick={handleLogout} className="rounded-full">
               <LogOut className="w-4 h-4 mr-2" />
               Logout
