@@ -137,7 +137,7 @@ def check_rate_limit(email: str) -> bool:
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(minutes=15)
     login_attempts[email] = [t for t in login_attempts[email] if t > cutoff]
-    return len(login_attempts[email]) < 5
+    return len(login_attempts[email]) < 10  # Increased from 5 to 10
 
 # ============ AUTH ENDPOINTS ============
 @api_router.post("/auth/login", response_model=TokenResponse)
