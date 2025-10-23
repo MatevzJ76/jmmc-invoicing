@@ -346,6 +346,32 @@ async def import_xlsx(
         raise HTTPException(status_code=400, detail=str(e))
 
 # ============ INVOICE ENDPOINTS ============
+@api_router.get("/batches")
+async def list_batches(current_user: User = Depends(get_current_user)):
+    """Get all import batches with invoice counts"""
+    batches = await db.importBatches.find({}, {"_id": 0}).to_list(1000)
+    
+    # Add invoice count for each batch
+    for batch in batches:
+        invoice_count = await db.invoices.count_documents({"batchId": batch.get("id")})
+        batch["invoiceCount"] = invoice_count
+    
+    return batches
+
+@api_router.get("/batches/{batch_id}")
+async def get_batch(batch_id: str, current_user: User = Depends(get_current_user)):
+    """Get batch details"""
+    batch = await db.importBatches.find_one({"id": batch_id}, {"_id": 0})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    return batch
+
+@api_router.get("/batches/{batch_id}/invoices")
+async def get_batch_invoices(batch_id: str, current_user: User = Depends(get_current_user)):
+    """Get all invoices for a specific batch"""
+    invoices = await db.invoices.find({"batchId": batch_id}, {"_id": 0}).to_list(1000)
+    return invoices
+
 @api_router.post("/invoices/compose")
 async def compose_invoices(batchId: str, current_user: User = Depends(get_current_user)):
     batch = await db.importBatches.find_one({"id": batchId})
