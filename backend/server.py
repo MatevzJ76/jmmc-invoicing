@@ -108,6 +108,14 @@ class AIRequest(BaseModel):
     text: str
     feature: str  # grammar, fraud, gdpr
 
+class AISettings(BaseModel):
+    aiProvider: str = "emergent"
+    customApiKey: Optional[str] = None
+    customModel: str = "gpt-4o"
+    grammarPrompt: str = "Fix grammar and spelling errors in this invoice text. Return only the corrected text without explanations."
+    fraudPrompt: str = "Analyze this invoice description for potential fraud indicators or suspicious patterns. Provide a brief risk assessment."
+    gdprPrompt: str = "Identify and mask any personal data (names, emails, phone numbers, addresses) in this text. Return the masked version with [REDACTED] in place of sensitive data."
+
 # ============ AUTH HELPERS ============
 def create_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
