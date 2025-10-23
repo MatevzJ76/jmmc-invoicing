@@ -202,6 +202,17 @@ async def change_password(request: ChangePasswordRequest, current_user: User = D
     
     return {"message": "Password changed successfully"}
 
+@api_router.post("/auth/clear-rate-limit")
+async def clear_rate_limit(email: str, current_user: User = Depends(get_current_user)):
+    """Clear rate limiting for a specific email (admin debugging)"""
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin role required")
+    
+    if email in login_attempts:
+        login_attempts[email] = []
+    
+    return {"message": f"Rate limit cleared for {email}"}
+
 # ============ IMPORT ENDPOINTS ============
 @api_router.post("/imports")
 async def import_xlsx(
