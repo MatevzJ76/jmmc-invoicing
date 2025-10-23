@@ -394,6 +394,7 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
         invoice_id = str(uuid.uuid4())
         invoice_doc = {
             "id": invoice_id,
+            "batchId": batchId,
             "customerId": customer_id,
             "customerName": customer["name"],
             "invoiceDate": batch["invoiceDate"],
