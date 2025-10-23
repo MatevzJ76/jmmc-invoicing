@@ -525,6 +525,67 @@ async def list_invoices(current_user: User = Depends(get_current_user)):
     return invoices
 
 # ============ AI ENDPOINTS ============
+@api_router.get("/settings/ai")
+async def get_ai_settings(current_user: User = Depends(get_current_user)):
+    """Get AI settings for current user"""
+    settings = await db.aiSettings.find_one({"userId": current_user.email})
+    if not settings:
+        # Return default settings
+        default_settings = AISettings()
+        return default_settings.model_dump()
+    
+    return {k: v for k, v in settings.items() if k != "_id" and k != "userId"}
+
+@api_router.post("/settings/ai")
+async def save_ai_settings(settings: AISettings, current_user: User = Depends(get_current_user)):
+    """Save AI settings for current user"""
+    settings_dict = settings.model_dump()
+    settings_dict["userId"] = current_user.email
+    settings_dict["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.aiSettings.update_one(
+        {"userId": current_user.email},
+        {"$set": settings_dict},
+        upsert=True
+    )
+    
+    return {"message": "Settings saved successfully"}
+
+@api_router.post("/settings/ai/test")
+async def test_ai_connection(settings: AISettings, current_user: User = Depends(get_current_user)):
+    """Test AI connection with provided settings"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        if settings.aiProvider == "emergent":
+            if not EMERGENT_LLM_KEY:
+                raise HTTPException(status_code=400, detail="Emergent LLM key not configured")
+            
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"test-{current_user.email}",
+                system_message="You are a test assistant."
+            ).with_model("openai", "gpt-4o-mini")
+            
+        else:  # custom
+            if not settings.customApiKey:
+                raise HTTPException(status_code=400, detail="Custom API key required")
+            
+            chat = LlmChat(
+                api_key=settings.customApiKey,
+                session_id=f"test-{current_user.email}",
+                system_message="You are a test assistant."
+            ).with_model("openai", settings.customModel)
+        
+        # Send test message
+        message = UserMessage(text="Hello, this is a connection test. Please respond with 'OK'.")
+        response = await chat.send_message(message)
+        
+        return {"message": f"Connection successful! AI responded: {response[:50]}..."}
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Connection failed: {str(e)}")
+
 @api_router.post("/ai/suggest")
 async def ai_suggest(request: AIRequest, current_user: User = Depends(get_current_user)):
     if not EMERGENT_LLM_KEY:
