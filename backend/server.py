@@ -271,17 +271,22 @@ async def import_xlsx(
             else:
                 row_data = row[0:10]
             
-            # Check if this is a section header row (has Projekt but no date)
+            # Check if this is a section header row (has Projekt/Stranka but no date)
             projekt_val = row_data[0]
             stranka_val = row_data[1]
             datum_val = row_data[2]
             
-            # If Projekt and/or Stranka have values but no date, it's a section header
-            if (projekt_val or stranka_val) and not datum_val:
+            # If Stranka has a value but no date, it's a customer section header
+            if stranka_val and not datum_val:
+                current_customer = str(stranka_val).strip()
+                # If there's also a Projekt value, update it
                 if projekt_val:
-                    current_project = str(projekt_val)
-                if stranka_val:
-                    current_customer = str(stranka_val)
+                    current_project = str(projekt_val).strip()
+                continue
+            
+            # If only Projekt has a value but no date, it's a project section header
+            if projekt_val and not stranka_val and not datum_val:
+                current_project = str(projekt_val).strip()
                 continue
             
             # Skip if no date (not a data row)
