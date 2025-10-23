@@ -429,6 +429,12 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
         
         invoice_ids.append(invoice_id)
     
+    # Update batch status
+    await db.importBatches.update_one(
+        {"id": batchId},
+        {"$set": {"status": "composed"}}
+    )
+    
     return {"invoiceIds": invoice_ids}
 
 @api_router.get("/invoices/{invoice_id}", response_model=Dict[str, Any])
