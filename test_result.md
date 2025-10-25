@@ -101,3 +101,50 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the newly implemented move time entry feature"
+
+backend:
+  - task: "GET /api/customers endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Endpoint returns all customers with id and name fields. Tested with admin@local token. Retrieved 286 customers successfully."
+
+  - task: "POST /api/time-entries/{entry_id}/move-customer endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Move time entry feature fully functional. All test scenarios passed: (a) Move from No Client to JMMC HP - PASSED, (b) Move from JMMC HP to JMMC Finance - PASSED, (c) Invalid entry_id returns 404 - PASSED, (d) Invalid customer_id returns 404 - PASSED. Verified: time entry customerId updated in database, old invoice lines no longer contain moved entry, new invoice lines include moved entry, no duplications exist, invoice totals recalculated correctly."
+
+frontend:
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "GET /api/customers endpoint"
+    - "POST /api/time-entries/{entry_id}/move-customer endpoint"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "Completed comprehensive testing of move time entry feature. All 5 test cases passed successfully. Feature is production-ready."
