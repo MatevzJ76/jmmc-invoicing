@@ -44,6 +44,18 @@ const BatchDetail = () => {
     loadBatchAndInvoices();
     loadAllBatches();
     loadVerificationData();
+    
+    // Load AI results from session storage if available
+    const savedResults = sessionStorage.getItem(`aiResults-${id}`);
+    if (savedResults) {
+      try {
+        const parsed = JSON.parse(savedResults);
+        setAiResults(parsed);
+        setShowAiWarnings(true);
+      } catch (e) {
+        console.error('Failed to load saved AI results:', e);
+      }
+    }
   }, [id]);
 
   useEffect(() => {
