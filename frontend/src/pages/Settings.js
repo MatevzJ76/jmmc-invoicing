@@ -26,7 +26,10 @@ const Settings = () => {
     grammarPrompt: 'Fix grammar and spelling errors in this invoice text. Return only the corrected text without explanations.',
     fraudPrompt: 'Analyze this invoice description for potential fraud indicators or suspicious patterns. Provide a brief risk assessment.',
     gdprPrompt: 'Identify and mask any personal data (names, emails, phone numbers, addresses) in this text. Return the masked version with [REDACTED] in place of sensitive data.',
-    verificationPrompt: 'Analyze this work description for suspicious patterns, irregularities, or fraud indicators. Look for: vague descriptions, unusual time patterns, duplicate entries, inconsistent work details. If suspicious, respond with JSON: {"flagged": true, "reason": "brief explanation"}. If normal, respond with: {"flagged": false, "reason": ""}'
+    verificationPrompt: 'Analyze this work description for suspicious patterns, irregularities, or fraud indicators. Look for: vague descriptions, unusual time patterns, duplicate entries, inconsistent work details. If suspicious, respond with JSON: {"flagged": true, "reason": "brief explanation"}. If normal, respond with: {"flagged": false, "reason": ""}',
+    eracuniUsername: '',
+    eracuniSecretKey: '',
+    eracuniToken: ''
   });
 
   useEffect(() => {
