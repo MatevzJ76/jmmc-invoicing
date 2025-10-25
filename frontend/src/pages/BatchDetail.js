@@ -149,7 +149,11 @@ const BatchDetail = () => {
   };
 
   const isEntryFlagged = (entryId) => {
-    return aiResults[entryId]?.flagged === true;
+    const isFlagged = aiResults[entryId]?.flagged === true;
+    if (showAiWarnings && Object.keys(aiResults).length > 0) {
+      console.log(`Checking entry ${entryId}: flagged=${isFlagged}`, aiResults[entryId]);
+    }
+    return isFlagged;
   };
 
   const getFlagReason = (entryId) => {
