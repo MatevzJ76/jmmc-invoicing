@@ -111,6 +111,60 @@ const Settings = () => {
       const formData = new FormData();
       formData.append('username', settings.eracuniUsername);
       formData.append('secretKey', settings.eracuniSecretKey);
+
+
+  const handleTestPrompt = async (promptType) => {
+    setTestingPrompt(promptType);
+    const testInput = testInputs[promptType];
+    
+    if (!testInput || testInput.trim() === '') {
+      toast.error('Please enter test input');
+      setTestingPrompt(null);
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(
+        `${BACKEND_URL}/api/ai/suggest`,
+        {
+          text: testInput,
+          feature: promptType
+        },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      setTestResults({
+        ...testResults,
+        [promptType]: {
+          success: true,
+          result: response.data.suggestion,
+          original: testInput
+        }
+      });
+      toast.success('Prompt test complete!');
+    } catch (error) {
+      setTestResults({
+        ...testResults,
+        [promptType]: {
+          success: false,
+          result: error.response?.data?.detail || 'Test failed',
+          original: testInput
+        }
+      });
+      toast.error('Prompt test failed');
+    } finally {
+      setTestingPrompt(null);
+    }
+  };
+
+  const updateTestInput = (promptType, value) => {
+    setTestInputs({
+      ...testInputs,
+      [promptType]: value
+    });
+  };
+
       formData.append('apiToken', settings.eracuniToken);
       
       const response = await axios.post(
