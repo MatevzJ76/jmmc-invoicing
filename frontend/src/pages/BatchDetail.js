@@ -359,14 +359,31 @@ const BatchDetail = () => {
           </div>
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <Label className="text-sm text-slate-600 mb-2 block">Status</Label>
-            <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
-              batch.status === 'archived' ? 'bg-gray-100 text-gray-700' :
-              batch.status === 'posted' ? 'bg-green-100 text-green-700' :
-              batch.status === 'composed' ? 'bg-blue-100 text-blue-700' :
-              'bg-yellow-100 text-yellow-700'
-            }`}>
-              {batch.status}
-            </span>
+            {isEditing ? (
+              <Select 
+                value={editedBatch?.status || 'imported'} 
+                onValueChange={(value) => updateField('status', value)}
+              >
+                <SelectTrigger data-testid="status-edit">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="imported">Imported</SelectItem>
+                  <SelectItem value="composed">Composed</SelectItem>
+                  <SelectItem value="posted">Posted</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                batch.status === 'archived' ? 'bg-gray-100 text-gray-700' :
+                batch.status === 'posted' ? 'bg-green-100 text-green-700' :
+                batch.status === 'composed' ? 'bg-blue-100 text-blue-700' :
+                'bg-yellow-100 text-yellow-700'
+              }`}>
+                {batch.status}
+              </span>
+            )}
           </div>
         </div>
 
