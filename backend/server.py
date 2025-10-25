@@ -225,6 +225,7 @@ async def clear_rate_limit(email: str, current_user: User = Depends(get_current_
 @api_router.post("/imports")
 async def import_xlsx(
     file: UploadFile = File(...),
+    title: str = Form(...),
     invoiceDate: str = Form(...),
     periodFrom: str = Form(...),
     periodTo: str = Form(...),
