@@ -37,6 +37,8 @@ const BatchDetail = () => {
   const [aiVerifying, setAiVerifying] = useState(false);
   const [aiResults, setAiResults] = useState({});
   const [showAiWarnings, setShowAiWarnings] = useState(false);
+  const [showResultsModal, setShowResultsModal] = useState(false);
+  const [verificationSummary, setVerificationSummary] = useState(null);
 
   useEffect(() => {
     loadBatchAndInvoices();
