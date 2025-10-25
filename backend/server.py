@@ -1119,11 +1119,19 @@ async def ai_suggest(request: AIRequest, current_user: User = Depends(get_curren
         model = "gpt-5"
     
     try:
+        # Determine provider based on model
+        if "claude" in model.lower():
+            provider = "anthropic"
+        elif "gemini" in model.lower():
+            provider = "google"
+        else:
+            provider = "openai"
+        
         chat = LlmChat(
             api_key=api_key,
             session_id=f"ai-{current_user.email}",
             system_message="You are an AI assistant for invoice processing."
-        ).with_model("openai", model)
+        ).with_model(provider, model)
         
         # Get custom prompts
         prompts = {
