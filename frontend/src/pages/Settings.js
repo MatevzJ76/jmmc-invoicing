@@ -149,7 +149,8 @@ const Settings = () => {
             <Zap className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl font-bold text-slate-800">AI Provider Configuration</h2>
           </div>
-            
+          
+          <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="provider">AI Provider</Label>
               <Select value={settings.aiProvider} onValueChange={(value) => updateSetting('aiProvider', value)}>
