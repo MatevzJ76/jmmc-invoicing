@@ -350,7 +350,7 @@ const InvoiceDetail = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-5 gap-4">
                     <div>
                       <Label htmlFor={`qty-${index}`}>Quantity</Label>
                       <Input
@@ -378,6 +378,35 @@ const InvoiceDetail = () => {
                       <p className="mt-2 text-lg font-semibold text-slate-800" data-testid={`amount-${index}`}>
                         €{line.amount.toFixed(2)}
                       </p>
+                    </div>
+                    <div className="flex items-end relative">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowMoveDropdown(showMoveDropdown === line.id ? null : line.id)}
+                        disabled={movingLine === line.id}
+                        className="w-full rounded-full"
+                        title="Move to different customer"
+                      >
+                        <ArrowRightLeft className="w-4 h-4" />
+                      </Button>
+                      
+                      {showMoveDropdown === line.id && (
+                        <div className="absolute left-0 top-full mt-1 w-64 bg-white border border-slate-200 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                          <div className="p-2 border-b border-slate-200 bg-slate-50">
+                            <p className="text-xs font-semibold text-slate-700">Move to Customer:</p>
+                          </div>
+                          {allCustomers.map(customer => (
+                            <button
+                              key={customer.id}
+                              onClick={() => handleMoveLineItem(line, customer.id)}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
+                            >
+                              {customer.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-end">
                       <Button
