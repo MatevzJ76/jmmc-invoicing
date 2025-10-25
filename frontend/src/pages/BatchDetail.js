@@ -38,6 +38,7 @@ const BatchDetail = () => {
   useEffect(() => {
     loadBatchAndInvoices();
     loadAllBatches();
+    loadVerificationData();
   }, [id]);
 
   useEffect(() => {
