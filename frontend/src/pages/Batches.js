@@ -76,6 +76,25 @@ const Batches = () => {
     setFilteredBatches(filtered);
   };
 
+  const handleArchive = async (batchId, e) => {
+    e.stopPropagation(); // Prevent row click
+    
+    if (!window.confirm('Archive this batch? It will be moved to the bottom of the list.')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(`${BACKEND_URL}/api/batches/${batchId}/archive`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Batch archived');
+      loadBatches(); // Reload to reflect changes
+    } catch (error) {
+      toast.error('Failed to archive batch');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     toast.success('Logged out successfully');
