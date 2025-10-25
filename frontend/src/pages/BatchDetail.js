@@ -97,26 +97,44 @@ const BatchDetail = () => {
 
   const handleAIVerification = async () => {
     setAiVerifying(true);
+    setAiResults({});
+    setShowAiWarnings(false);
+    
+    toast.info('AI verification started. This may take a minute...');
+    
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.post(
         `${BACKEND_URL}/api/batches/${id}/verify-entries`,
         {},
-        { headers: { Authorization: `Bearer ${token}` }}
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 120000 // 2 minute timeout
+        }
       );
       
       setAiResults(response.data.results || {});
       setShowAiWarnings(true);
       
       const flaggedCount = Object.keys(response.data.results || {}).length;
+      const totalChecked = response.data.total_checked || 0;
+      
       if (flaggedCount > 0) {
-        toast.success(`AI verification complete: ${flaggedCount} suspicious entries found`);
+        toast.success(`AI verification complete: ${flaggedCount} of ${totalChecked} entries flagged as suspicious`);
       } else {
-        toast.success('AI verification complete: No suspicious entries found');
+        toast.success(`AI verification complete: All ${totalChecked} entries passed verification`);
       }
     } catch (error) {
-      toast.error('AI verification failed');
-      console.error(error);
+      console.error('AI verification error:', error);
+      
+      if (error.code === 'ECONNABORTED') {
+        toast.error('AI verification timed out. Please try again or check fewer entries.');
+      } else if (error.response?.status === 401) {
+        toast.error('Session expired. Please log in again.');
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        toast.error('AI verification failed: ' + (error.response?.data?.message || error.message));
+      }
     } finally {
       setAiVerifying(false);
     }
