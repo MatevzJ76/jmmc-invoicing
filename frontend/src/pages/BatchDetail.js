@@ -74,6 +74,19 @@ const BatchDetail = () => {
     }
   }, [allBatches, id]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMoveDropdown && !event.target.closest('.relative')) {
+        setShowMoveDropdown(null);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showMoveDropdown]);
+
+
   const loadAllBatches = async () => {
     try {
       const token = localStorage.getItem('access_token');
