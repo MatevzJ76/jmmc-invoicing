@@ -48,7 +48,7 @@ const Dashboard = () => {
       <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Emergent Invoicing
+            JMMC Invoicing
           </h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-600">{user?.email}</span>
