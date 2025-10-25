@@ -439,17 +439,22 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
         api_key = EMERGENT_LLM_KEY
         model = "gpt-4o-mini"
     
-    # Get all time entries for this batch
+    # Get all time entries for this batch with random sampling to get diverse entries
+    import random
     all_entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
     
     if not all_entries:
         return {"results": {}, "message": "No entries found"}
     
-    # Limit to prevent blocking - use first 50 entries
+    # Shuffle and limit to prevent blocking while ensuring diverse sampling
     MAX_ENTRIES = 50
-    entries_to_check = all_entries[:MAX_ENTRIES]
-    
-    logger.info(f"Verifying {len(entries_to_check)} of {len(all_entries)} total entries")
+    if len(all_entries) > MAX_ENTRIES:
+        # Randomly sample to get entries from different categories
+        entries_to_check = random.sample(all_entries, MAX_ENTRIES)
+        logger.info(f"Randomly sampled {MAX_ENTRIES} of {len(all_entries)} entries for verification")
+    else:
+        entries_to_check = all_entries
+        logger.info(f"Verifying all {len(all_entries)} entries")
     
     if not entries_to_check:
         return {"results": {}, "message": "No entries with descriptions to check"}
