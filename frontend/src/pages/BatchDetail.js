@@ -101,6 +101,7 @@ const BatchDetail = () => {
     setAiVerifying(true);
     setAiResults({});
     setShowAiWarnings(false);
+    setShowResultsModal(false);
     
     toast.info('AI verification started. This may take a minute...');
     
@@ -121,11 +122,16 @@ const BatchDetail = () => {
       const flaggedCount = Object.keys(response.data.results || {}).length;
       const totalChecked = response.data.total_checked || 0;
       
-      if (flaggedCount > 0) {
-        toast.success(`AI verification complete: ${flaggedCount} of ${totalChecked} entries flagged as suspicious`);
-      } else {
-        toast.success(`AI verification complete: All ${totalChecked} entries passed verification`);
-      }
+      // Set verification summary for modal
+      setVerificationSummary({
+        flaggedCount,
+        totalChecked,
+        passedCount: totalChecked - flaggedCount
+      });
+      
+      // Show modal after completion
+      setShowResultsModal(true);
+      
     } catch (error) {
       console.error('AI verification error:', error);
       
