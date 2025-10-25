@@ -366,8 +366,8 @@ const Settings = () => {
             </div>
 
             {/* Fraud Detection Prompt */}
-            <div className="space-y-2 mb-6">
-              <Label htmlFor="fraud">Fraud Detection</Label>
+            <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <Label htmlFor="fraud" className="text-base font-semibold">Fraud Detection</Label>
               <Textarea
                 id="fraud"
                 value={settings.fraudPrompt}
@@ -377,6 +377,38 @@ const Settings = () => {
                 data-testid="fraud-prompt-input"
               />
               <p className="text-xs text-slate-500">Analyzes invoice descriptions for suspicious patterns</p>
+              
+              {/* Test Section */}
+              <div className="mt-4 pt-4 border-t border-slate-300">
+                <Label htmlFor="fraud-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
+                <Textarea
+                  id="fraud-test"
+                  value={testInputs.fraud}
+                  onChange={(e) => updateTestInput('fraud', e.target.value)}
+                  rows={2}
+                  placeholder="Enter invoice description to analyze..."
+                  className="text-sm mb-2"
+                />
+                <Button
+                  onClick={() => handleTestPrompt('fraud')}
+                  disabled={testingPrompt === 'fraud' || !testInputs.fraud}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  <Sparkles className="w-3 h-3 mr-2" />
+                  {testingPrompt === 'fraud' ? 'Testing...' : 'Test Prompt'}
+                </Button>
+                
+                {testResults.fraud && (
+                  <div className={`mt-3 p-3 rounded-lg border ${
+                    testResults.fraud.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  }`}>
+                    <p className="text-xs font-semibold mb-1">Result:</p>
+                    <p className="text-sm">{testResults.fraud.result}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* GDPR Masking Prompt */}
