@@ -445,8 +445,12 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
     if not all_entries:
         return {"results": {}, "message": "No entries found"}
     
-    # Filter entries with descriptions
+    # Filter entries with descriptions and limit to prevent blocking
     entries_to_check = [e for e in all_entries if e.get("notes", "").strip() != ""]
+    MAX_ENTRIES = 50  # Limit to 50 entries to prevent long blocking
+    if len(entries_to_check) > MAX_ENTRIES:
+        entries_to_check = entries_to_check[:MAX_ENTRIES]
+        logger.info(f"Limited verification to {MAX_ENTRIES} entries out of {len(all_entries)}")
     
     if not entries_to_check:
         return {"results": {}, "message": "No entries with descriptions to check"}
@@ -458,6 +462,9 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
         # Use batch processing - combine multiple entries into one prompt
         batch_size = 10  # Process 10 entries per API call
         results = {}
+        total_batches = (len(entries_to_check) + batch_size - 1) // batch_size
+        
+        logger.info(f"Starting verification of {len(entries_to_check)} entries in {total_batches} batches")
         
         for i in range(0, len(entries_to_check), batch_size):
             batch = entries_to_check[i:i + batch_size]
@@ -475,41 +482,52 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
             
             batch_text += f"\n{verification_prompt}"
             
-            # Make single API call for batch
-            chat = LlmChat(
-                api_key=api_key,
-                session_id=f"verification-{current_user.email}-{i}",
-                system_message="You are an AI assistant for invoice verification. Always respond with valid JSON array."
-            ).with_model("openai", model)
-            
-            message = UserMessage(text=batch_text)
-            response = await chat.send_message(message)
-            
-            # Parse batch response
+            # Make single API call for batch with timeout
             try:
-                clean_response = response.strip()
-                if clean_response.startswith("```"):
-                    clean_response = clean_response.split("```")[1]
-                    if clean_response.startswith("json"):
-                        clean_response = clean_response[4:]
-                clean_response = clean_response.strip()
+                chat = LlmChat(
+                    api_key=api_key,
+                    session_id=f"verification-{current_user.email}-{i}",
+                    system_message="You are an AI assistant for invoice verification. Always respond with valid JSON array."
+                ).with_model("openai", model)
                 
-                batch_results = json.loads(clean_response)
+                message = UserMessage(text=batch_text)
                 
-                # Process batch results
-                for result in batch_results:
-                    if isinstance(result, dict) and result.get("flagged", False):
-                        entry_id = result.get("entry_id")
-                        if entry_id:
-                            results[entry_id] = {
-                                "flagged": True,
-                                "reason": result.get("reason", "Suspicious activity detected")
-                            }
-            except (json.JSONDecodeError, TypeError) as e:
-                # If batch fails, continue to next batch
-                logger.warning(f"Failed to parse batch {i}: {str(e)}")
+                # Add timeout to prevent hanging
+                response = await asyncio.wait_for(
+                    chat.send_message(message),
+                    timeout=30.0  # 30 second timeout per batch
+                )
+                
+                # Parse batch response
+                try:
+                    clean_response = response.strip()
+                    if clean_response.startswith("```"):
+                        clean_response = clean_response.split("```")[1]
+                        if clean_response.startswith("json"):
+                            clean_response = clean_response[4:]
+                    clean_response = clean_response.strip()
+                    
+                    batch_results = json.loads(clean_response)
+                    
+                    # Process batch results
+                    for result in batch_results:
+                        if isinstance(result, dict) and result.get("flagged", False):
+                            entry_id = result.get("entry_id")
+                            if entry_id:
+                                results[entry_id] = {
+                                    "flagged": True,
+                                    "reason": result.get("reason", "Suspicious activity detected")
+                                }
+                except (json.JSONDecodeError, TypeError) as e:
+                    # If batch fails, continue to next batch
+                    logger.warning(f"Failed to parse batch {i}: {str(e)}")
+                    continue
+                    
+            except asyncio.TimeoutError:
+                logger.warning(f"Batch {i} timed out after 30 seconds")
                 continue
         
+        logger.info(f"Verification complete: {len(results)} flagged out of {len(entries_to_check)}")
         return {"results": results, "total_checked": len(entries_to_check), "flagged_count": len(results)}
         
     except Exception as e:
