@@ -39,8 +39,13 @@ const Batches = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Sort by periodTo descending (newest first)
+      // Sort: archived batches at bottom, others by periodTo descending
       const sorted = response.data.sort((a, b) => {
+        // Archived batches go to bottom
+        if (a.status === 'archived' && b.status !== 'archived') return 1;
+        if (a.status !== 'archived' && b.status === 'archived') return -1;
+        
+        // For non-archived, sort by periodTo descending (newest first)
         return new Date(b.periodTo) - new Date(a.periodTo);
       });
       
