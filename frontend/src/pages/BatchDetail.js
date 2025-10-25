@@ -119,6 +119,9 @@ const BatchDetail = () => {
       setAiResults(response.data.results || {});
       setShowAiWarnings(true);
       
+      console.log('AI Results received:', response.data.results);
+      console.log('Total AI results keys:', Object.keys(response.data.results || {}).length);
+      
       const flaggedCount = Object.keys(response.data.results || {}).length;
       const totalChecked = response.data.total_checked || 0;
       
