@@ -320,8 +320,8 @@ const Settings = () => {
           </p>
 
             {/* Grammar Correction Prompt */}
-            <div className="space-y-2 mb-6">
-              <Label htmlFor="grammar">Grammar Correction</Label>
+            <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <Label htmlFor="grammar" className="text-base font-semibold">Grammar Correction</Label>
               <Textarea
                 id="grammar"
                 value={settings.grammarPrompt}
@@ -331,6 +331,38 @@ const Settings = () => {
                 data-testid="grammar-prompt-input"
               />
               <p className="text-xs text-slate-500">Used when clicking the AI sparkle icon on description fields</p>
+              
+              {/* Test Section */}
+              <div className="mt-4 pt-4 border-t border-slate-300">
+                <Label htmlFor="grammar-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
+                <Textarea
+                  id="grammar-test"
+                  value={testInputs.grammar}
+                  onChange={(e) => updateTestInput('grammar', e.target.value)}
+                  rows={2}
+                  placeholder="Enter text with grammar errors to test..."
+                  className="text-sm mb-2"
+                />
+                <Button
+                  onClick={() => handleTestPrompt('grammar')}
+                  disabled={testingPrompt === 'grammar' || !testInputs.grammar}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  <Sparkles className="w-3 h-3 mr-2" />
+                  {testingPrompt === 'grammar' ? 'Testing...' : 'Test Prompt'}
+                </Button>
+                
+                {testResults.grammar && (
+                  <div className={`mt-3 p-3 rounded-lg border ${
+                    testResults.grammar.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  }`}>
+                    <p className="text-xs font-semibold mb-1">Result:</p>
+                    <p className="text-sm">{testResults.grammar.result}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Fraud Detection Prompt */}
