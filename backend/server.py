@@ -688,32 +688,46 @@ async def move_time_entry_to_customer(
         "customerId": new_customer_id
     })
     
+    # Get project info for the line description
+    project = await db.projects.find_one({"id": entry.get("projectId")})
+    project_name = project.get("name", "General") if project else "General"
+    
     # Create new line item for this entry
     hours = entry.get("hours", 0)
     value = entry.get("value", 0)
     unit_price = (value / hours) if hours > 0 else 0
     
-    new_line = {
-        "id": str(uuid.uuid4()),
+    new_line_id = str(uuid.uuid4())
+    new_line_doc = {
+        "id": new_line_id,
+        "invoiceId": "",  # Will be set below
         "timeEntryId": entry_id,
-        "description": entry.get("notes", ""),
+        "description": f"{project_name} - {entry.get('employeeName', 'Unknown')} - {entry.get('notes', '')}",
         "quantity": hours,
         "unitPrice": unit_price,
-        "amount": value
+        "amount": value,
+        "taxCode": None
     }
     
     logger.info(f"Creating new line: hours={hours}, value={value}, unitPrice={unit_price}")
     
     if new_invoice:
-        # Add line to existing invoice
-        updated_lines = new_invoice.get("lines", []) + [new_line]
-        new_total = sum(line.get("amount", 0) for line in updated_lines)
+        # Add line to existing invoice in invoiceLines collection
+        new_line_doc["invoiceId"] = new_invoice["id"]
+        await db.invoiceLines.insert_one(new_line_doc)
+        
+        # Recalculate total from all lines
+        all_lines = await db.invoiceLines.find(
+            {"invoiceId": new_invoice["id"]},
+            {"_id": 0}
+        ).to_list(1000)
+        new_total = sum(line.get("amount", 0) for line in all_lines)
         
         await db.invoices.update_one(
             {"id": new_invoice["id"]},
-            {"$set": {"lines": updated_lines, "total": new_total}}
+            {"$set": {"total": new_total}}
         )
-        logger.info(f"Added entry to existing invoice {new_invoice['id']}. New line count: {len(updated_lines)}, New total: {new_total}")
+        logger.info(f"Added entry to existing invoice {new_invoice['id']}. New line count: {len(all_lines)}, New total: {new_total}")
     else:
         # Create new invoice for this customer
         batch = await db.importBatches.find_one({"id": batch_id})
