@@ -67,8 +67,37 @@ const Login = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Logo/Brand Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-2xl">
-            <div className="text-white font-bold text-3xl">J</div>
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl mb-4 shadow-2xl relative overflow-hidden">
+            {/* AI Neural Network Icon */}
+            <svg className="w-12 h-12 text-white" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Central node */}
+              <circle cx="24" cy="24" r="4" fill="currentColor" className="animate-pulse"/>
+              
+              {/* Outer nodes */}
+              <circle cx="12" cy="12" r="2.5" fill="currentColor" opacity="0.8"/>
+              <circle cx="36" cy="12" r="2.5" fill="currentColor" opacity="0.8"/>
+              <circle cx="12" cy="36" r="2.5" fill="currentColor" opacity="0.8"/>
+              <circle cx="36" cy="36" r="2.5" fill="currentColor" opacity="0.8"/>
+              
+              {/* Mid nodes */}
+              <circle cx="24" cy="8" r="2" fill="currentColor" opacity="0.6"/>
+              <circle cx="40" cy="24" r="2" fill="currentColor" opacity="0.6"/>
+              <circle cx="24" cy="40" r="2" fill="currentColor" opacity="0.6"/>
+              <circle cx="8" cy="24" r="2" fill="currentColor" opacity="0.6"/>
+              
+              {/* Connection lines */}
+              <line x1="24" y1="24" x2="12" y2="12" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+              <line x1="24" y1="24" x2="36" y2="12" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+              <line x1="24" y1="24" x2="12" y2="36" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+              <line x1="24" y1="24" x2="36" y2="36" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+              <line x1="24" y1="24" x2="24" y2="8" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+              <line x1="24" y1="24" x2="40" y2="24" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+              <line x1="24" y1="24" x2="24" y2="40" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+              <line x1="24" y1="24" x2="8" y2="24" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+            </svg>
+            
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 animate-pulse"></div>
           </div>
           <h1 className="text-4xl font-bold text-white mb-2 tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             JMMC Invoicing
