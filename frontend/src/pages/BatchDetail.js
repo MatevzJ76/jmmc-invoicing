@@ -40,6 +40,7 @@ const BatchDetail = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBatch(batchResponse.data);
+      setEditedBatch(batchResponse.data);
 
       // Load invoices for this batch
       const invoicesResponse = await axios.get(`${BACKEND_URL}/api/batches/${id}/invoices`, {
@@ -52,6 +53,37 @@ const BatchDetail = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedBatch(batch);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(`${BACKEND_URL}/api/batches/${id}`, editedBatch, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Batch details updated');
+      setBatch(editedBatch);
+      setIsEditing(false);
+      loadBatchAndInvoices(); // Reload to get updated invoices
+    } catch (error) {
+      toast.error('Failed to update batch');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateField = (field, value) => {
+    setEditedBatch({...editedBatch, [field]: value});
   };
 
   const filterInvoices = () => {
