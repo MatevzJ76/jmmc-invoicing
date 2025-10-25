@@ -722,6 +722,7 @@ async def move_time_entry_to_customer(
             "status": "draft",
             "createdAt": datetime.now(timezone.utc).isoformat()
         })
+        logger.info(f"Created new invoice {new_invoice_id} for customer {new_customer.get('name')} with 1 line")
     
     # Audit event
     await db.auditEvents.insert_one({
