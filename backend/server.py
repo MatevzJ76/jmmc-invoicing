@@ -417,6 +417,82 @@ async def get_batch_verification(batch_id: str, current_user: User = Depends(get
         "noClient": no_client_entries
     }
 
+@api_router.post("/batches/{batch_id}/verify-entries")
+async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_current_user)):
+    """Run AI verification on time entry descriptions"""
+    # Get user's AI settings
+    user_settings = await db.aiSettings.find_one({"userId": current_user.email})
+    
+    if not user_settings:
+        user_settings = AISettings().model_dump()
+    
+    # Determine API key and model
+    if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
+        api_key = user_settings["customApiKey"]
+        model = user_settings.get("customModel", "gpt-4o")
+    else:
+        if not EMERGENT_LLM_KEY:
+            return {"results": {}, "message": "AI not configured"}
+        api_key = EMERGENT_LLM_KEY
+        model = "gpt-4o-mini"
+    
+    # Get all time entries for this batch
+    all_entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
+    
+    if not all_entries:
+        return {"results": {}, "message": "No entries found"}
+    
+    verification_prompt = user_settings.get("verificationPrompt", 
+        "Analyze this work description for suspicious patterns. If suspicious, respond with JSON: {\"flagged\": true, \"reason\": \"brief explanation\"}. If normal: {\"flagged\": false, \"reason\": \"\"}")
+    
+    try:
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"verification-{current_user.email}",
+            system_message="You are an AI assistant for invoice verification. Always respond with valid JSON."
+        ).with_model("openai", model)
+        
+        # Check each entry
+        results = {}
+        for entry in all_entries:
+            entry_id = entry.get("id")
+            description = entry.get("notes", "")
+            
+            if not description or description.strip() == "":
+                continue
+            
+            # Format prompt with entry data
+            prompt_text = f"{verification_prompt}\n\nWork description: {description}\nEmployee: {entry.get('employeeName', 'N/A')}\nHours: {entry.get('hours', 0)}\nDate: {entry.get('date', 'N/A')}"
+            
+            message = UserMessage(text=prompt_text)
+            response = await chat.send_message(message)
+            
+            # Parse JSON response
+            try:
+                import json
+                # Clean response - remove markdown code blocks if present
+                clean_response = response.strip()
+                if clean_response.startswith("```"):
+                    clean_response = clean_response.split("```")[1]
+                    if clean_response.startswith("json"):
+                        clean_response = clean_response[4:]
+                clean_response = clean_response.strip()
+                
+                result = json.loads(clean_response)
+                if result.get("flagged", False):
+                    results[entry_id] = {
+                        "flagged": True,
+                        "reason": result.get("reason", "Suspicious activity detected")
+                    }
+            except json.JSONDecodeError:
+                # If not valid JSON, treat as not flagged
+                continue
+        
+        return {"results": results, "total_checked": len(all_entries), "flagged_count": len(results)}
+        
+    except Exception as e:
+        return {"results": {}, "message": f"AI verification error: {str(e)}"}
+
 @api_router.put("/batches/{batch_id}")
 async def update_batch(batch_id: str, update_data: dict, current_user: User = Depends(get_current_user)):
     """Update batch details"""
