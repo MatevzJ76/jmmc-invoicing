@@ -24,6 +24,16 @@ const BatchDetail = () => {
   const [editedBatch, setEditedBatch] = useState(null);
   const [allBatches, setAllBatches] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const [verificationData, setVerificationData] = useState({
+    jmmcHP: [],
+    jmmcFinance: [],
+    noClient: []
+  });
+  const [expandedCategories, setExpandedCategories] = useState({
+    jmmcHP: false,
+    jmmcFinance: false,
+    noClient: false
+  });
 
   useEffect(() => {
     loadBatchAndInvoices();
