@@ -73,6 +73,25 @@ const BatchDetail = () => {
     }
   };
 
+  const loadVerificationData = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/batches/${id}/verification`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setVerificationData(response.data);
+    } catch (error) {
+      console.error('Failed to load verification data:', error);
+    }
+  };
+
+  const toggleCategory = (category) => {
+    setExpandedCategories({
+      ...expandedCategories,
+      [category]: !expandedCategories[category]
+    });
+  };
+
   const loadBatchAndInvoices = async () => {
     try {
       const token = localStorage.getItem('access_token');
