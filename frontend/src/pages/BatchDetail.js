@@ -27,11 +27,40 @@ const BatchDetail = () => {
 
   useEffect(() => {
     loadBatchAndInvoices();
+    loadAllBatches();
   }, [id]);
 
   useEffect(() => {
     filterInvoices();
   }, [invoices, searchTerm, statusFilter]);
+
+  useEffect(() => {
+    // Find current batch index whenever batches or id changes
+    if (allBatches.length > 0) {
+      const index = allBatches.findIndex(b => b.id === id);
+      setCurrentIndex(index);
+    }
+  }, [allBatches, id]);
+
+  const loadAllBatches = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/batches`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Sort same way as batches list page
+      const sorted = response.data.sort((a, b) => {
+        if (a.status === 'archived' && b.status !== 'archived') return 1;
+        if (a.status !== 'archived' && b.status === 'archived') return -1;
+        return new Date(b.periodTo) - new Date(a.periodTo);
+      });
+      
+      setAllBatches(sorted);
+    } catch (error) {
+      console.error('Failed to load batches list:', error);
+    }
+  };
 
   const loadBatchAndInvoices = async () => {
     try {
