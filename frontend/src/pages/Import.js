@@ -12,12 +12,23 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const Import = () => {
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
+  const [title, setTitle] = useState('');
   const [invoiceDate, setInvoiceDate] = useState('');
   const [periodFrom, setPeriodFrom] = useState('');
   const [periodTo, setPeriodTo] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+
+  // Auto-suggest title based on period
+  useEffect(() => {
+    if (periodFrom && periodTo) {
+      const date = new Date(periodFrom);
+      const month = date.toLocaleString('en-US', { month: 'long' });
+      const year = date.getFullYear();
+      setTitle(`${month} ${year}`);
+    }
+  }, [periodFrom, periodTo]);
 
   const handleDrag = (e) => {
     e.preventDefault();
