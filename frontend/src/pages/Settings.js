@@ -88,6 +88,32 @@ const Settings = () => {
     }
   };
 
+  const handleTestEracuni = async () => {
+    setTestingEracuni(true);
+    setEracuniTestResult(null);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(
+        `${BACKEND_URL}/api/settings/eracuni/test`,
+        {
+          username: settings.eracuniUsername,
+          secretKey: settings.eracuniSecretKey,
+          apiToken: settings.eracuniToken
+        },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      setEracuniTestResult({ success: true, message: response.data.message });
+      toast.success('e-računi connection test successful!');
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || 'e-računi connection test failed';
+      setEracuniTestResult({ success: false, message: errorMsg });
+      toast.error(errorMsg);
+    } finally {
+      setTestingEracuni(false);
+    }
+  };
+
+
   const updateSetting = (key, value) => {
     setSettings({...settings, [key]: value});
     setTestResult(null);
