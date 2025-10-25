@@ -38,7 +38,13 @@ const Batches = () => {
       const response = await axios.get(`${BACKEND_URL}/api/batches`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setBatches(response.data);
+      
+      // Sort by periodTo descending (newest first)
+      const sorted = response.data.sort((a, b) => {
+        return new Date(b.periodTo) - new Date(a.periodTo);
+      });
+      
+      setBatches(sorted);
     } catch (error) {
       toast.error('Failed to load batches');
       console.error(error);
