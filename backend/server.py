@@ -382,6 +382,40 @@ async def get_batch_invoices(batch_id: str, current_user: User = Depends(get_cur
     invoices = await db.invoices.find({"batchId": batch_id}, {"_id": 0}).to_list(1000)
     return invoices
 
+@api_router.get("/batches/{batch_id}/verification")
+async def get_batch_verification(batch_id: str, current_user: User = Depends(get_current_user)):
+    """Get verification data for specific clients and no-client entries"""
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Get all time entries for this batch
+    all_entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
+    
+    # Get customer names for each entry
+    jmmc_hp_entries = []
+    jmmc_finance_entries = []
+    no_client_entries = []
+    
+    for entry in all_entries:
+        # Get customer name
+        customer = await db.customers.find_one({"id": entry["customerId"]})
+        customer_name = customer["name"] if customer else ""
+        
+        # Categorize entries
+        if "JMMC HP d.o.o." in customer_name:
+            jmmc_hp_entries.append(entry)
+        elif "JMMC Finance d.o.o." in customer_name:
+            jmmc_finance_entries.append(entry)
+        elif not customer_name or customer_name.strip() == "" or customer_name == "General":
+            no_client_entries.append(entry)
+    
+    return {
+        "jmmcHP": jmmc_hp_entries,
+        "jmmcFinance": jmmc_finance_entries,
+        "noClient": no_client_entries
+    }
+
 @api_router.put("/batches/{batch_id}")
 async def update_batch(batch_id: str, update_data: dict, current_user: User = Depends(get_current_user)):
     """Update batch details"""
