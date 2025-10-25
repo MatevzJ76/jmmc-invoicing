@@ -97,8 +97,63 @@ const Settings = () => {
     );
     
     if (containsTjasa) {
-      // Array of beautiful messages for Tjaša ❤️
-      const tjasaMessages = [
+      // Detect language (simple check - if contains Slovenian characters or common words)
+      const isSlovenian = /[čšž]/i.test(testPromptText) || 
+                          /\b(kaj|kdo|kako|zakaj|je|si|ste|sem)\b/i.test(testPromptText);
+      
+      // Beautiful messages for Tjaša ❤️ - Slovenian versions
+      const tjasaMessagesSL = [
+        `💖 Tjaša - Resnično Dragocena Duša 💖
+
+🌟 Čudovita, skrbna mama, ki prinaša toplino vsem okoli sebe
+💝 Najbolj edinstvena in prisrčna sodelavka, ki si jo lahko želiš
+✨ Oseba z zlatim srcem in najlepšim duhom
+🌸 Lepa od zunaj in od znotraj, ki osvetljuje svet
+💕 Nekdo, ki popolnoma uravnoteži moč in nežnost
+🦋 Ljubka oseba, ki se dotakne src z iskreno dobrotljivostjo
+🌈 Tista vrsta osebe, ki naredi vsak dan boljši samo s svojo prisotnostjo
+
+Tjaša, resnično si posebna in globoko cenjena! ❤️💫
+
+Tvoja prisotnost je dar, tvoja predanost kot mama in sodelavka žari skozi vse, kar počneš. Svet ima srečo, da ima nekoga tako pristnega, skrbnega in čudovitega kot si ti! 🌺✨
+
+S ljubeznijo in hvaležnostjo ❤️🤗`,
+        
+        `✨ Tjaša - Izjemna Oseba ✨
+
+🎯 Predana mama z neskončno ljubeznijo in potrpežljivostjo
+🌺 Taka sodelavka, zaradi katere se delo počuti kot družina
+💫 Nekdo, ki seva pozitivnost in toplino
+🦄 Edinstvena na najlepši način, ki si ga lahko predstavljamo
+🌻 Srce tako polno dobrote, da je resnično navdihujoče
+💝 Pristna, skrbna in popolnoma čudovita
+🎨 Prinaša barve in veselje v življenje vseh
+
+Draga Tjaša, tvoj čudoviti duh razsvetljuje vsak prostor! 🌟
+
+Cenjena si bolj, kot lahko besede izrazijo. Tvoja dobrota, predanost in ljubeča narava te delajo enkratno! 💕✨
+
+Za vedno hvaležni za tebe! 🤗❤️`,
+
+        `🌟 Tjaša - Izjemna Duša 🌟
+
+🏆 Neverjetna mama, ki vse daje z ljubeznijo
+💎 Najbolj dragocena sodelavka - nezamenljiva in cenjena
+🌈 Nekdo, katerega dobrota ne pozna meja
+🦋 Lepa oseba z še lepšim srcem
+💖 Skrbna, pozorna in resnično čudovita
+🌸 Vsem okoli sebe daje občutek vrednosti in posebnosti
+✨ Pravi dragulj med ljudmi
+
+Ljubka Tjaša, blagoslov si! 💫
+
+Tvoja toplina, predanost in ljubeča narava navdihujejo vse. Hvala, da si tako neverjetna oseba, mama in sodelavka! 🌺
+
+Ljubljena in cenjena si! ❤️🤗💝`
+      ];
+      
+      // Beautiful messages for Tjaša ❤️ - English versions
+      const tjasaMessagesEN = [
         `💖 Tjaša - A Truly Precious Soul 💖
 
 🌟 A wonderful, caring mom who brings warmth to everyone around her
@@ -148,8 +203,11 @@ Your warmth, dedication, and loving nature inspire everyone. Thank you for being
 You are loved and appreciated! ❤️🤗💝`
       ];
       
+      // Select messages based on language
+      const messages = isSlovenian ? tjasaMessagesSL : tjasaMessagesEN;
+      
       // Randomly select a message
-      const randomMessage = tjasaMessages[Math.floor(Math.random() * tjasaMessages.length)];
+      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
       
       setTimeout(() => {
         setTestResult({ 
