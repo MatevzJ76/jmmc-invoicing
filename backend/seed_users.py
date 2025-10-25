@@ -21,53 +21,63 @@ async def seed_users():
     client = AsyncIOMotorClient(mongo_url)
     db = client[os.environ['DB_NAME']]
     
+    # Use fixed passwords instead of OTPs
+    admin_password = "Admin2025!"
+    user_password = "User2025!"
+    
+    # Hash passwords
+    admin_hash = ph.hash(admin_password)
+    user_hash = ph.hash(user_password)
+    
     # Check if users already exist
     existing_admin = await db.users.find_one({"email": "admin@local"})
     existing_user = await db.users.find_one({"email": "user@local"})
     
-    if existing_admin and existing_user:
-        print("✓ Users already seeded")
-        client.close()
-        return
-    
-    # Generate OTPs
-    admin_otp = secrets.token_urlsafe(12)
-    user_otp = secrets.token_urlsafe(12)
-    
-    # Hash passwords
-    admin_hash = ph.hash(admin_otp)
-    user_hash = ph.hash(user_otp)
-    
-    # Create users
+    # Update or create admin user
     admin_user = {
         "email": "admin@local",
         "passwordHash": admin_hash,
         "role": "ADMIN",
-        "mustReset": True,
+        "mustReset": False,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     
+    if existing_admin:
+        # Update existing admin with new password
+        await db.users.update_one(
+            {"email": "admin@local"},
+            {"$set": {"passwordHash": admin_hash, "mustReset": False}}
+        )
+        print(f"\n🔐 ADMIN USER UPDATED")
+    else:
+        await db.users.insert_one(admin_user)
+        print(f"\n🔐 ADMIN USER CREATED")
+    
+    print(f"   Email: admin@local")
+    print(f"   Password: {admin_password}\n")
+    
+    # Update or create regular user
     regular_user = {
         "email": "user@local",
         "passwordHash": user_hash,
         "role": "USER",
-        "mustReset": True,
+        "mustReset": False,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     
-    if not existing_admin:
-        await db.users.insert_one(admin_user)
-        print(f"\n🔐 ADMIN USER CREATED")
-        print(f"   Email: admin@local")
-        print(f"   OTP: {admin_otp}")
-        print(f"   (mustReset=true)\n")
-    
-    if not existing_user:
+    if existing_user:
+        # Update existing user with new password
+        await db.users.update_one(
+            {"email": "user@local"},
+            {"$set": {"passwordHash": user_hash, "mustReset": False}}
+        )
+        print(f"🔐 USER UPDATED")
+    else:
         await db.users.insert_one(regular_user)
         print(f"🔐 USER CREATED")
-        print(f"   Email: user@local")
-        print(f"   OTP: {user_otp}")
-        print(f"   (mustReset=true)\n")
+    
+    print(f"   Email: user@local")
+    print(f"   Password: {user_password}\n")
     
     # Create indexes
     await db.users.create_index("email", unique=True)
