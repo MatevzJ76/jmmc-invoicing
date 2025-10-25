@@ -18,6 +18,9 @@ const BatchDetail = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editedBatch, setEditedBatch] = useState(null);
 
   useEffect(() => {
     loadBatchAndInvoices();
