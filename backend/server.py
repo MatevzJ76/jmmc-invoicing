@@ -702,6 +702,7 @@ async def move_time_entry_to_customer(
             {"id": new_invoice["id"]},
             {"$set": {"lines": updated_lines, "total": new_total}}
         )
+        logger.info(f"Added entry to existing invoice {new_invoice['id']}. New line count: {len(updated_lines)}, New total: {new_total}")
     else:
         # Create new invoice for this customer
         batch = await db.importBatches.find_one({"id": batch_id})
