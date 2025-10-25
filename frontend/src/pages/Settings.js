@@ -458,8 +458,8 @@ const Settings = () => {
             </div>
 
             {/* Verification Prompt */}
-            <div className="space-y-2 mb-6">
-              <Label htmlFor="verification">Invoice Verification (Batch Review)</Label>
+            <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <Label htmlFor="verification" className="text-base font-semibold">Invoice Verification (Batch Review)</Label>
               <Textarea
                 id="verification"
                 value={settings.verificationPrompt}
@@ -469,6 +469,38 @@ const Settings = () => {
                 data-testid="verification-prompt-input"
               />
               <p className="text-xs text-slate-500">Checks work descriptions in batch verification for fraud, irregularities, or suspicious patterns. Must return JSON format.</p>
+              
+              {/* Test Section */}
+              <div className="mt-4 pt-4 border-t border-slate-300">
+                <Label htmlFor="verification-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
+                <Textarea
+                  id="verification-test"
+                  value={testInputs.verification}
+                  onChange={(e) => updateTestInput('verification', e.target.value)}
+                  rows={2}
+                  placeholder="Enter work description to verify..."
+                  className="text-sm mb-2"
+                />
+                <Button
+                  onClick={() => handleTestPrompt('verification')}
+                  disabled={testingPrompt === 'verification' || !testInputs.verification}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  <Sparkles className="w-3 h-3 mr-2" />
+                  {testingPrompt === 'verification' ? 'Testing...' : 'Test Prompt'}
+                </Button>
+                
+                {testResults.verification && (
+                  <div className={`mt-3 p-3 rounded-lg border ${
+                    testResults.verification.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  }`}>
+                    <p className="text-xs font-semibold mb-1">Result:</p>
+                    <p className="text-sm whitespace-pre-wrap">{testResults.verification.result}</p>
+                  </div>
+                )}
+              </div>
             </div>
         </div>
 
