@@ -187,7 +187,6 @@ const Batches = () => {
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Title</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Filename</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Period</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Invoice Date</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Due Date</th>
