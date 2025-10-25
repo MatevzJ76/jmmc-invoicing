@@ -66,6 +66,7 @@ const Import = () => {
     setLoading(true);
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('title', title);
     formData.append('invoiceDate', invoiceDate);
     formData.append('periodFrom', periodFrom);
     formData.append('periodTo', periodTo);
