@@ -39,6 +39,9 @@ const BatchDetail = () => {
   const [showAiWarnings, setShowAiWarnings] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [verificationSummary, setVerificationSummary] = useState(null);
+  const [allCustomers, setAllCustomers] = useState([]);
+  const [movingEntry, setMovingEntry] = useState(null);
+  const [showMoveDropdown, setShowMoveDropdown] = useState(null);
 
   useEffect(() => {
     loadBatchAndInvoices();
