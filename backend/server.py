@@ -742,12 +742,16 @@ async def move_time_entry_to_customer(
             "dueDate": batch.get("dueDate"),
             "periodFrom": batch.get("periodFrom"),
             "periodTo": batch.get("periodTo"),
-            "lines": [new_line],
-            "total": new_line["amount"],
+            "total": value,
             "status": "draft",
             "createdAt": datetime.now(timezone.utc).isoformat()
         })
-        logger.info(f"Created new invoice {new_invoice_id} for customer {new_customer.get('name')} with 1 line")
+        
+        # Add line to invoiceLines collection
+        new_line_doc["invoiceId"] = new_invoice_id
+        await db.invoiceLines.insert_one(new_line_doc)
+        
+        logger.info(f"Created new invoice {new_invoice_id} for customer {new_customer.get('name')} with 1 line, total: {value}")
     
     # Audit event
     await db.auditEvents.insert_one({
