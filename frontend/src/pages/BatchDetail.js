@@ -125,16 +125,65 @@ const BatchDetail = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/batches')} className="rounded-full">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Batches
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              {batch.title || batch.filename}
-            </h1>
-            <p className="text-sm text-slate-500">{batch.filename}</p>
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/batches')} className="rounded-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Batches
+            </Button>
+            <div>
+              {isEditing ? (
+                <Input
+                  value={editedBatch?.title || ''}
+                  onChange={(e) => updateField('title', e.target.value)}
+                  className="text-2xl font-bold"
+                  placeholder="Batch title"
+                  data-testid="batch-title-edit"
+                />
+              ) : (
+                <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {batch.title || batch.filename}
+                </h1>
+              )}
+              <p className="text-sm text-slate-500">{batch.filename}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {isEditing ? (
+              <>
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                  data-testid="cancel-edit-button"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                  size="sm"
+                  className="rounded-full bg-blue-600 hover:bg-blue-700"
+                  data-testid="save-batch-button"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save'}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={handleEdit}
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                data-testid="edit-batch-button"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+            )}
           </div>
         </div>
       </nav>
