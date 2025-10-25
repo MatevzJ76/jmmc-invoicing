@@ -95,6 +95,41 @@ const BatchDetail = () => {
     });
   };
 
+  const handleAIVerification = async () => {
+    setAiVerifying(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(
+        `${BACKEND_URL}/api/batches/${id}/verify-entries`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      setAiResults(response.data.results || {});
+      setShowAiWarnings(true);
+      
+      const flaggedCount = Object.keys(response.data.results || {}).length;
+      if (flaggedCount > 0) {
+        toast.success(`AI verification complete: ${flaggedCount} suspicious entries found`);
+      } else {
+        toast.success('AI verification complete: No suspicious entries found');
+      }
+    } catch (error) {
+      toast.error('AI verification failed');
+      console.error(error);
+    } finally {
+      setAiVerifying(false);
+    }
+  };
+
+  const isEntryFlagged = (entryId) => {
+    return aiResults[entryId]?.flagged === true;
+  };
+
+  const getFlagReason = (entryId) => {
+    return aiResults[entryId]?.reason || '';
+  };
+
   const loadBatchAndInvoices = async () => {
     try {
       const token = localStorage.getItem('access_token');
