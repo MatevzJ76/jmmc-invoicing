@@ -304,7 +304,7 @@ const BatchDetail = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Batch Summary */}
-        <div className="grid md:grid-cols-4 gap-4 mb-6">
+        <div className="grid md:grid-cols-5 gap-4 mb-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <Label className="text-sm text-slate-600 mb-2 block">Period From</Label>
             {isEditing ? (
@@ -356,6 +356,17 @@ const BatchDetail = () => {
             ) : (
               <p className="text-lg font-semibold text-slate-800">{batch.dueDate}</p>
             )}
+          </div>
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <Label className="text-sm text-slate-600 mb-2 block">Status</Label>
+            <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+              batch.status === 'archived' ? 'bg-gray-100 text-gray-700' :
+              batch.status === 'posted' ? 'bg-green-100 text-green-700' :
+              batch.status === 'composed' ? 'bg-blue-100 text-blue-700' :
+              'bg-yellow-100 text-yellow-700'
+            }`}>
+              {batch.status}
+            </span>
           </div>
         </div>
 
