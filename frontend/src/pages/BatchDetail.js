@@ -117,6 +117,23 @@ const BatchDetail = () => {
     setEditedBatch({...editedBatch, [field]: value});
   };
 
+  const goToPreviousBatch = () => {
+    if (currentIndex > 0) {
+      const prevBatch = allBatches[currentIndex - 1];
+      navigate(`/batches/${prevBatch.id}`);
+    }
+  };
+
+  const goToNextBatch = () => {
+    if (currentIndex < allBatches.length - 1) {
+      const nextBatch = allBatches[currentIndex + 1];
+      navigate(`/batches/${nextBatch.id}`);
+    }
+  };
+
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < allBatches.length - 1;
+
   const filterInvoices = () => {
     let filtered = [...invoices];
 
