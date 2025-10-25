@@ -42,6 +42,7 @@ const BatchDetail = () => {
   const [allCustomers, setAllCustomers] = useState([]);
   const [movingEntry, setMovingEntry] = useState(null);
   const [showMoveDropdown, setShowMoveDropdown] = useState(null);
+  const [customerSearch, setCustomerSearch] = useState('');
 
   useEffect(() => {
     loadBatchAndInvoices();
