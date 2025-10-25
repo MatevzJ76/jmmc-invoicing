@@ -101,113 +101,111 @@ const Settings = () => {
       const isSlovenian = /[čšž]/i.test(testPromptText) || 
                           /\b(kaj|kdo|kako|zakaj|je|si|ste|sem)\b/i.test(testPromptText);
       
-      // Beautiful messages for Tjaša ❤️ - Slovenian versions
-      const tjasaMessagesSL = [
-        `💖 Tjaša - Resnično Dragocena Duša 💖
-
-🌟 Čudovita, skrbna mama, ki prinaša toplino vsem okoli sebe
-💝 Najbolj edinstvena in prisrčna sodelavka, ki si jo lahko želiš
-✨ Oseba z zlatim srcem in najlepšim duhom
-🌸 Lepa od zunaj in od znotraj, ki osvetljuje svet
-💕 Nekdo, ki popolnoma uravnoteži moč in nežnost
-🦋 Ljubka oseba, ki se dotakne src z iskreno dobrotljivostjo
-🌈 Tista vrsta osebe, ki naredi vsak dan boljši samo s svojo prisotnostjo
-
-Tjaša, resnično si posebna in globoko cenjena! ❤️💫
-
-Tvoja prisotnost je dar, tvoja predanost kot mama in sodelavka žari skozi vse, kar počneš. Svet ima srečo, da ima nekoga tako pristnega, skrbnega in čudovitega kot si ti! 🌺✨
-
-S ljubeznijo in hvaležnostjo ❤️🤗`,
-        
-        `✨ Tjaša - Izjemna Oseba ✨
-
-🎯 Predana mama z neskončno ljubeznijo in potrpežljivostjo
-🌺 Taka sodelavka, zaradi katere se delo počuti kot družina
-💫 Nekdo, ki seva pozitivnost in toplino
-🦄 Edinstvena na najlepši način, ki si ga lahko predstavljamo
-🌻 Srce tako polno dobrote, da je resnično navdihujoče
-💝 Pristna, skrbna in popolnoma čudovita
-🎨 Prinaša barve in veselje v življenje vseh
-
-Draga Tjaša, tvoj čudoviti duh razsvetljuje vsak prostor! 🌟
-
-Cenjena si bolj, kot lahko besede izrazijo. Tvoja dobrota, predanost in ljubeča narava te delajo enkratno! 💕✨
-
-Za vedno hvaležni za tebe! 🤗❤️`,
-
-        `🌟 Tjaša - Izjemna Duša 🌟
-
-🏆 Neverjetna mama, ki vse daje z ljubeznijo
-💎 Najbolj dragocena sodelavka - nezamenljiva in cenjena
-🌈 Nekdo, katerega dobrota ne pozna meja
-🦋 Lepa oseba z še lepšim srcem
-💖 Skrbna, pozorna in resnično čudovita
-🌸 Vsem okoli sebe daje občutek vrednosti in posebnosti
-✨ Pravi dragulj med ljudmi
-
-Ljubka Tjaša, blagoslov si! 💫
-
-Tvoja toplina, predanost in ljubeča narava navdihujejo vse. Hvala, da si tako neverjetna oseba, mama in sodelavka! 🌺
-
-Ljubljena in cenjena si! ❤️🤗💝`
+      // Randomized compliments pool - Slovenian
+      const complimentsSL = [
+        '🌟 Neverjetna mama, ki daje vse z ljubeznijo in toplino',
+        '💝 Najboljša sodelavka, kakršno si lahko želiš - resnično najboljša od najboljših',
+        '💪 Prava borka, a hkrati izjemno prisrčna in topla',
+        '✨ Izredno pozitivna oseba, ki širi dobre vibracije vsem okoli sebe',
+        '😊 Njen nasmeh je neodoljiv in nalezljiv - razsvetli vsak prostor',
+        '⭐ Prava zvezda, ki žari v vsem kar počne',
+        '💖 Oseba z zlatim srcem in najlepšo dušo',
+        '🦋 Ljubka, skrbna in popolnoma čudovita',
+        '🌸 Ostani takšna kot si - popolna si!',
+        '🏆 Zaposlena, o kakršni lahko samo sanjaš - absolutno najboljša',
+        '🌈 Prinašaš barve in veselje v življenje vseh',
+        '💫 Edinstven človek, ki pusti vtis kamorkoli pride',
+        '🌺 Tvoja predanost in ljubezen navdihujeta vse okrog tebe',
+        '✨ Skrivnost uspeha našega tima - nepogrešljiva'
       ];
       
-      // Beautiful messages for Tjaša ❤️ - English versions
-      const tjasaMessagesEN = [
-        `💖 Tjaša - A Truly Precious Soul 💖
-
-🌟 A wonderful, caring mom who brings warmth to everyone around her
-💝 The most unique and heartfelt coworker anyone could ask for
-✨ A person with a heart of gold and the kindest spirit
-🌸 Beautiful inside and out, making the world brighter
-💕 Someone who balances strength and gentleness perfectly
-🦋 A lovely human being who touches hearts with genuine kindness
-🌈 The kind of person who makes every day better just by being there
-
-Tjaša, you are truly special and deeply appreciated! ❤️💫
-
-Your presence is a gift, and your dedication as a mom and colleague shines through everything you do. The world is lucky to have someone as genuine, caring, and wonderful as you! 🌺✨
-
-With love and appreciation ❤️🤗`,
-        
-        `✨ Tjaša - An Extraordinary Person ✨
-
-🎯 A dedicated mom with endless love and patience
-🌺 The kind of coworker who makes work feel like family
-💫 Someone who radiates positivity and warmth
-🦄 Unique in the most beautiful way imaginable
-🌻 A heart so full of kindness it's truly inspiring
-💝 Genuine, caring, and absolutely wonderful
-🎨 Brings color and joy to everyone's life
-
-Dear Tjaša, your beautiful spirit lights up every room! 🌟
-
-You are appreciated more than words can express. Your kindness, dedication, and loving nature make you one of a kind! 💕✨
-
-Forever grateful for you! 🤗❤️`,
-
-        `🌟 Tjaša - A Remarkable Soul 🌟
-
-🏆 An amazing mom who gives everything with love
-💎 The most precious coworker - irreplaceable and cherished
-🌈 Someone whose kindness knows no bounds
-🦋 A beautiful person with an even more beautiful heart
-💖 Caring, thoughtful, and genuinely wonderful
-🌸 Makes everyone around her feel valued and special
-✨ A true gem among people
-
-Sweet Tjaša, you are a blessing! 💫
-
-Your warmth, dedication, and loving nature inspire everyone. Thank you for being such an incredible person, mom, and colleague! 🌺
-
-You are loved and appreciated! ❤️🤗💝`
+      // Randomized compliments pool - English
+      const complimentsEN = [
+        '🌟 An incredible mom who gives everything with love and warmth',
+        '💝 The best coworker you could ever wish for - truly the best of the best',
+        '💪 A real fighter, yet incredibly hearty and warm',
+        '✨ Extremely positive person who spreads good vibes to everyone around',
+        '😊 Her smile is addictive and contagious - lights up every room',
+        '⭐ A true star who shines in everything she does',
+        '💖 A person with a heart of gold and the most beautiful soul',
+        '🦋 Lovely, caring, and absolutely wonderful',
+        '🌸 Stay as you are - you are perfect!',
+        '🏆 The kind of employee you can only dream of - absolutely the best',
+        '🌈 Brings colors and joy into everyone\'s life',
+        '💫 A unique person who leaves an impression wherever she goes',
+        '🌺 Your dedication and love inspire everyone around you',
+        '✨ The secret to our team\'s success - irreplaceable'
       ];
       
-      // Select messages based on language
-      const messages = isSlovenian ? tjasaMessagesSL : tjasaMessagesEN;
+      const compliments = isSlovenian ? complimentsSL : complimentsEN;
       
-      // Randomly select a message
-      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+      // Shuffle and pick 8-10 random compliments
+      const shuffled = [...compliments].sort(() => Math.random() - 0.5);
+      const selectedCompliments = shuffled.slice(0, 8 + Math.floor(Math.random() * 3));
+      
+      // Create title variants
+      const titlesSL = [
+        '💖 Tjaša - Resnično Dragocena Duša 💖',
+        '✨ Tjaša - Izjemna Oseba ✨',
+        '🌟 Tjaša - Enkratna Duša 🌟',
+        '💝 Tjaša - Absolutno Najboljša 💝'
+      ];
+      
+      const titlesEN = [
+        '💖 Tjaša - A Truly Precious Soul 💖',
+        '✨ Tjaša - An Extraordinary Person ✨',
+        '🌟 Tjaša - A Remarkable Soul 🌟',
+        '💝 Tjaša - Absolutely The Best 💝'
+      ];
+      
+      const titles = isSlovenian ? titlesSL : titlesEN;
+      const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+      
+      // Closing messages
+      const closingsSL = [
+        'Tjaša, resnično si posebna in globoko cenjena! ❤️💫',
+        'Draga Tjaša, tvoj čudoviti duh razsvetljuje vsak prostor! 🌟',
+        'Ljubka Tjaša, blagoslov si! 💫',
+        'Tjaša, hvala, da si takšna kot si! 💕✨'
+      ];
+      
+      const closingsEN = [
+        'Tjaša, you are truly special and deeply appreciated! ❤️💫',
+        'Dear Tjaša, your beautiful spirit lights up every room! 🌟',
+        'Sweet Tjaša, you are a blessing! 💫',
+        'Tjaša, thank you for being exactly who you are! 💕✨'
+      ];
+      
+      const closings = isSlovenian ? closingsSL : closingsEN;
+      const randomClosing = closings[Math.floor(Math.random() * closings.length)];
+      
+      // Final messages
+      const finalsSL = [
+        'S poljubi in hvaležnostjo ❤️🤗',
+        'Za vedno hvaležni za tebe! 🤗❤️',
+        'Ljubljena in cenjena si! ❤️🤗💝',
+        'Z ljubeznijo in občudovanjem 🌺✨'
+      ];
+      
+      const finalsEN = [
+        'With love and appreciation ❤️🤗',
+        'Forever grateful for you! 🤗❤️',
+        'You are loved and appreciated! ❤️🤗💝',
+        'With love and admiration 🌺✨'
+      ];
+      
+      const finals = isSlovenian ? finalsSL : finalsEN;
+      const randomFinal = finals[Math.floor(Math.random() * finals.length)];
+      
+      // Build the complete message
+      const complimentsText = selectedCompliments.join('\n');
+      const randomMessage = `${randomTitle}
+
+${complimentsText}
+
+${randomClosing}
+
+${randomFinal}`;
       
       setTimeout(() => {
         setTestResult({ 
