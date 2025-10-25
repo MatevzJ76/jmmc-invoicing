@@ -514,31 +514,55 @@ const BatchDetail = () => {
             
             {expandedCategories.jmmcHP && (
               <div className="mt-2 space-y-2 pl-4">
-                {verificationData.jmmcHP.map((entry, idx) => (
-                  <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg">
-                    <div className="grid grid-cols-4 gap-2 text-sm">
-                      <div>
-                        <span className="text-xs text-slate-500">Date:</span>
-                        <p className="font-medium">{entry.date}</p>
+                {verificationData.jmmcHP.map((entry, idx) => {
+                  const isFlagged = isEntryFlagged(entry.id);
+                  const flagReason = getFlagReason(entry.id);
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`p-3 border rounded-lg ${
+                        isFlagged && showAiWarnings
+                          ? 'bg-red-50 border-red-300' 
+                          : 'bg-white border-slate-200'
+                      }`}
+                    >
+                      <div className="grid grid-cols-4 gap-2 text-sm">
+                        <div>
+                          <span className="text-xs text-slate-500">Date:</span>
+                          <p className="font-medium">{entry.date}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-slate-500">Employee:</span>
+                          <p className="font-medium">{entry.employeeName}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-slate-500">Hours:</span>
+                          <p className="font-medium">{entry.hours}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <span className="text-xs text-slate-500">Value:</span>
+                            <p className="font-medium">€{entry.value.toFixed(2)}</p>
+                          </div>
+                          {isFlagged && showAiWarnings && (
+                            <div className="relative group">
+                              <Info className="w-4 h-4 text-red-600 cursor-help" />
+                              <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-slate-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                                <div className="font-semibold mb-1">⚠️ AI Warning</div>
+                                <p>{flagReason}</p>
+                                <div className="absolute -bottom-1 right-4 w-2 h-2 bg-slate-900 transform rotate-45"></div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-xs text-slate-500">Employee:</span>
-                        <p className="font-medium">{entry.employeeName}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-500">Hours:</span>
-                        <p className="font-medium">{entry.hours}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-500">Value:</span>
-                        <p className="font-medium">€{entry.value.toFixed(2)}</p>
-                      </div>
+                      {entry.notes && (
+                        <p className="text-xs text-slate-600 mt-2">{entry.notes}</p>
+                      )}
                     </div>
-                    {entry.notes && (
-                      <p className="text-xs text-slate-600 mt-2">{entry.notes}</p>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
