@@ -106,6 +106,47 @@ const BatchDetail = () => {
     }
   };
 
+  const loadAllCustomers = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/customers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAllCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to load customers:', error);
+    }
+  };
+
+  const handleMoveEntry = async (entryId, newCustomerId) => {
+    setMovingEntry(entryId);
+    setShowMoveDropdown(null);
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('new_customer_id', newCustomerId);
+      
+      await axios.post(
+        `${BACKEND_URL}/api/time-entries/${entryId}/move-customer`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Entry moved successfully');
+      
+      // Reload verification data to reflect changes
+      await loadVerificationData();
+      await loadBatchAndInvoices();
+    } catch (error) {
+      toast.error('Failed to move entry');
+      console.error(error);
+    } finally {
+      setMovingEntry(null);
+    }
+  };
+
+
   const toggleCategory = (category) => {
     setExpandedCategories({
       ...expandedCategories,
