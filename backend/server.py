@@ -503,11 +503,19 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
             
             # Make single API call for batch with timeout
             try:
+                # Determine provider based on model
+                if "claude" in model.lower():
+                    provider = "anthropic"
+                elif "gemini" in model.lower():
+                    provider = "google"
+                else:
+                    provider = "openai"
+                
                 chat = LlmChat(
                     api_key=api_key,
                     session_id=f"verification-{current_user.email}-{i}",
                     system_message="You are an AI assistant for invoice verification. Always respond with valid JSON array."
-                ).with_model("openai", model)
+                ).with_model(provider, model)
                 
                 message = UserMessage(text=batch_text)
                 
