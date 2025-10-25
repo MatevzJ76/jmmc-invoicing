@@ -21,6 +21,21 @@ const Settings = () => {
   const [testingEracuni, setTestingEracuni] = useState(false);
   const [eracuniTestResult, setEracuniTestResult] = useState(null);
   
+  // Prompt testing states
+  const [testInputs, setTestInputs] = useState({
+    grammar: '',
+    fraud: '',
+    gdpr: '',
+    verification: ''
+  });
+  const [testResults, setTestResults] = useState({
+    grammar: null,
+    fraud: null,
+    gdpr: null,
+    verification: null
+  });
+  const [testingPrompt, setTestingPrompt] = useState(null);
+  
   const [settings, setSettings] = useState({
     aiProvider: 'emergent',
     customApiKey: '',
