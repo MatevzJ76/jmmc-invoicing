@@ -782,6 +782,103 @@ const BatchDetail = () => {
           Showing {filteredInvoices.length} of {invoices.length} invoices
         </div>
       </div>
+
+      {/* AI Verification Results Modal */}
+      {showResultsModal && verificationSummary && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">AI Verification Complete</h3>
+                  <p className="text-sm text-slate-500">Analysis finished</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowResultsModal(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Results Summary */}
+            <div className="space-y-4 mb-6">
+              {/* Total Checked */}
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-700">Total Entries Checked</span>
+                  <span className="text-2xl font-bold text-blue-800">{verificationSummary.totalChecked}</span>
+                </div>
+              </div>
+
+              {/* Passed */}
+              <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-green-700">Passed Verification</span>
+                  </div>
+                  <span className="text-2xl font-bold text-green-800">{verificationSummary.passedCount}</span>
+                </div>
+              </div>
+
+              {/* Flagged */}
+              <div className={`rounded-xl p-4 border ${
+                verificationSummary.flaggedCount > 0 
+                  ? 'bg-red-50 border-red-200' 
+                  : 'bg-gray-50 border-gray-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className={`w-4 h-4 ${
+                      verificationSummary.flaggedCount > 0 ? 'text-red-500' : 'text-gray-400'
+                    }`} />
+                    <span className={`text-sm font-medium ${
+                      verificationSummary.flaggedCount > 0 ? 'text-red-700' : 'text-gray-600'
+                    }`}>
+                      Flagged as Suspicious
+                    </span>
+                  </div>
+                  <span className={`text-2xl font-bold ${
+                    verificationSummary.flaggedCount > 0 ? 'text-red-800' : 'text-gray-500'
+                  }`}>
+                    {verificationSummary.flaggedCount}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Message */}
+            {verificationSummary.flaggedCount > 0 ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-amber-800">
+                  <strong>Action Required:</strong> {verificationSummary.flaggedCount} suspicious {verificationSummary.flaggedCount === 1 ? 'entry' : 'entries'} found. 
+                  Please review the flagged items below (marked in red with info icons).
+                </p>
+              </div>
+            ) : (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-green-800">
+                  <strong>All Clear!</strong> No suspicious patterns detected. All entries passed verification.
+                </p>
+              </div>
+            )}
+
+            {/* Action Button */}
+            <Button
+              onClick={() => setShowResultsModal(false)}
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-full py-3 font-semibold"
+            >
+              {verificationSummary.flaggedCount > 0 ? 'Review Flagged Entries' : 'Close'}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
