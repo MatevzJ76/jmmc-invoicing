@@ -473,12 +473,24 @@ const BatchDetail = () => {
 
         {/* Verification Tile */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-5 h-5 text-orange-600" />
-            <h3 className="text-lg font-semibold text-slate-800">Verification</h3>
-            <span className="text-xs text-slate-500 ml-2">
-              ({verificationData.jmmcHP.length + verificationData.jmmcFinance.length + verificationData.noClient.length} items need review)
-            </span>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-orange-600" />
+              <h3 className="text-lg font-semibold text-slate-800">Verification</h3>
+              <span className="text-xs text-slate-500 ml-2">
+                ({verificationData.jmmcHP.length + verificationData.jmmcFinance.length + verificationData.noClient.length} items need review)
+              </span>
+            </div>
+            <Button
+              onClick={handleAIVerification}
+              disabled={aiVerifying}
+              variant="outline"
+              size="sm"
+              className="rounded-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {aiVerifying ? 'Checking...' : 'AI Check'}
+            </Button>
           </div>
 
           {/* JMMC HP d.o.o. */}
