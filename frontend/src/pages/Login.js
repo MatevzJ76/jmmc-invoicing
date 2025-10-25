@@ -56,19 +56,35 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-slate-200">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-slate-800 mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Emergent Invoicing
-            </h1>
-            <p className="text-slate-600">Sign in to your account</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo/Brand Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-2xl">
+            <div className="text-white font-bold text-3xl">J</div>
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            JMMC Invoicing
+          </h1>
+          <p className="text-blue-200 text-sm">Powered by AI Intelligence</p>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-semibold text-white mb-1">Welcome Back</h2>
+            <p className="text-blue-200 text-sm">Sign in to your account</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-white/90 font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -76,12 +92,13 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@local"
                 required
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-blue-400 rounded-xl"
                 data-testid="login-email-input"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-white/90 font-medium">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -90,34 +107,48 @@ const Login = () => {
                 placeholder="Enter your password"
                 required
                 autoFocus
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-blue-400 rounded-xl"
                 data-testid="login-password-input"
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full py-6 text-lg font-semibold"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               disabled={loading}
               data-testid="login-submit-button"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Signing in...
+                </span>
+              ) : (
+                'Sign In'
+              )}
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs text-blue-700 font-bold mb-3">🔑 Test Credentials:</p>
+          <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
+            <p className="text-xs text-blue-200 font-bold mb-3">🔑 Test Credentials:</p>
             <div className="space-y-3 text-xs">
-              <div className="bg-white p-2 rounded border border-blue-300">
-                <div className="font-semibold text-blue-800">Admin Account:</div>
-                <div className="font-mono text-slate-700">Email: admin@local</div>
-                <div className="font-mono text-slate-700">Password: Admin2025!</div>
+              <div className="bg-white/10 p-3 rounded-lg border border-white/20">
+                <div className="font-semibold text-white mb-1">Admin Account:</div>
+                <div className="font-mono text-blue-200">Email: admin@local</div>
+                <div className="font-mono text-blue-200">Password: Admin2025!</div>
               </div>
-              <div className="bg-white p-2 rounded border border-blue-300">
-                <div className="font-semibold text-blue-800">User Account:</div>
-                <div className="font-mono text-slate-700">Email: user@local</div>
-                <div className="font-mono text-slate-700">Password: User2025!</div>
+              <div className="bg-white/10 p-3 rounded-lg border border-white/20">
+                <div className="font-semibold text-white mb-1">User Account:</div>
+                <div className="font-mono text-blue-200">Email: user@local</div>
+                <div className="font-mono text-blue-200">Password: User2025!</div>
               </div>
             </div>
+          </div>
+
+          {/* AI Badge */}
+          <div className="mt-4 flex items-center justify-center gap-2 text-white/60 text-xs">
+            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            <span>AI-Powered Invoice Management</span>
           </div>
         </div>
       </div>
