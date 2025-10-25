@@ -611,6 +611,131 @@ async def archive_batch(batch_id: str, current_user: User = Depends(get_current_
     
     return {"message": "Batch archived successfully"}
 
+
+# ============ CUSTOMERS ============
+@api_router.get("/customers")
+async def get_all_customers(current_user: User = Depends(get_current_user)):
+    """Get all customers from database"""
+    customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
+    return customers
+
+# ============ TIME ENTRIES ============
+@api_router.post("/time-entries/{entry_id}/move-customer")
+async def move_time_entry_to_customer(
+    entry_id: str, 
+    new_customer_id: str = Form(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Move a time entry to a different customer"""
+    # Find the time entry
+    entry = await db.timeEntries.find_one({"id": entry_id})
+    if not entry:
+        raise HTTPException(status_code=404, detail="Time entry not found")
+    
+    old_customer_id = entry.get("customerId")
+    
+    # Verify new customer exists
+    new_customer = await db.customers.find_one({"id": new_customer_id})
+    if not new_customer:
+        raise HTTPException(status_code=404, detail="Target customer not found")
+    
+    # Update the time entry
+    await db.timeEntries.update_one(
+        {"id": entry_id},
+        {"$set": {"customerId": new_customer_id}}
+    )
+    
+    # Find affected invoices and update them
+    batch_id = entry.get("batchId")
+    
+    # Remove this entry from old customer's invoice lines
+    if old_customer_id:
+        old_invoice = await db.invoices.find_one({
+            "batchId": batch_id,
+            "customerId": old_customer_id
+        })
+        
+        if old_invoice:
+            # Remove line item for this time entry
+            updated_lines = [
+                line for line in old_invoice.get("lines", [])
+                if line.get("timeEntryId") != entry_id
+            ]
+            
+            # Recalculate total
+            new_total = sum(line.get("amount", 0) for line in updated_lines)
+            
+            await db.invoices.update_one(
+                {"id": old_invoice["id"]},
+                {"$set": {"lines": updated_lines, "total": new_total}}
+            )
+    
+    # Add to new customer's invoice or create if doesn't exist
+    new_invoice = await db.invoices.find_one({
+        "batchId": batch_id,
+        "customerId": new_customer_id
+    })
+    
+    # Create new line item for this entry
+    new_line = {
+        "id": str(uuid.uuid4()),
+        "timeEntryId": entry_id,
+        "description": entry.get("notes", ""),
+        "quantity": entry.get("hours", 0),
+        "unitPrice": entry.get("rate", 0),
+        "amount": entry.get("value", 0)
+    }
+    
+    if new_invoice:
+        # Add line to existing invoice
+        updated_lines = new_invoice.get("lines", []) + [new_line]
+        new_total = sum(line.get("amount", 0) for line in updated_lines)
+        
+        await db.invoices.update_one(
+            {"id": new_invoice["id"]},
+            {"$set": {"lines": updated_lines, "total": new_total}}
+        )
+    else:
+        # Create new invoice for this customer
+        batch = await db.importBatches.find_one({"id": batch_id})
+        
+        new_invoice_id = str(uuid.uuid4())
+        await db.invoices.insert_one({
+            "id": new_invoice_id,
+            "batchId": batch_id,
+            "customerId": new_customer_id,
+            "customerName": new_customer.get("name", ""),
+            "invoiceDate": batch.get("invoiceDate"),
+            "dueDate": batch.get("dueDate"),
+            "periodFrom": batch.get("periodFrom"),
+            "periodTo": batch.get("periodTo"),
+            "lines": [new_line],
+            "total": new_line["amount"],
+            "status": "draft",
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        })
+    
+    # Audit event
+    await db.auditEvents.insert_one({
+        "id": str(uuid.uuid4()),
+        "actorId": current_user.email,
+        "action": "move_time_entry",
+        "entity": "TimeEntry",
+        "entityId": entry_id,
+        "metadata": {
+            "oldCustomerId": old_customer_id,
+            "newCustomerId": new_customer_id
+        },
+        "at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "message": "Time entry moved successfully",
+        "oldCustomerId": old_customer_id,
+        "newCustomerId": new_customer_id
+    }
+
+
 @api_router.post("/invoices/compose")
 async def compose_invoices(batchId: str, current_user: User = Depends(get_current_user)):
     batch = await db.importBatches.find_one({"id": batchId})
