@@ -675,6 +675,7 @@ async def move_time_entry_to_customer(
                 {"id": old_invoice["id"]},
                 {"$set": {"lines": updated_lines, "total": new_total}}
             )
+            logger.info(f"Removed entry from old invoice. New line count: {len(updated_lines)}, New total: {new_total}")
     
     # Add to new customer's invoice or create if doesn't exist
     new_invoice = await db.invoices.find_one({
