@@ -103,17 +103,10 @@ const BatchDetail = () => {
   };
 
   const toggleCategory = (category) => {
-    const newState = !expandedCategories[category];
     setExpandedCategories({
       ...expandedCategories,
-      [category]: newState
+      [category]: !expandedCategories[category]
     });
-    
-    // Log entry IDs when expanding to debug matching
-    if (newState && showAiWarnings) {
-      const categoryData = verificationData[category] || [];
-      console.log(`${category} Entry IDs:`, categoryData.map(e => e.id).slice(0, 10));
-    }
   };
 
   const handleAIVerification = async () => {
