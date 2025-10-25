@@ -435,12 +435,12 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
     # Determine API key and model
     if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
         api_key = user_settings["customApiKey"]
-        model = user_settings.get("customModel", "gpt-4o")
+        model = user_settings.get("customModel", "gpt-5")
     else:
         if not EMERGENT_LLM_KEY:
             return {"results": {}, "message": "AI not configured"}
         api_key = EMERGENT_LLM_KEY
-        model = "gpt-4o-mini"
+        model = "gpt-5"
     
     # Get entries specifically from verification categories (JMMC HP, JMMC Finance, No Client)
     # This ensures we verify the entries the user actually sees in the UI
