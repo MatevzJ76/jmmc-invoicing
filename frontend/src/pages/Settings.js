@@ -20,6 +20,7 @@ const Settings = () => {
   const [testResult, setTestResult] = useState(null);
   const [testingEracuni, setTestingEracuni] = useState(false);
   const [eracuniTestResult, setEracuniTestResult] = useState(null);
+  const [aiTestPrompt, setAiTestPrompt] = useState('');
   
   // Prompt testing states
   const [testInputs, setTestInputs] = useState({
