@@ -111,7 +111,7 @@ class AIRequest(BaseModel):
 class AISettings(BaseModel):
     aiProvider: str = "emergent"
     customApiKey: Optional[str] = None
-    customModel: str = "gpt-4o"
+    customModel: str = "gpt-5"
     grammarPrompt: str = "Fix grammar and spelling errors in this invoice text. Return only the corrected text without explanations."
     fraudPrompt: str = "Analyze this invoice description for potential fraud indicators or suspicious patterns. Provide a brief risk assessment."
     gdprPrompt: str = "Identify and mask any personal data (names, emails, phone numbers, addresses) in this text. Return the masked version with [REDACTED] in place of sensitive data."
