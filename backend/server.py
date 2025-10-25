@@ -382,6 +382,30 @@ async def get_batch_invoices(batch_id: str, current_user: User = Depends(get_cur
     invoices = await db.invoices.find({"batchId": batch_id}, {"_id": 0}).to_list(1000)
     return invoices
 
+@api_router.post("/batches/{batch_id}/archive")
+async def archive_batch(batch_id: str, current_user: User = Depends(get_current_user)):
+    """Archive a batch"""
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    await db.importBatches.update_one(
+        {"id": batch_id},
+        {"$set": {"status": "archived"}}
+    )
+    
+    # Audit event
+    await db.auditEvents.insert_one({
+        "id": str(uuid.uuid4()),
+        "actorId": current_user.email,
+        "action": "archive_batch",
+        "entity": "Batch",
+        "entityId": batch_id,
+        "at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"message": "Batch archived successfully"}
+
 @api_router.post("/invoices/compose")
 async def compose_invoices(batchId: str, current_user: User = Depends(get_current_user)):
     batch = await db.importBatches.find_one({"id": batchId})
