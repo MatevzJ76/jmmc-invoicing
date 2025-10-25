@@ -919,19 +919,44 @@ const BatchDetail = () => {
                           </button>
                           
                           {showMoveDropdown === entry.id && (
-                            <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-slate-200 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
-                              <div className="p-2 border-b border-slate-200 bg-slate-50">
-                                <p className="text-xs font-semibold text-slate-700">Move to Customer:</p>
+                            <div className="absolute right-0 top-full mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
+                              <div className="p-3 border-b border-slate-200 bg-slate-50">
+                                <p className="text-xs font-semibold text-slate-700 mb-2">Move to Customer:</p>
+                                <Input
+                                  type="text"
+                                  placeholder="Search customers..."
+                                  value={customerSearch}
+                                  onChange={(e) => setCustomerSearch(e.target.value)}
+                                  className="text-sm h-8"
+                                  autoFocus
+                                  onClick={(e) => e.stopPropagation()}
+                                />
                               </div>
-                              {allCustomers.map(customer => (
-                                <button
-                                  key={customer.id}
-                                  onClick={() => handleMoveEntry(entry.id, customer.id)}
-                                  className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
-                                >
-                                  {customer.name}
-                                </button>
-                              ))}
+                              <div className="max-h-48 overflow-y-auto">
+                                {allCustomers
+                                  .filter(customer => 
+                                    customer.name.toLowerCase().includes(customerSearch.toLowerCase())
+                                  )
+                                  .map(customer => (
+                                    <button
+                                      key={customer.id}
+                                      onClick={() => {
+                                        handleMoveEntry(entry.id, customer.id);
+                                        setCustomerSearch('');
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
+                                    >
+                                      {customer.name}
+                                    </button>
+                                  ))}
+                                {allCustomers.filter(customer => 
+                                  customer.name.toLowerCase().includes(customerSearch.toLowerCase())
+                                ).length === 0 && (
+                                  <div className="px-3 py-4 text-center text-sm text-slate-500">
+                                    No customers found
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
