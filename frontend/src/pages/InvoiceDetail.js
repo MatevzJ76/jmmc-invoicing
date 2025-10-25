@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Send, Trash2, Plus, Sparkles } from 'lucide-react';
+import { ArrowLeft, Save, Send, Trash2, Plus, Sparkles, ArrowRightLeft } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
