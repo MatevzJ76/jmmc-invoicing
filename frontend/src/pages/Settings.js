@@ -18,6 +18,8 @@ const Settings = () => {
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testResult, setTestResult] = useState(null);
+  const [testingEracuni, setTestingEracuni] = useState(false);
+  const [eracuniTestResult, setEracuniTestResult] = useState(null);
   
   const [settings, setSettings] = useState({
     aiProvider: 'emergent',
