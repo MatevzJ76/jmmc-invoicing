@@ -230,12 +230,17 @@ const Settings = () => {
               )}
             </div>
           </div>
+        </div>
 
-          <div className="border-t border-slate-200 pt-8">
-            <h2 className="text-xl font-bold text-slate-800 mb-4">AI Agent Prompts</h2>
-            <p className="text-sm text-slate-600 mb-6">
-              Customize the prompts that control how the AI Agent processes your invoice data.
-            </p>
+        {/* AI Agent Prompts Tile */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Sparkles className="w-6 h-6 text-blue-600" />
+            <h2 className="text-xl font-bold text-slate-800">AI Agent Prompts</h2>
+          </div>
+          <p className="text-sm text-slate-600 mb-6">
+            Customize the prompts that control how the AI Agent processes your invoice data.
+          </p>
 
             {/* Grammar Correction Prompt */}
             <div className="space-y-2 mb-6">
