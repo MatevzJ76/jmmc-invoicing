@@ -820,6 +820,7 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
             line_doc = {
                 "id": line_id,
                 "invoiceId": invoice_id,
+                "timeEntryId": entry["id"],  # Add timeEntryId for move functionality
                 "description": f"{project['name']} - {entry['employeeName']} - {entry['notes'] or ''}",
                 "quantity": entry["hours"],
                 "unitPrice": entry["value"] / entry["hours"] if entry["hours"] > 0 else 0,
