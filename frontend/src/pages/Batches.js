@@ -206,9 +206,6 @@ const Batches = () => {
                       <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
                         <div className="font-semibold text-slate-800">{batch.title || 'Untitled'}</div>
                       </td>
-                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
-                        <div className="text-sm text-slate-600">{batch.filename}</div>
-                      </td>
                       <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
                         {batch.periodFrom} - {batch.periodTo}
                       </td>
