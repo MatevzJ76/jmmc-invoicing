@@ -1005,21 +1005,37 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
             if not EMERGENT_LLM_KEY:
                 raise HTTPException(status_code=400, detail="Emergent LLM key not configured")
             
+            # Determine provider based on model name
+            if "claude" in settings.customModel.lower():
+                provider = "anthropic"
+            elif "gemini" in settings.customModel.lower():
+                provider = "google"
+            else:
+                provider = "openai"
+            
             chat = LlmChat(
                 api_key=EMERGENT_LLM_KEY,
                 session_id=f"test-{current_user.email}",
                 system_message="You are a test assistant."
-            ).with_model("openai", "gpt-4o-mini")
+            ).with_model(provider, settings.customModel)
             
         else:  # custom
             if not settings.customApiKey:
                 raise HTTPException(status_code=400, detail="Custom API key required")
             
+            # Determine provider from custom model
+            if "claude" in settings.customModel.lower():
+                provider = "anthropic"
+            elif "gemini" in settings.customModel.lower():
+                provider = "google"
+            else:
+                provider = "openai"
+            
             chat = LlmChat(
                 api_key=settings.customApiKey,
                 session_id=f"test-{current_user.email}",
                 system_message="You are a test assistant."
-            ).with_model("openai", settings.customModel)
+            ).with_model(provider, settings.customModel)
         
         # Send test message
         message = UserMessage(text="Hello, this is a connection test. Please respond with 'OK'.")
