@@ -90,6 +90,40 @@ const Settings = () => {
     // Use test prompt if provided, otherwise use default
     const testPromptText = aiTestPrompt || "Hello, this is a connection test. Please respond with 'OK'.";
     
+    // Easter egg: Special response for Tjaša/Tjaska variants
+    const tjasaVariants = ['tjaša', 'tjasa', 'tjaška', 'tjaska'];
+    const containsTjasa = tjasaVariants.some(variant => 
+      testPromptText.toLowerCase().includes(variant)
+    );
+    
+    if (containsTjasa) {
+      // Beautiful message for Tjaša ❤️
+      setTimeout(() => {
+        setTestResult({ 
+          success: true, 
+          message: "✨ Special Message Detected ✨",
+          fullResponse: `💖 Tjaša - A Truly Precious Soul 💖
+
+🌟 A wonderful, caring mom who brings warmth to everyone around her
+💝 The most unique and heartfelt coworker anyone could ask for
+✨ A person with a heart of gold and the kindest spirit
+🌸 Beautiful inside and out, making the world brighter
+💕 Someone who balances strength and gentleness perfectly
+🦋 A lovely human being who touches hearts with genuine kindness
+🌈 The kind of person who makes every day better just by being there
+
+Tjaša, you are truly special and deeply appreciated! ❤️💫
+
+Your presence is a gift, and your dedication as a mom and colleague shines through everything you do. The world is lucky to have someone as genuine, caring, and wonderful as you! 🌺✨
+
+With love and appreciation ❤️🤗` 
+        });
+        toast.success('💖 A special message just for you!');
+        setTesting(false);
+      }, 1000);
+      return;
+    }
+    
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.post(
