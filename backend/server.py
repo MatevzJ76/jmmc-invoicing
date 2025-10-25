@@ -1006,6 +1006,9 @@ async def save_ai_settings(settings: AISettings, current_user: User = Depends(ge
 @api_router.post("/settings/ai/test")
 async def test_ai_connection(settings: AISettings, current_user: User = Depends(get_current_user)):
     """Test AI connection with provided settings"""
+    # Get test prompt from settings (passed as extra field)
+    test_prompt = getattr(settings, 'testPrompt', None) or "Hello, this is a connection test. Please respond with 'OK'."
+    
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
         
@@ -1024,7 +1027,7 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
             chat = LlmChat(
                 api_key=EMERGENT_LLM_KEY,
                 session_id=f"test-{current_user.email}",
-                system_message="You are a test assistant."
+                system_message="You are a helpful AI assistant."
             ).with_model(provider, settings.customModel)
             
         else:  # custom
@@ -1042,14 +1045,18 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
             chat = LlmChat(
                 api_key=settings.customApiKey,
                 session_id=f"test-{current_user.email}",
-                system_message="You are a test assistant."
+                system_message="You are a helpful AI assistant."
             ).with_model(provider, settings.customModel)
         
         # Send test message
-        message = UserMessage(text="Hello, this is a connection test. Please respond with 'OK'.")
+        message = UserMessage(text=test_prompt)
         response = await chat.send_message(message)
         
-        return {"message": f"Connection successful! AI responded: {response[:50]}..."}
+        return {
+            "message": f"Connection successful! Model: {settings.customModel}",
+            "response": response,
+            "testPrompt": test_prompt
+        }
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Connection failed: {str(e)}")
