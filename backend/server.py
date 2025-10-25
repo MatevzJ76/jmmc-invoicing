@@ -627,23 +627,29 @@ async def move_time_entry_to_customer(
     current_user: User = Depends(get_current_user)
 ):
     """Move a time entry to a different customer"""
+    logger.info(f"Move request: entry_id={entry_id}, new_customer_id={new_customer_id}")
+    
     # Find the time entry
     entry = await db.timeEntries.find_one({"id": entry_id})
     if not entry:
+        logger.error(f"Time entry not found: {entry_id}")
         raise HTTPException(status_code=404, detail="Time entry not found")
     
     old_customer_id = entry.get("customerId")
+    logger.info(f"Found entry. Old customer: {old_customer_id}, New customer: {new_customer_id}")
     
     # Verify new customer exists
     new_customer = await db.customers.find_one({"id": new_customer_id})
     if not new_customer:
+        logger.error(f"Target customer not found: {new_customer_id}")
         raise HTTPException(status_code=404, detail="Target customer not found")
     
     # Update the time entry
-    await db.timeEntries.update_one(
+    result = await db.timeEntries.update_one(
         {"id": entry_id},
         {"$set": {"customerId": new_customer_id}}
     )
+    logger.info(f"Time entry updated. Modified count: {result.modified_count}")
     
     # Find affected invoices and update them
     batch_id = entry.get("batchId")
