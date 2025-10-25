@@ -419,7 +419,10 @@ async def get_batch_verification(batch_id: str, current_user: User = Depends(get
 
 @api_router.post("/batches/{batch_id}/verify-entries")
 async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_current_user)):
-    """Run AI verification on time entry descriptions"""
+    """Run AI verification on time entry descriptions using batch processing"""
+    import json
+    import asyncio
+    
     # Get user's AI settings
     user_settings = await db.aiSettings.find_one({"userId": current_user.email})
     
@@ -442,35 +445,48 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
     if not all_entries:
         return {"results": {}, "message": "No entries found"}
     
+    # Filter entries with descriptions
+    entries_to_check = [e for e in all_entries if e.get("notes", "").strip() != ""]
+    
+    if not entries_to_check:
+        return {"results": {}, "message": "No entries with descriptions to check"}
+    
     verification_prompt = user_settings.get("verificationPrompt", 
         "Analyze this work description for suspicious patterns. If suspicious, respond with JSON: {\"flagged\": true, \"reason\": \"brief explanation\"}. If normal: {\"flagged\": false, \"reason\": \"\"}")
     
     try:
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"verification-{current_user.email}",
-            system_message="You are an AI assistant for invoice verification. Always respond with valid JSON."
-        ).with_model("openai", model)
-        
-        # Check each entry
+        # Use batch processing - combine multiple entries into one prompt
+        batch_size = 10  # Process 10 entries per API call
         results = {}
-        for entry in all_entries:
-            entry_id = entry.get("id")
-            description = entry.get("notes", "")
+        
+        for i in range(0, len(entries_to_check), batch_size):
+            batch = entries_to_check[i:i + batch_size]
             
-            if not description or description.strip() == "":
-                continue
+            # Create a batch prompt
+            batch_text = "Analyze the following work entries and return a JSON array with results for each entry. Format: [{\"entry_id\": \"id1\", \"flagged\": true/false, \"reason\": \"explanation\"}]\n\n"
+            batch_text += "Entries to analyze:\n"
             
-            # Format prompt with entry data
-            prompt_text = f"{verification_prompt}\n\nWork description: {description}\nEmployee: {entry.get('employeeName', 'N/A')}\nHours: {entry.get('hours', 0)}\nDate: {entry.get('date', 'N/A')}"
+            for idx, entry in enumerate(batch):
+                batch_text += f"\n{idx + 1}. Entry ID: {entry.get('id')}\n"
+                batch_text += f"   Description: {entry.get('notes', '')}\n"
+                batch_text += f"   Employee: {entry.get('employeeName', 'N/A')}\n"
+                batch_text += f"   Hours: {entry.get('hours', 0)}\n"
+                batch_text += f"   Date: {entry.get('date', 'N/A')}\n"
             
-            message = UserMessage(text=prompt_text)
+            batch_text += f"\n{verification_prompt}"
+            
+            # Make single API call for batch
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=f"verification-{current_user.email}-{i}",
+                system_message="You are an AI assistant for invoice verification. Always respond with valid JSON array."
+            ).with_model("openai", model)
+            
+            message = UserMessage(text=batch_text)
             response = await chat.send_message(message)
             
-            # Parse JSON response
+            # Parse batch response
             try:
-                import json
-                # Clean response - remove markdown code blocks if present
                 clean_response = response.strip()
                 if clean_response.startswith("```"):
                     clean_response = clean_response.split("```")[1]
@@ -478,19 +494,26 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
                         clean_response = clean_response[4:]
                 clean_response = clean_response.strip()
                 
-                result = json.loads(clean_response)
-                if result.get("flagged", False):
-                    results[entry_id] = {
-                        "flagged": True,
-                        "reason": result.get("reason", "Suspicious activity detected")
-                    }
-            except json.JSONDecodeError:
-                # If not valid JSON, treat as not flagged
+                batch_results = json.loads(clean_response)
+                
+                # Process batch results
+                for result in batch_results:
+                    if isinstance(result, dict) and result.get("flagged", False):
+                        entry_id = result.get("entry_id")
+                        if entry_id:
+                            results[entry_id] = {
+                                "flagged": True,
+                                "reason": result.get("reason", "Suspicious activity detected")
+                            }
+            except (json.JSONDecodeError, TypeError) as e:
+                # If batch fails, continue to next batch
+                logger.warning(f"Failed to parse batch {i}: {str(e)}")
                 continue
         
-        return {"results": results, "total_checked": len(all_entries), "flagged_count": len(results)}
+        return {"results": results, "total_checked": len(entries_to_check), "flagged_count": len(results)}
         
     except Exception as e:
+        logger.error(f"AI verification error: {str(e)}")
         return {"results": {}, "message": f"AI verification error: {str(e)}"}
 
 @api_router.put("/batches/{batch_id}")
