@@ -28,6 +28,7 @@ const InvoiceDetail = () => {
     const userStr = localStorage.getItem('user');
     if (userStr) setUser(JSON.parse(userStr));
     loadInvoice();
+    loadAllCustomers();
   }, [id]);
 
   const loadInvoice = async () => {
