@@ -684,14 +684,20 @@ async def move_time_entry_to_customer(
     })
     
     # Create new line item for this entry
+    hours = entry.get("hours", 0)
+    value = entry.get("value", 0)
+    unit_price = (value / hours) if hours > 0 else 0
+    
     new_line = {
         "id": str(uuid.uuid4()),
         "timeEntryId": entry_id,
         "description": entry.get("notes", ""),
-        "quantity": entry.get("hours", 0),
-        "unitPrice": entry.get("rate", 0),
-        "amount": entry.get("value", 0)
+        "quantity": hours,
+        "unitPrice": unit_price,
+        "amount": value
     }
+    
+    logger.info(f"Creating new line: hours={hours}, value={value}, unitPrice={unit_price}")
     
     if new_invoice:
         # Add line to existing invoice
