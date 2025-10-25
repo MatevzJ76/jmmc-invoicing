@@ -352,10 +352,43 @@ const Settings = () => {
               />
               <p className="text-xs text-slate-500">Your e-računi API authentication token</p>
             </div>
-          </div>
 
-          {/* Save Button */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200">
+            {/* Test Connection Button */}
+            <div className="pt-4">
+              <Button
+                onClick={handleTestEracuni}
+                disabled={testingEracuni || !settings.eracuniUsername || !settings.eracuniSecretKey || !settings.eracuniToken}
+                variant="outline"
+                className="rounded-full"
+                data-testid="test-eracuni-button"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                {testingEracuni ? 'Testing...' : 'Test Connection'}
+              </Button>
+              
+              {eracuniTestResult && (
+                <div className={`mt-3 p-3 rounded-lg flex items-start gap-2 ${
+                  eracuniTestResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                }`}>
+                  {eracuniTestResult.success ? (
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  )}
+                  <p className={`text-sm ${
+                    eracuniTestResult.success ? 'text-green-700' : 'text-red-700'
+                  }`}>
+                    {eracuniTestResult.message}
+                  </p>
+                </div>
+              )}
+            </div>
+        </div>
+
+        {/* Save Button - Global */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-600">Save all configuration changes</p>
             <Button
               onClick={handleSave}
               disabled={saving}
