@@ -252,6 +252,7 @@ async def import_xlsx(
         batch_id = str(uuid.uuid4())
         batch_doc = {
             "id": batch_id,
+            "title": title,
             "filename": file.filename,
             "periodFrom": periodFrom,
             "periodTo": periodTo,
