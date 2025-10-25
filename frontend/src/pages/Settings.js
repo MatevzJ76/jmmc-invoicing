@@ -249,6 +249,20 @@ const Settings = () => {
               />
               <p className="text-xs text-slate-500">Identifies and masks personal data in invoice text</p>
             </div>
+
+            {/* Verification Prompt */}
+            <div className="space-y-2 mb-6">
+              <Label htmlFor="verification">Invoice Verification (Batch Review)</Label>
+              <Textarea
+                id="verification"
+                value={settings.verificationPrompt}
+                onChange={(e) => updateSetting('verificationPrompt', e.target.value)}
+                rows={4}
+                className="font-mono text-sm"
+                data-testid="verification-prompt-input"
+              />
+              <p className="text-xs text-slate-500">Checks work descriptions in batch verification for fraud, irregularities, or suspicious patterns. Must return JSON format.</p>
+            </div>
           </div>
 
           {/* Save Button */}
