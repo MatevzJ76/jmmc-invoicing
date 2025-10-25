@@ -738,6 +738,8 @@ async def move_time_entry_to_customer(
         "at": datetime.now(timezone.utc).isoformat()
     })
     
+    logger.info(f"Move complete: Entry {entry_id} moved from {old_customer_id} to {new_customer_id}")
+    
     return {
         "message": "Time entry moved successfully",
         "oldCustomerId": old_customer_id,
