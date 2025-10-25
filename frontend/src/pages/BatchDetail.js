@@ -206,7 +206,11 @@ const BatchDetail = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/batches')} className="rounded-full">
+              <Button 
+                onClick={() => navigate('/batches')} 
+                className="rounded-full bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black text-white shadow-md hover:shadow-lg transition-all duration-200 font-medium px-5"
+                size="sm"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Batches
               </Button>
