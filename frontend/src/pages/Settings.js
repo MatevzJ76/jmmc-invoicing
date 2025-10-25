@@ -286,7 +286,17 @@ const Settings = () => {
             )}
 
             {/* Test Connection */}
-            <div className="pt-4">
+            <div className="pt-4 border-t border-slate-200">
+              <Label htmlFor="ai-test-prompt" className="text-sm font-medium mb-2 block">Test Prompt (Optional):</Label>
+              <Textarea
+                id="ai-test-prompt"
+                value={aiTestPrompt}
+                onChange={(e) => setAiTestPrompt(e.target.value)}
+                rows={2}
+                placeholder="Enter a custom test message to check model quality... (Leave empty for default test)"
+                className="text-sm mb-3"
+              />
+              
               <Button
                 onClick={handleTestConnection}
                 disabled={testing || (settings.aiProvider === 'custom' && !settings.customApiKey)}
@@ -299,19 +309,28 @@ const Settings = () => {
               </Button>
               
               {testResult && (
-                <div className={`mt-3 p-3 rounded-lg flex items-start gap-2 ${
-                  testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                <div className={`mt-3 p-4 rounded-lg border ${
+                  testResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
                 }`}>
-                  {testResult.success ? (
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 mb-2">
+                    {testResult.success ? (
+                      <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    )}
+                    <p className={`text-sm font-semibold ${
+                      testResult.success ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {testResult.message}
+                    </p>
+                  </div>
+                  
+                  {testResult.success && testResult.fullResponse && (
+                    <div className="mt-3 p-3 bg-white rounded border border-green-300">
+                      <p className="text-xs font-semibold text-slate-700 mb-1">AI Response:</p>
+                      <p className="text-sm text-slate-800 whitespace-pre-wrap">{testResult.fullResponse}</p>
+                    </div>
                   )}
-                  <p className={`text-sm ${
-                    testResult.success ? 'text-green-700' : 'text-red-700'
-                  }`}>
-                    {testResult.message}
-                  </p>
                 </div>
               )}
             </div>
