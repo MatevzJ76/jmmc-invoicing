@@ -268,6 +268,61 @@ const Settings = () => {
             </div>
           </div>
 
+          {/* e-računi API Configuration */}
+          <div className="border-t border-slate-200 pt-8">
+            <div className="flex items-center gap-3 mb-4">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h2 className="text-xl font-bold text-slate-800">e-računi API Configuration</h2>
+            </div>
+            <p className="text-sm text-slate-600 mb-6">
+              Configure your e-računi integration for posting invoices. <a href="https://e-racuni.com/si9/ApiDocumentation-Method-SalesInvoiceCreate" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View API Documentation</a>
+            </p>
+
+            {/* Username */}
+            <div className="space-y-2 mb-6">
+              <Label htmlFor="eracuniUsername">Username</Label>
+              <Input
+                id="eracuniUsername"
+                type="text"
+                value={settings.eracuniUsername}
+                onChange={(e) => updateSetting('eracuniUsername', e.target.value)}
+                placeholder="Enter e-računi username"
+                data-testid="eracuni-username-input"
+              />
+              <p className="text-xs text-slate-500">Your e-računi account username</p>
+            </div>
+
+            {/* Secret Key */}
+            <div className="space-y-2 mb-6">
+              <Label htmlFor="eracuniSecretKey">Secret Key</Label>
+              <Input
+                id="eracuniSecretKey"
+                type="password"
+                value={settings.eracuniSecretKey}
+                onChange={(e) => updateSetting('eracuniSecretKey', e.target.value)}
+                placeholder="Enter secret key"
+                data-testid="eracuni-secret-key-input"
+              />
+              <p className="text-xs text-slate-500">Your e-računi API secret key (stored securely)</p>
+            </div>
+
+            {/* Token */}
+            <div className="space-y-2 mb-6">
+              <Label htmlFor="eracuniToken">API Token</Label>
+              <Input
+                id="eracuniToken"
+                type="password"
+                value={settings.eracuniToken}
+                onChange={(e) => updateSetting('eracuniToken', e.target.value)}
+                placeholder="Enter API token"
+                data-testid="eracuni-token-input"
+              />
+              <p className="text-xs text-slate-500">Your e-računi API authentication token</p>
+            </div>
+          </div>
+
           {/* Save Button */}
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200">
             <Button
