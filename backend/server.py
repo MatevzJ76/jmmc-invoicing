@@ -1095,12 +1095,12 @@ async def ai_suggest(request: AIRequest, current_user: User = Depends(get_curren
     # Determine API key and model
     if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
         api_key = user_settings["customApiKey"]
-        model = user_settings.get("customModel", "gpt-4o")
+        model = user_settings.get("customModel", "gpt-5")
     else:
         if not EMERGENT_LLM_KEY:
             return {"suggestion": request.text, "message": "AI not configured"}
         api_key = EMERGENT_LLM_KEY
-        model = "gpt-4o-mini"
+        model = "gpt-5"
     
     try:
         chat = LlmChat(
