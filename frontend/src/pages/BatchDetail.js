@@ -22,6 +22,8 @@ const BatchDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editedBatch, setEditedBatch] = useState(null);
+  const [allBatches, setAllBatches] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(-1);
 
   useEffect(() => {
     loadBatchAndInvoices();
