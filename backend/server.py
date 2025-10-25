@@ -382,6 +382,43 @@ async def get_batch_invoices(batch_id: str, current_user: User = Depends(get_cur
     invoices = await db.invoices.find({"batchId": batch_id}, {"_id": 0}).to_list(1000)
     return invoices
 
+@api_router.put("/batches/{batch_id}")
+async def update_batch(batch_id: str, update_data: dict, current_user: User = Depends(get_current_user)):
+    """Update batch details"""
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Update allowed fields
+    allowed_fields = ["title", "invoiceDate", "periodFrom", "periodTo", "dueDate"]
+    update_fields = {k: v for k, v in update_data.items() if k in allowed_fields}
+    
+    if update_fields:
+        await db.importBatches.update_one(
+            {"id": batch_id},
+            {"$set": update_fields}
+        )
+        
+        # Update all invoices in this batch with new dates if changed
+        if any(k in update_fields for k in ["invoiceDate", "periodFrom", "periodTo", "dueDate"]):
+            invoice_updates = {}
+            if "invoiceDate" in update_fields:
+                invoice_updates["invoiceDate"] = update_fields["invoiceDate"]
+            if "periodFrom" in update_fields:
+                invoice_updates["periodFrom"] = update_fields["periodFrom"]
+            if "periodTo" in update_fields:
+                invoice_updates["periodTo"] = update_fields["periodTo"]
+            if "dueDate" in update_fields:
+                invoice_updates["dueDate"] = update_fields["dueDate"]
+            
+            if invoice_updates:
+                await db.invoices.update_many(
+                    {"batchId": batch_id},
+                    {"$set": invoice_updates}
+                )
+    
+    return {"message": "Batch updated successfully"}
+
 @api_router.post("/batches/{batch_id}/archive")
 async def archive_batch(batch_id: str, current_user: User = Depends(get_current_user)):
     """Archive a batch"""
