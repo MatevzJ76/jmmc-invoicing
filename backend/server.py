@@ -456,7 +456,7 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
         return {"results": {}, "message": "No entries with descriptions to check"}
     
     verification_prompt = user_settings.get("verificationPrompt", 
-        "Analyze this work description for suspicious patterns. If suspicious, respond with JSON: {\"flagged\": true, \"reason\": \"brief explanation\"}. If normal: {\"flagged\": false, \"reason\": \"\"}")
+        "Analyze this work description for suspicious patterns. If no description is provided or it's empty/vague, flag it as suspicious. If suspicious, respond with JSON: {\"flagged\": true, \"reason\": \"brief explanation\"}. If normal: {\"flagged\": false, \"reason\": \"\"}")
     
     try:
         # Use batch processing - combine multiple entries into one prompt
