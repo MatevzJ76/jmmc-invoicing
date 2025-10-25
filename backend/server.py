@@ -654,7 +654,7 @@ async def move_time_entry_to_customer(
     # Find affected invoices and update them
     batch_id = entry.get("batchId")
     
-    # Remove this entry from old customer's invoice lines
+    # Remove this entry from old customer's invoice lines in invoiceLines collection
     if old_customer_id:
         old_invoice = await db.invoices.find_one({
             "batchId": batch_id,
@@ -662,20 +662,25 @@ async def move_time_entry_to_customer(
         })
         
         if old_invoice:
-            # Remove line item for this time entry
-            updated_lines = [
-                line for line in old_invoice.get("lines", [])
-                if line.get("timeEntryId") != entry_id
-            ]
+            # Delete line from invoiceLines collection
+            delete_result = await db.invoiceLines.delete_many({
+                "invoiceId": old_invoice["id"],
+                "timeEntryId": entry_id
+            })
             
-            # Recalculate total
-            new_total = sum(line.get("amount", 0) for line in updated_lines)
+            # Recalculate total from remaining lines
+            remaining_lines = await db.invoiceLines.find(
+                {"invoiceId": old_invoice["id"]},
+                {"_id": 0}
+            ).to_list(1000)
+            
+            new_total = sum(line.get("amount", 0) for line in remaining_lines)
             
             await db.invoices.update_one(
                 {"id": old_invoice["id"]},
-                {"$set": {"lines": updated_lines, "total": new_total}}
+                {"$set": {"total": new_total}}
             )
-            logger.info(f"Removed entry from old invoice. New line count: {len(updated_lines)}, New total: {new_total}")
+            logger.info(f"Removed {delete_result.deleted_count} line(s) from old invoice. New line count: {len(remaining_lines)}, New total: {new_total}")
     
     # Add to new customer's invoice or create if doesn't exist
     new_invoice = await db.invoices.find_one({
