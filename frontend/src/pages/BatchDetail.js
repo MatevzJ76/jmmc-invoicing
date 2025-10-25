@@ -138,6 +138,9 @@ const BatchDetail = () => {
       setAiResults(response.data.results || {});
       setShowAiWarnings(true);
       
+      // Save to session storage for persistence
+      sessionStorage.setItem(`aiResults-${id}`, JSON.stringify(response.data.results || {}));
+      
       console.log('AI Results - Flagged Entry IDs:', Object.keys(response.data.results || {}));
       
       const flaggedCount = Object.keys(response.data.results || {}).length;
