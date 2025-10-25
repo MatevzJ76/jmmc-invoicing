@@ -141,15 +141,13 @@ const Settings = () => {
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 space-y-8">
-          
-          {/* AI Provider Selection */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <Zap className="w-6 h-6 text-purple-600" />
-              <h2 className="text-xl font-bold text-slate-800">AI Provider Configuration</h2>
-            </div>
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* AI Provider Settings Tile */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Zap className="w-6 h-6 text-purple-600" />
+            <h2 className="text-xl font-bold text-slate-800">AI Provider Configuration</h2>
+          </div>
             
             <div className="space-y-2">
               <Label htmlFor="provider">AI Provider</Label>
