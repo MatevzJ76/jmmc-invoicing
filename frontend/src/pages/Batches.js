@@ -163,6 +163,7 @@ const Batches = () => {
                 <SelectItem value="imported">Imported</SelectItem>
                 <SelectItem value="composed">Composed</SelectItem>
                 <SelectItem value="posted">Posted</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
           </div>
