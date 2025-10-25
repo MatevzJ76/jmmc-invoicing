@@ -192,13 +192,61 @@ const BatchDetail = () => {
         {/* Batch Summary */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-            <p className="text-sm text-slate-600 mb-1">Period</p>
-            <p className="text-lg font-semibold text-slate-800">{batch.periodFrom} - {batch.periodTo}</p>
+            <Label className="text-sm text-slate-600 mb-2 block">Period From</Label>
+            {isEditing ? (
+              <Input
+                type="date"
+                value={editedBatch?.periodFrom || ''}
+                onChange={(e) => updateField('periodFrom', e.target.value)}
+                data-testid="period-from-edit"
+              />
+            ) : (
+              <p className="text-lg font-semibold text-slate-800">{batch.periodFrom}</p>
+            )}
           </div>
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-            <p className="text-sm text-slate-600 mb-1">Invoice Date</p>
-            <p className="text-lg font-semibold text-slate-800">{batch.invoiceDate}</p>
+            <Label className="text-sm text-slate-600 mb-2 block">Period To</Label>
+            {isEditing ? (
+              <Input
+                type="date"
+                value={editedBatch?.periodTo || ''}
+                onChange={(e) => updateField('periodTo', e.target.value)}
+                data-testid="period-to-edit"
+              />
+            ) : (
+              <p className="text-lg font-semibold text-slate-800">{batch.periodTo}</p>
+            )}
           </div>
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <Label className="text-sm text-slate-600 mb-2 block">Invoice Date</Label>
+            {isEditing ? (
+              <Input
+                type="date"
+                value={editedBatch?.invoiceDate || ''}
+                onChange={(e) => updateField('invoiceDate', e.target.value)}
+                data-testid="invoice-date-edit"
+              />
+            ) : (
+              <p className="text-lg font-semibold text-slate-800">{batch.invoiceDate}</p>
+            )}
+          </div>
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <Label className="text-sm text-slate-600 mb-2 block">Due Date</Label>
+            {isEditing ? (
+              <Input
+                type="date"
+                value={editedBatch?.dueDate || ''}
+                onChange={(e) => updateField('dueDate', e.target.value)}
+                data-testid="due-date-edit"
+              />
+            ) : (
+              <p className="text-lg font-semibold text-slate-800">{batch.dueDate}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Total Invoices</p>
             <p className="text-lg font-semibold text-blue-600">{invoices.length}</p>
