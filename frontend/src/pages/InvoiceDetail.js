@@ -20,6 +20,9 @@ const InvoiceDetail = () => {
   const [saving, setSaving] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
   const [user, setUser] = useState(null);
+  const [allCustomers, setAllCustomers] = useState([]);
+  const [showMoveDropdown, setShowMoveDropdown] = useState(null);
+  const [movingLine, setMovingLine] = useState(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
