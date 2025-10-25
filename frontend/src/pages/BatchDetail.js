@@ -47,6 +47,7 @@ const BatchDetail = () => {
     loadBatchAndInvoices();
     loadAllBatches();
     loadVerificationData();
+    loadAllCustomers();
     
     // Load AI results from session storage if available
     const savedResults = sessionStorage.getItem(`aiResults-${id}`);
