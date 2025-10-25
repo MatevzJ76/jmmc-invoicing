@@ -86,14 +86,22 @@ const Settings = () => {
   const handleTestConnection = async () => {
     setTesting(true);
     setTestResult(null);
+    
+    // Use test prompt if provided, otherwise use default
+    const testPromptText = aiTestPrompt || "Hello, this is a connection test. Please respond with 'OK'.";
+    
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.post(
         `${BACKEND_URL}/api/settings/ai/test`,
-        settings,
+        { ...settings, testPrompt: testPromptText },
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      setTestResult({ success: true, message: response.data.message });
+      setTestResult({ 
+        success: true, 
+        message: response.data.message,
+        fullResponse: response.data.response 
+      });
       toast.success('Connection test successful!');
     } catch (error) {
       const errorMsg = error.response?.data?.detail || 'Connection test failed';
