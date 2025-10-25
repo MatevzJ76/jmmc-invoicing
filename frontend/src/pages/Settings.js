@@ -108,7 +108,7 @@ const Settings = () => {
             Back
           </Button>
           <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            AI Agent Settings
+            Settings
           </h1>
         </div>
       </nav>
