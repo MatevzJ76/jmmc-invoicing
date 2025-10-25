@@ -34,6 +34,9 @@ const BatchDetail = () => {
     jmmcFinance: false,
     noClient: false
   });
+  const [aiVerifying, setAiVerifying] = useState(false);
+  const [aiResults, setAiResults] = useState({});
+  const [showAiWarnings, setShowAiWarnings] = useState(false);
 
   useEffect(() => {
     loadBatchAndInvoices();
