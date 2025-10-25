@@ -401,6 +401,167 @@ const BatchDetail = () => {
           </div>
         </div>
 
+        {/* Verification Tile */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="w-5 h-5 text-orange-600" />
+            <h3 className="text-lg font-semibold text-slate-800">Verification</h3>
+            <span className="text-xs text-slate-500 ml-2">
+              ({verificationData.jmmcHP.length + verificationData.jmmcFinance.length + verificationData.noClient.length} items need review)
+            </span>
+          </div>
+
+          {/* JMMC HP d.o.o. */}
+          <div className="mb-4">
+            <button
+              onClick={() => toggleCategory('jmmcHP')}
+              className="w-full flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              data-testid="jmmc-hp-category"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  {verificationData.jmmcHP.length}
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-slate-800">JMMC HP d.o.o.</p>
+                  <p className="text-xs text-slate-600">{verificationData.jmmcHP.length} entries</p>
+                </div>
+              </div>
+              {expandedCategories.jmmcHP ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+            
+            {expandedCategories.jmmcHP && (
+              <div className="mt-2 space-y-2 pl-4">
+                {verificationData.jmmcHP.map((entry, idx) => (
+                  <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg">
+                    <div className="grid grid-cols-4 gap-2 text-sm">
+                      <div>
+                        <span className="text-xs text-slate-500">Date:</span>
+                        <p className="font-medium">{entry.date}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Employee:</span>
+                        <p className="font-medium">{entry.employeeName}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Hours:</span>
+                        <p className="font-medium">{entry.hours}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Value:</span>
+                        <p className="font-medium">€{entry.value.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    {entry.notes && (
+                      <p className="text-xs text-slate-600 mt-2">{entry.notes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* JMMC Finance d.o.o. */}
+          <div className="mb-4">
+            <button
+              onClick={() => toggleCategory('jmmcFinance')}
+              className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+              data-testid="jmmc-finance-category"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  {verificationData.jmmcFinance.length}
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-slate-800">JMMC Finance d.o.o.</p>
+                  <p className="text-xs text-slate-600">{verificationData.jmmcFinance.length} entries</p>
+                </div>
+              </div>
+              {expandedCategories.jmmcFinance ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+            
+            {expandedCategories.jmmcFinance && (
+              <div className="mt-2 space-y-2 pl-4">
+                {verificationData.jmmcFinance.map((entry, idx) => (
+                  <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg">
+                    <div className="grid grid-cols-4 gap-2 text-sm">
+                      <div>
+                        <span className="text-xs text-slate-500">Date:</span>
+                        <p className="font-medium">{entry.date}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Employee:</span>
+                        <p className="font-medium">{entry.employeeName}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Hours:</span>
+                        <p className="font-medium">{entry.hours}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Value:</span>
+                        <p className="font-medium">€{entry.value.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    {entry.notes && (
+                      <p className="text-xs text-slate-600 mt-2">{entry.notes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* No Client */}
+          <div>
+            <button
+              onClick={() => toggleCategory('noClient')}
+              className="w-full flex items-center justify-between p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+              data-testid="no-client-category"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  {verificationData.noClient.length}
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-slate-800">No Client Specified</p>
+                  <p className="text-xs text-slate-600">{verificationData.noClient.length} entries without client</p>
+                </div>
+              </div>
+              {expandedCategories.noClient ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+            
+            {expandedCategories.noClient && (
+              <div className="mt-2 space-y-2 pl-4">
+                {verificationData.noClient.map((entry, idx) => (
+                  <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg">
+                    <div className="grid grid-cols-4 gap-2 text-sm">
+                      <div>
+                        <span className="text-xs text-slate-500">Date:</span>
+                        <p className="font-medium">{entry.date}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Employee:</span>
+                        <p className="font-medium">{entry.employeeName}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Hours:</span>
+                        <p className="font-medium">{entry.hours}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Value:</span>
+                        <p className="font-medium">€{entry.value.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    {entry.notes && (
+                      <p className="text-xs text-slate-600 mt-2">{entry.notes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Invoices List */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
           <h2 className="text-xl font-bold text-slate-800 mb-4">Invoices</h2>
