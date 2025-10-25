@@ -154,6 +154,19 @@ const Import = () => {
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <h2 className="text-lg font-bold text-slate-800 mb-4">Invoice Metadata</h2>
             <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="title">Batch Title</Label>
+                <Input
+                  id="title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., October 2025"
+                  required
+                  data-testid="batch-title-input"
+                />
+                <p className="text-xs text-slate-500">Auto-suggested from period dates</p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="invoiceDate">Invoice Date</Label>
                 <Input
