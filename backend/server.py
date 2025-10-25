@@ -1028,7 +1028,7 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
             chat = LlmChat(
                 api_key=EMERGENT_LLM_KEY,
                 session_id=f"test-{current_user.email}",
-                system_message="You are a helpful AI assistant."
+                system_message="You are a helpful AI assistant. IMPORTANT: Always respond in the SAME LANGUAGE as the user's prompt. If the prompt is in Slovenian, respond in Slovenian. If in English, respond in English. Match the language exactly."
             ).with_model(provider, settings.customModel)
             
         else:  # custom
@@ -1046,7 +1046,7 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
             chat = LlmChat(
                 api_key=settings.customApiKey,
                 session_id=f"test-{current_user.email}",
-                system_message="You are a helpful AI assistant."
+                system_message="You are a helpful AI assistant. IMPORTANT: Always respond in the SAME LANGUAGE as the user's prompt. If the prompt is in Slovenian, respond in Slovenian. If in English, respond in English. Match the language exactly."
             ).with_model(provider, settings.customModel)
         
         # Send test message
