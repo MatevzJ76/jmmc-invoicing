@@ -161,6 +161,7 @@ const Batches = () => {
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Title</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Filename</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Period</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Invoice Date</th>
@@ -179,7 +180,10 @@ const Batches = () => {
                       data-testid={`batch-row-${batch.id}`}
                     >
                       <td className="px-6 py-4">
-                        <div className="font-medium text-slate-800">{batch.filename}</div>
+                        <div className="font-semibold text-slate-800">{batch.title || 'Untitled'}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-600">{batch.filename}</div>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
                         {batch.periodFrom} - {batch.periodTo}
