@@ -642,6 +642,11 @@ const BatchDetail = () => {
                   const isFlagged = isEntryFlagged(entry.id);
                   const flagReason = getFlagReason(entry.id);
                   
+                  // Debug log for second entry (should be bf4e419e...)
+                  if (idx === 1 && showAiWarnings) {
+                    console.log(`JMMC Finance entry #2 (${entry.id}): isFlagged=${isFlagged}, showAiWarnings=${showAiWarnings}, flagReason="${flagReason}"`);
+                  }
+                  
                   return (
                     <div 
                       key={idx} 
