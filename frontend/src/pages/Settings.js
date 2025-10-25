@@ -412,8 +412,8 @@ const Settings = () => {
             </div>
 
             {/* GDPR Masking Prompt */}
-            <div className="space-y-2 mb-6">
-              <Label htmlFor="gdpr">GDPR Data Masking</Label>
+            <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <Label htmlFor="gdpr" className="text-base font-semibold">GDPR Data Masking</Label>
               <Textarea
                 id="gdpr"
                 value={settings.gdprPrompt}
@@ -423,6 +423,38 @@ const Settings = () => {
                 data-testid="gdpr-prompt-input"
               />
               <p className="text-xs text-slate-500">Identifies and masks personal data in invoice text</p>
+              
+              {/* Test Section */}
+              <div className="mt-4 pt-4 border-t border-slate-300">
+                <Label htmlFor="gdpr-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
+                <Textarea
+                  id="gdpr-test"
+                  value={testInputs.gdpr}
+                  onChange={(e) => updateTestInput('gdpr', e.target.value)}
+                  rows={2}
+                  placeholder="Enter text with personal data to test masking..."
+                  className="text-sm mb-2"
+                />
+                <Button
+                  onClick={() => handleTestPrompt('gdpr')}
+                  disabled={testingPrompt === 'gdpr' || !testInputs.gdpr}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  <Sparkles className="w-3 h-3 mr-2" />
+                  {testingPrompt === 'gdpr' ? 'Testing...' : 'Test Prompt'}
+                </Button>
+                
+                {testResults.gdpr && (
+                  <div className={`mt-3 p-3 rounded-lg border ${
+                    testResults.gdpr.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  }`}>
+                    <p className="text-xs font-semibold mb-1">Result:</p>
+                    <p className="text-sm">{testResults.gdpr.result}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Verification Prompt */}
