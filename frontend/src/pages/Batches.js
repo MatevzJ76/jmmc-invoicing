@@ -194,34 +194,35 @@ const Batches = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Invoices</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Status</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Created</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredBatches.map((batch) => (
                     <tr
                       key={batch.id}
-                      className="hover:bg-slate-50 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/batches/${batch.id}`)}
+                      className="hover:bg-slate-50 transition-colors"
                       data-testid={`batch-row-${batch.id}`}
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
                         <div className="font-semibold text-slate-800">{batch.title || 'Untitled'}</div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
                         <div className="text-sm text-slate-600">{batch.filename}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">
+                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
                         {batch.periodFrom} - {batch.periodTo}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{batch.invoiceDate}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{batch.dueDate}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>{batch.invoiceDate}</td>
+                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>{batch.dueDate}</td>
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                           {batch.invoiceCount || 0}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                          batch.status === 'archived' ? 'bg-gray-100 text-gray-700' :
                           batch.status === 'posted' ? 'bg-green-100 text-green-700' :
                           batch.status === 'composed' ? 'bg-blue-100 text-blue-700' :
                           'bg-yellow-100 text-yellow-700'
@@ -229,8 +230,24 @@ const Batches = () => {
                           {batch.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">
+                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
                         {new Date(batch.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {batch.status !== 'archived' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleArchive(batch.id, e)}
+                            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full"
+                            data-testid={`archive-button-${batch.id}`}
+                            title="Archive batch"
+                          >
+                            <Archive className="w-4 h-4" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-gray-400">Archived</span>
+                        )}
                       </td>
                     </tr>
                   ))}
