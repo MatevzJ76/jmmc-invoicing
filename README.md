@@ -4,7 +4,7 @@ Monthly invoicing system for time tracking & invoice management with AI-powered 
 
 ## Quick Start
 
-**Live URL**: https://bill-buddy-42.preview.emergentagent.com
+**Live URL**: https://invoice-master-115.preview.emergentagent.com
 
 **Default Credentials**:
 - Admin: `admin@local` / `Admin2025!`
