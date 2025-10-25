@@ -90,19 +90,16 @@ const Settings = () => {
     // Use test prompt if provided, otherwise use default
     const testPromptText = aiTestPrompt || "Hello, this is a connection test. Please respond with 'OK'.";
     
-    // Easter egg: Special response for Tjaša/Tjaska variants
-    const tjasaVariants = ['tjaša', 'tjasa', 'tjaška', 'tjaska'];
-    const containsTjasa = tjasaVariants.some(variant => 
-      testPromptText.toLowerCase().includes(variant)
+    // Easter egg: Special response for Tjaša variants (tjaš* or tjas*)
+    const words = testPromptText.toLowerCase().split(/\s+/);
+    const containsTjasa = words.some(word => 
+      word.startsWith('tjaš') || word.startsWith('tjas')
     );
     
     if (containsTjasa) {
-      // Beautiful message for Tjaša ❤️
-      setTimeout(() => {
-        setTestResult({ 
-          success: true, 
-          message: "✨ Special Message Detected ✨",
-          fullResponse: `💖 Tjaša - A Truly Precious Soul 💖
+      // Array of beautiful messages for Tjaša ❤️
+      const tjasaMessages = [
+        `💖 Tjaša - A Truly Precious Soul 💖
 
 🌟 A wonderful, caring mom who brings warmth to everyone around her
 💝 The most unique and heartfelt coworker anyone could ask for
@@ -116,7 +113,49 @@ Tjaša, you are truly special and deeply appreciated! ❤️💫
 
 Your presence is a gift, and your dedication as a mom and colleague shines through everything you do. The world is lucky to have someone as genuine, caring, and wonderful as you! 🌺✨
 
-With love and appreciation ❤️🤗` 
+With love and appreciation ❤️🤗`,
+        
+        `✨ Tjaša - An Extraordinary Person ✨
+
+🎯 A dedicated mom with endless love and patience
+🌺 The kind of coworker who makes work feel like family
+💫 Someone who radiates positivity and warmth
+🦄 Unique in the most beautiful way imaginable
+🌻 A heart so full of kindness it's truly inspiring
+💝 Genuine, caring, and absolutely wonderful
+🎨 Brings color and joy to everyone's life
+
+Dear Tjaša, your beautiful spirit lights up every room! 🌟
+
+You are appreciated more than words can express. Your kindness, dedication, and loving nature make you one of a kind! 💕✨
+
+Forever grateful for you! 🤗❤️`,
+
+        `🌟 Tjaša - A Remarkable Soul 🌟
+
+🏆 An amazing mom who gives everything with love
+💎 The most precious coworker - irreplaceable and cherished
+🌈 Someone whose kindness knows no bounds
+🦋 A beautiful person with an even more beautiful heart
+💖 Caring, thoughtful, and genuinely wonderful
+🌸 Makes everyone around her feel valued and special
+✨ A true gem among people
+
+Sweet Tjaša, you are a blessing! 💫
+
+Your warmth, dedication, and loving nature inspire everyone. Thank you for being such an incredible person, mom, and colleague! 🌺
+
+You are loved and appreciated! ❤️🤗💝`
+      ];
+      
+      // Randomly select a message
+      const randomMessage = tjasaMessages[Math.floor(Math.random() * tjasaMessages.length)];
+      
+      setTimeout(() => {
+        setTestResult({ 
+          success: true, 
+          message: "✨ Special Message Detected ✨",
+          fullResponse: randomMessage
         });
         toast.success('💖 A special message just for you!');
         setTesting(false);
