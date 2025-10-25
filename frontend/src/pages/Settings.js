@@ -93,13 +93,14 @@ const Settings = () => {
     setEracuniTestResult(null);
     try {
       const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('username', settings.eracuniUsername);
+      formData.append('secretKey', settings.eracuniSecretKey);
+      formData.append('apiToken', settings.eracuniToken);
+      
       const response = await axios.post(
         `${BACKEND_URL}/api/settings/eracuni/test`,
-        {
-          username: settings.eracuniUsername,
-          secretKey: settings.eracuniSecretKey,
-          apiToken: settings.eracuniToken
-        },
+        formData,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       setEracuniTestResult({ success: true, message: response.data.message });
