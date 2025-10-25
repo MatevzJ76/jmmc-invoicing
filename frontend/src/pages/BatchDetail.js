@@ -94,9 +94,12 @@ const BatchDetail = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Batches
           </Button>
-          <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            {batch.filename}
-          </h1>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              {batch.title || batch.filename}
+            </h1>
+            <p className="text-sm text-slate-500">{batch.filename}</p>
+          </div>
         </div>
       </nav>
 
