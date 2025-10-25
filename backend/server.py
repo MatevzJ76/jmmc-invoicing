@@ -445,12 +445,42 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
     if not all_entries:
         return {"results": {}, "message": "No entries found"}
     
-    # Limit total entries to prevent blocking (check all entries, not just those with descriptions)
-    MAX_ENTRIES = 50  # Limit to 50 entries to prevent long blocking
-    entries_to_check = all_entries
-    if len(entries_to_check) > MAX_ENTRIES:
-        entries_to_check = entries_to_check[:MAX_ENTRIES]
-        logger.info(f"Limited verification to {MAX_ENTRIES} entries out of {len(all_entries)}")
+    # Categorize entries by customer to ensure balanced verification
+    jmmc_hp_entries = []
+    jmmc_finance_entries = []
+    no_client_entries = []
+    
+    for entry in all_entries:
+        customer = await db.customers.find_one({"id": entry["customerId"]})
+        customer_name = customer["name"] if customer else ""
+        
+        if "JMMC HP d.o.o." in customer_name:
+            jmmc_hp_entries.append(entry)
+        elif "JMMC Finance d.o.o." in customer_name:
+            jmmc_finance_entries.append(entry)
+        elif not customer_name or customer_name.strip() == "" or customer_name == "General":
+            no_client_entries.append(entry)
+    
+    # Take proportional samples from each category (max 50 total)
+    MAX_ENTRIES = 50
+    total_entries = len(jmmc_hp_entries) + len(jmmc_finance_entries) + len(no_client_entries)
+    
+    if total_entries == 0:
+        return {"results": {}, "message": "No entries found"}
+    
+    # Calculate proportional samples
+    hp_sample = min(len(jmmc_hp_entries), int(MAX_ENTRIES * len(jmmc_hp_entries) / total_entries))
+    finance_sample = min(len(jmmc_finance_entries), int(MAX_ENTRIES * len(jmmc_finance_entries) / total_entries))
+    no_client_sample = min(len(no_client_entries), MAX_ENTRIES - hp_sample - finance_sample)
+    
+    # Combine samples
+    entries_to_check = (
+        jmmc_hp_entries[:hp_sample] +
+        jmmc_finance_entries[:finance_sample] +
+        no_client_entries[:no_client_sample]
+    )
+    
+    logger.info(f"Verifying {len(entries_to_check)} entries: HP={hp_sample}, Finance={finance_sample}, NoClient={no_client_sample}")
     
     if not entries_to_check:
         return {"results": {}, "message": "No entries with descriptions to check"}
