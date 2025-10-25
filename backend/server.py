@@ -445,9 +445,9 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
     if not all_entries:
         return {"results": {}, "message": "No entries found"}
     
-    # Filter entries with descriptions and limit to prevent blocking
-    entries_to_check = [e for e in all_entries if e.get("notes", "").strip() != ""]
+    # Limit total entries to prevent blocking (check all entries, not just those with descriptions)
     MAX_ENTRIES = 50  # Limit to 50 entries to prevent long blocking
+    entries_to_check = all_entries
     if len(entries_to_check) > MAX_ENTRIES:
         entries_to_check = entries_to_check[:MAX_ENTRIES]
         logger.info(f"Limited verification to {MAX_ENTRIES} entries out of {len(all_entries)}")
