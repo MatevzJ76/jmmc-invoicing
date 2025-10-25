@@ -439,22 +439,33 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
         api_key = EMERGENT_LLM_KEY
         model = "gpt-4o-mini"
     
-    # Get all time entries for this batch with random sampling to get diverse entries
-    import random
+    # Get entries specifically from verification categories (JMMC HP, JMMC Finance, No Client)
+    # This ensures we verify the entries the user actually sees in the UI
     all_entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
     
     if not all_entries:
         return {"results": {}, "message": "No entries found"}
     
-    # Shuffle and limit to prevent blocking while ensuring diverse sampling
+    # Categorize to match what user sees in verification tile
+    verification_entries = []
+    for entry in all_entries:
+        customer = await db.customers.find_one({"id": entry["customerId"]})
+        customer_name = customer["name"] if customer else ""
+        
+        # Only include entries from the three verification categories
+        if ("JMMC HP d.o.o." in customer_name or 
+            "JMMC Finance d.o.o." in customer_name or 
+            not customer_name or customer_name.strip() == "" or customer_name == "General"):
+            verification_entries.append(entry)
+    
+    #  Limit to prevent long processing
     MAX_ENTRIES = 50
-    if len(all_entries) > MAX_ENTRIES:
-        # Randomly sample to get entries from different categories
-        entries_to_check = random.sample(all_entries, MAX_ENTRIES)
-        logger.info(f"Randomly sampled {MAX_ENTRIES} of {len(all_entries)} entries for verification")
+    if len(verification_entries) > MAX_ENTRIES:
+        entries_to_check = verification_entries[:MAX_ENTRIES]
+        logger.info(f"Limited to {MAX_ENTRIES} of {len(verification_entries)} verification entries")
     else:
-        entries_to_check = all_entries
-        logger.info(f"Verifying all {len(all_entries)} entries")
+        entries_to_check = verification_entries
+        logger.info(f"Verifying all {len(verification_entries)} verification entries")
     
     if not entries_to_check:
         return {"results": {}, "message": "No entries with descriptions to check"}
