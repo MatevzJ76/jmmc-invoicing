@@ -119,6 +119,7 @@ class AISettings(BaseModel):
     eracuniUsername: Optional[str] = None
     eracuniSecretKey: Optional[str] = None
     eracuniToken: Optional[str] = None
+    testPrompt: Optional[str] = None  # For testing AI connection quality
 
 # ============ AUTH HELPERS ============
 def create_token(data: dict, expires_delta: timedelta):
