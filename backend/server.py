@@ -1030,6 +1030,60 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Connection failed: {str(e)}")
 
+
+# ============ E-RAČUNI ENDPOINTS ============
+@api_router.post("/settings/eracuni/test")
+async def test_eracuni_connection(
+    username: str = Form(...),
+    secretKey: str = Form(...),
+    apiToken: str = Form(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Test e-računi API connection"""
+    import httpx
+    
+    try:
+        # e-računi API endpoint (adjust based on organization)
+        # This is a generic endpoint - actual URL may vary
+        api_url = "https://eurofaktura.com/WebServices/API"
+        
+        # Test with a simple PartnerList method (least intrusive)
+        payload = {
+            "username": username,
+            "secretKey": secretKey,
+            "token": apiToken,
+            "method": "PartnerList",
+            "parameters": {
+                "page": 1,
+                "limit": 1
+            }
+        }
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                api_url,
+                json=payload,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            # Check if request was successful
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Check if there's an error in the response
+                if result.get("error"):
+                    return {"message": f"Authentication failed: {result.get('error')}"}
+                
+                return {"message": "e-računi connection successful! Credentials are valid."}
+            else:
+                return {"message": f"Connection failed with status {response.status_code}"}
+    
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=400, detail="Connection timeout - please check your network")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Connection test failed: {str(e)}")
+
+
 @api_router.post("/ai/suggest")
 async def ai_suggest(request: AIRequest, current_user: User = Depends(get_current_user)):
     # Get user's AI settings
