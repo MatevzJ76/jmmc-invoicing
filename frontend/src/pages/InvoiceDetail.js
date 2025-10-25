@@ -47,6 +47,55 @@ const InvoiceDetail = () => {
     }
   };
 
+  const loadAllCustomers = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/customers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAllCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to load customers:', error);
+    }
+  };
+
+  const handleMoveLineItem = async (line, newCustomerId) => {
+    setMovingLine(line.id);
+    setShowMoveDropdown(null);
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      // Get the time entry ID from the line
+      const timeEntryId = line.timeEntryId;
+      
+      if (!timeEntryId) {
+        toast.error('Cannot move this line item');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('new_customer_id', newCustomerId);
+      
+      await axios.post(
+        `${BACKEND_URL}/api/time-entries/${timeEntryId}/move-customer`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Line item moved successfully');
+      
+      // Reload invoice to reflect changes
+      await loadInvoice();
+    } catch (error) {
+      toast.error('Failed to move line item');
+      console.error(error);
+    } finally {
+      setMovingLine(null);
+    }
+  };
+
+
   const handleSave = async () => {
     setSaving(true);
     try {
