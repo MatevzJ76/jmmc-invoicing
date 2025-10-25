@@ -753,6 +753,50 @@ async def move_time_entry_to_customer(
         
         logger.info(f"Created new invoice {new_invoice_id} for customer {new_customer.get('name')} with 1 line, total: {value}")
     
+
+@api_router.post("/invoices/migrate-time-entry-ids")
+async def migrate_time_entry_ids(current_user: User = Depends(get_current_user)):
+    """Migration: Add timeEntryId to existing invoice lines"""
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Get all invoice lines
+    all_lines = await db.invoiceLines.find({}, {"_id": 0}).to_list(100000)
+    
+    updated_count = 0
+    for line in all_lines:
+        # Skip if already has timeEntryId
+        if line.get("timeEntryId"):
+            continue
+        
+        # Try to find matching time entry based on description, quantity, and invoice
+        invoice = await db.invoices.find_one({"id": line["invoiceId"]})
+        if not invoice:
+            continue
+        
+        batch_id = invoice.get("batchId")
+        customer_id = invoice.get("customerId")
+        
+        # Find time entry that matches this line
+        # Match by hours (quantity), customerId, and batchId
+        matching_entry = await db.timeEntries.find_one({
+            "batchId": batch_id,
+            "customerId": customer_id,
+            "hours": line.get("quantity", 0)
+        })
+        
+        if matching_entry:
+            # Update the line with timeEntryId
+            await db.invoiceLines.update_one(
+                {"id": line["id"]},
+                {"$set": {"timeEntryId": matching_entry["id"]}}
+            )
+            updated_count += 1
+    
+    logger.info(f"Migration complete: Updated {updated_count} invoice lines with timeEntryId")
+    return {"message": f"Updated {updated_count} invoice lines", "total_lines": len(all_lines)}
+
+
     # Audit event
     await db.auditEvents.insert_one({
         "id": str(uuid.uuid4()),
