@@ -88,6 +88,19 @@ const BatchDetail = () => {
   }, [showMoveDropdown]);
 
 
+  // Sort verification data when AI results change
+  useEffect(() => {
+    if (showAiWarnings && Object.keys(aiResults).length > 0) {
+      setVerificationData(prevData => ({
+        jmmcHP: sortVerificationData([...prevData.jmmcHP]),
+        jmmcFinance: sortVerificationData([...prevData.jmmcFinance]),
+        noClient: sortVerificationData([...prevData.noClient])
+      }));
+    }
+  }, [aiResults, showAiWarnings]);
+
+
+
   const loadAllBatches = async () => {
     try {
       const token = localStorage.getItem('access_token');
