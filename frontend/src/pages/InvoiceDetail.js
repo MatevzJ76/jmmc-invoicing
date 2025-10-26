@@ -373,6 +373,21 @@ const InvoiceDetail = () => {
                 <span className="text-slate-600">Line Items:</span>
                 <span className="font-semibold text-slate-800">{lines.length}</span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">Status:</span>
+                <Select value={invoice.status} onValueChange={handleStatusChange}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="imported">Imported</SelectItem>
+                    <SelectItem value="edited">Edited</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="issued">Issued</SelectItem>
+                    <SelectItem value="deleted">Deleted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex justify-between pt-3 border-t border-slate-200">
                 <span className="text-lg font-bold text-slate-800">Total:</span>
                 <span className="text-2xl font-bold text-blue-600">€{total.toFixed(2)}</span>
