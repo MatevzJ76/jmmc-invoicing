@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Zap, Check, X, Sparkles } from 'lucide-react';
+import { ArrowLeft, Save, Zap, Check, X, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
