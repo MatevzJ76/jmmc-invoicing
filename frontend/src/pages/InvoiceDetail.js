@@ -215,7 +215,7 @@ const InvoiceDetail = () => {
         productCode: "000001",
         quantity: line.quantity,
         unit: "h",
-        netPrice: line.unitPrice > 0 ? line.unitPrice : null
+        netPrice: line.unitPrice
       }));
       
       const eracuniRequest = {
@@ -244,7 +244,8 @@ const InvoiceDetail = () => {
             buyerDocumentID: "",
             buyerTaxNumber: "",
             buyerVatRegistration: "None",
-            Items: eracuniItems
+            Items: eracuniItems,
+            city: "Nova Gorica"
           }
         }
       };
