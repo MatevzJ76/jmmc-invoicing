@@ -639,7 +639,7 @@ const InvoiceDetail = () => {
                         id={`price-${index}`}
                         type="number"
                         step="0.01"
-                        value={line.unitPrice}
+                        value={parseFloat(line.unitPrice).toFixed(2)}
                         onChange={(e) => updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)}
                         onFocus={(e) => e.target.select()}
                         disabled={invoice.status === 'posted'}
