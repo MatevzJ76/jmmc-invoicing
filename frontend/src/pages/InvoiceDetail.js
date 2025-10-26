@@ -285,13 +285,14 @@ const InvoiceDetail = () => {
       <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="rounded-full">
+            <Button 
+              onClick={() => navigate(-1)} 
+              className="rounded-full bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black text-white shadow-md hover:shadow-lg transition-all duration-200 font-medium px-5"
+              size="sm"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
-            <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Invoice: {invoice.customerName}
-            </h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2">
