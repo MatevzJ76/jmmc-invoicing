@@ -918,9 +918,21 @@ async def update_invoice(invoice_id: str, update: InvoiceUpdate, current_user: U
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
     
-    # Update invoice number if provided
+    # Update invoice header fields if provided
+    header_updates = {}
     if update.number:
-        await db.invoices.update_one({"id": invoice_id}, {"$set": {"number": update.number}})
+        header_updates["number"] = update.number
+    if update.invoiceDate:
+        header_updates["invoiceDate"] = update.invoiceDate
+    if update.dueDate:
+        header_updates["dueDate"] = update.dueDate
+    if update.periodFrom:
+        header_updates["periodFrom"] = update.periodFrom
+    if update.periodTo:
+        header_updates["periodTo"] = update.periodTo
+    
+    if header_updates:
+        await db.invoices.update_one({"id": invoice_id}, {"$set": header_updates})
     
     # Update lines and recalculate amounts
     await db.invoiceLines.delete_many({"invoiceId": invoice_id})
