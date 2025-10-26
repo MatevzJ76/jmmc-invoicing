@@ -1076,7 +1076,7 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
         if not user_settings or not user_settings.get("eracuniUsername") or not user_settings.get("eracuniToken"):
             raise HTTPException(status_code=400, detail="e-računi credentials not configured in Settings")
         
-        endpoint = user_settings.get("eracuniEndpoint", "https://e-racuni.com/WebServices/API")
+        endpoint = user_settings.get("eracuniEndpoint", "https://e-racuni.com/WebServicesSI/API")
         
         # Build e-računi API payload
         items = []
