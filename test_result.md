@@ -131,11 +131,11 @@ backend:
 
   - task: "POST /api/invoices/{invoice_id}/post - e-računi integration"
     implemented: true
-    working: false
+    working: "testing"
     file: "/app/backend/server.py"
     stuck_count: 2
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: false
           agent: "main"
@@ -148,6 +148,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "Tested e-računi API integration with invoice ID 0e4c2b84-10b8-4500-af52-60f3be1cd6cd. CRITICAL ISSUE FOUND: The API endpoint URL is INCORRECT. Current endpoint: https://e-racuni.com/WebServices/API returns HTTP 404. CORRECT endpoint for Slovenia should be: https://e-racuni.com/WebServicesSI/API (note the 'SI' suffix). Web search confirms this is the proper endpoint for Slovenian localization. The system is making real API calls (not stub mode), credentials are saved correctly, but using wrong endpoint URL. Backend logs show: 'e-računi API HTTP 404' with HTML error page response."
+        - working: "testing"
+          agent: "main"
+          comment: "Fixed endpoint URL: (1) Updated database endpoint for admin@local to https://e-racuni.com/WebServicesSI/API. (2) Updated default endpoint in AISettings model. (3) Updated fallback endpoint in posting logic. (4) Updated frontend Settings.js default. All instances now use correct Slovenian endpoint with 'SI' suffix. Ready for retest with correct endpoint."
 
 frontend:
 
