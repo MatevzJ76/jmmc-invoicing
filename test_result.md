@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the newly implemented move time entry feature"
+user_problem_statement: "Fix e-računi API integration - no new invoices being created in e-računi system"
 
 backend:
   - task: "GET /api/customers endpoint"
@@ -128,6 +128,20 @@ backend:
         - working: true
           agent: "testing"
           comment: "Move time entry feature fully functional. All test scenarios passed: (a) Move from No Client to JMMC HP - PASSED, (b) Move from JMMC HP to JMMC Finance - PASSED, (c) Invalid entry_id returns 404 - PASSED, (d) Invalid customer_id returns 404 - PASSED. Verified: time entry customerId updated in database, old invoice lines no longer contain moved entry, new invoice lines include moved entry, no duplications exist, invoice totals recalculated correctly."
+
+  - task: "POST /api/invoices/{invoice_id}/post - e-računi integration"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "User reports no invoices being created in e-računi system. Investigation reveals: (1) ERACUNI_MODE is set to 'stub' in backend/.env, preventing real API calls. (2) Real integration exists but requires user credentials in Settings. (3) Frontend shows hardcoded demo credentials in 'View API' modal which is misleading. Need to: confirm user has real credentials, configure them in Settings page, change ERACUNI_MODE to enable real API, test actual integration."
+        - agent: "user"
+          comment: "Confirmed: no new invoices in e-računi, API calls not working"
 
 frontend:
 
