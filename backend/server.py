@@ -1052,7 +1052,11 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
         external_number = f"ER-STUB-{int(datetime.now(timezone.utc).timestamp())}"
         await db.invoices.update_one(
             {"id": invoice_id},
-            {"$set": {"status": "posted", "externalNumber": external_number}}
+            {"$set": {
+                "status": "posted",
+                "number": external_number,  # Set invoice number from stub
+                "externalNumber": external_number
+            }}
         )
         
         # Audit event
