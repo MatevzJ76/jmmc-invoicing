@@ -241,6 +241,10 @@ ${randomFinal}`;
       const errorMsg = error.response?.data?.detail || 'Connection test failed';
       setTestResult({ success: false, message: errorMsg });
       toast.error(errorMsg);
+      
+      if (error.response?.status === 401) {
+        setTimeout(() => navigate('/login'), 2000);
+      }
     } finally {
       setTesting(false);
     }
