@@ -92,9 +92,9 @@ const BatchDetail = () => {
   useEffect(() => {
     if (showAiWarnings && Object.keys(aiResults).length > 0) {
       setVerificationData(prevData => ({
-        jmmcHP: sortVerificationData([...prevData.jmmcHP]),
-        jmmcFinance: sortVerificationData([...prevData.jmmcFinance]),
-        noClient: sortVerificationData([...prevData.noClient])
+        jmmcHP: sortVerificationData([...prevData.jmmcHP], aiResults),
+        jmmcFinance: sortVerificationData([...prevData.jmmcFinance], aiResults),
+        noClient: sortVerificationData([...prevData.noClient], aiResults)
       }));
     }
   }, [aiResults, showAiWarnings]);
