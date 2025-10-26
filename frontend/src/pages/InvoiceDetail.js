@@ -272,12 +272,22 @@ const InvoiceDetail = () => {
       toast.success(`Invoice posted: ${response.data.externalNumber}`);
       loadInvoice();
     } catch (error) {
-      // Store error response
+      console.error('Post to e-računi error:', error);
+      
+      // Store detailed error response
+      const errorDetails = {
+        error: error.response?.data?.detail || error.message,
+        statusCode: error.response?.status,
+        timestamp: new Date().toISOString(),
+        fullError: error.response?.data || error.message
+      };
+      
       setApiDebugData(prev => ({
         ...prev,
-        response: { error: error.response?.data?.detail || error.message }
+        response: errorDetails
       }));
-      toast.error('Failed to post invoice');
+      
+      toast.error(`Failed to post invoice: ${error.response?.data?.detail || error.message}`);
     }
   };
 
