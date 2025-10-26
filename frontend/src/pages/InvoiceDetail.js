@@ -470,10 +470,11 @@ const InvoiceDetail = () => {
                         onChange={(e) => updateLine(index, 'description', e.target.value)}
                         placeholder="Service description"
                         rows={2}
+                        disabled={invoice.status === 'posted'}
                         data-testid={`description-input-${index}`}
                       />
                     </div>
-                    {aiEnabled && (
+                    {aiEnabled && invoice.status !== 'posted' && (
                       <Button
                         size="sm"
                         variant="outline"
