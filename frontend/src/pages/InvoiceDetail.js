@@ -771,12 +771,7 @@ const InvoiceDetail = () => {
                 </h4>
                 <div className="bg-slate-900 rounded-lg p-4 overflow-x-auto">
                   <pre className="text-green-400 text-xs font-mono">
-{JSON.stringify({
-  method: "SalesInvoiceCreate",
-  invoice: apiDebugData.request?.invoice?.number,
-  customer: apiDebugData.request?.invoice?.customerName,
-  lineCount: apiDebugData.request?.lines?.length
-}, null, 2)}
+{JSON.stringify(apiDebugData.request, null, 2)}
                   </pre>
                 </div>
               </div>
