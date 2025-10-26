@@ -745,19 +745,19 @@ const InvoiceDetail = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
                       <span className="text-slate-600 min-w-32">Customer:</span>
-                      <code className="text-slate-800 font-mono">{apiDebugData.request?.invoice?.customerName}</code>
+                      <code className="text-slate-800 font-mono">{apiDebugData.request?.parameters?.SalesInvoice?.buyerName || 'N/A'}</code>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-slate-600 min-w-32">Invoice Number:</span>
-                      <code className="text-slate-800 font-mono">{apiDebugData.request?.invoice?.number || 'Not set'}</code>
+                      <code className="text-slate-800 font-mono">{invoice.number || 'Not set'}</code>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-slate-600 min-w-32">Invoice Date:</span>
-                      <code className="text-slate-800 font-mono">{apiDebugData.request?.invoice?.invoiceDate}</code>
+                      <code className="text-slate-800 font-mono">{apiDebugData.request?.parameters?.SalesInvoice?.date}</code>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-slate-600 min-w-32">Line Items:</span>
-                      <code className="text-slate-800 font-mono">{apiDebugData.request?.lines?.length || 0}</code>
+                      <code className="text-slate-800 font-mono">{apiDebugData.request?.parameters?.SalesInvoice?.Items?.length || 0}</code>
                     </div>
                   </div>
                 </div>
