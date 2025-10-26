@@ -358,7 +358,7 @@ const InvoiceDetail = () => {
                         id={`qty-${index}`}
                         type="number"
                         step="0.01"
-                        value={line.quantity}
+                        value={Number(line.quantity).toFixed(2)}
                         onChange={(e) => updateLine(index, 'quantity', parseFloat(e.target.value) || 0)}
                         data-testid={`quantity-input-${index}`}
                       />
