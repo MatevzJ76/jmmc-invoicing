@@ -256,12 +256,47 @@ ${randomFinal}`;
   const handleTestEracuni = async () => {
     setTestingEracuni(true);
     setEracuniTestResult(null);
+    
+    // Build API debug data
+    const requestPayload = {
+      username: settings.eracuniUsername,
+      secretKey: settings.eracuniSecretKey,
+      token: settings.eracuniToken,
+      method: "PartnerList",
+      parameters: { page: 1, limit: 1 }
+    };
+    
+    setApiDebugData({
+      request: requestPayload,
+      response: null,
+      timestamp: new Date().toISOString()
+    });
+    
     try {
       const token = localStorage.getItem('access_token');
       const formData = new FormData();
       formData.append('username', settings.eracuniUsername);
       formData.append('secretKey', settings.eracuniSecretKey);
-
+      formData.append('apiToken', settings.eracuniToken);
+      
+      const response = await axios.post(
+        `${BACKEND_URL}/api/settings/eracuni/test`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      setEracuniTestResult({ success: true, message: response.data.message });
+      setApiDebugData(prev => ({ ...prev, response: response.data }));
+      toast.success('e-računi connection test successful!');
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || 'e-računi connection test failed';
+      setEracuniTestResult({ success: false, message: errorMsg });
+      setApiDebugData(prev => ({ ...prev, response: { error: errorMsg } }));
+      toast.error(errorMsg);
+    } finally {
+      setTestingEracuni(false);
+    }
+  };
 
   const handleTestPrompt = async (promptType) => {
     setTestingPrompt(promptType);
