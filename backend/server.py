@@ -325,7 +325,9 @@ async def import_xlsx(
             
             # Parse value (handle comma as decimal separator)
             try:
-                value = float(str(value_str).replace(',', '.')) if value_str else 0.0
+                value_raw = float(str(value_str).replace(',', '.')) if value_str else 0.0
+                # Round to 2 decimal places for currency
+                value = round(value_raw, 2)
             except:
                 value = 0.0
             
