@@ -938,7 +938,12 @@ async def update_invoice(invoice_id: str, update: InvoiceUpdate, current_user: U
         }
         await db.invoiceLines.insert_one(line_doc)
     
-    await db.invoices.update_one({"id": invoice_id}, {"$set": {"total": total}})
+    # Update total and mark as edited if status is imported
+    update_fields = {"total": total}
+    if invoice.get("status") == "imported":
+        update_fields["status"] = "edited"
+    
+    await db.invoices.update_one({"id": invoice_id}, {"$set": update_fields})
     
     return {"message": "Invoice updated"}
 
