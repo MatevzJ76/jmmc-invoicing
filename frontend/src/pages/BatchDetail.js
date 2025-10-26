@@ -236,10 +236,11 @@ const BatchDetail = () => {
       });
       
       // Sort verification data to put flagged entries on top
+      const newResults = response.data.results || {};
       setVerificationData(prevData => ({
-        jmmcHP: sortVerificationData([...prevData.jmmcHP]),
-        jmmcFinance: sortVerificationData([...prevData.jmmcFinance]),
-        noClient: sortVerificationData([...prevData.noClient])
+        jmmcHP: sortVerificationData([...prevData.jmmcHP], newResults),
+        jmmcFinance: sortVerificationData([...prevData.jmmcFinance], newResults),
+        noClient: sortVerificationData([...prevData.noClient], newResults)
       }));
       
       // Show modal after completion
