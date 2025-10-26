@@ -174,11 +174,11 @@ const BatchDetail = () => {
   };
 
 
-  const sortVerificationData = (data) => {
+  const sortVerificationData = (data, results) => {
     // Sort entries: flagged first (by date desc), then unflagged (by date desc)
     return data.sort((a, b) => {
-      const aFlagged = isEntryFlagged(a.id);
-      const bFlagged = isEntryFlagged(b.id);
+      const aFlagged = results[a.id]?.flagged === true;
+      const bFlagged = results[b.id]?.flagged === true;
       
       // If one is flagged and the other isn't, flagged comes first
       if (aFlagged && !bFlagged) return -1;
