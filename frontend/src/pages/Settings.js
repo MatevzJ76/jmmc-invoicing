@@ -897,6 +897,10 @@ ${randomFinal}`;
                 <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
+                      <span className="text-slate-600 min-w-24">Endpoint:</span>
+                      <code className="text-slate-800 font-mono text-xs">{settings.eracuniEndpoint}</code>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <span className="text-slate-600 min-w-24">Username:</span>
                       <code className="text-slate-800 font-mono">{settings.eracuniUsername}</code>
                     </div>
