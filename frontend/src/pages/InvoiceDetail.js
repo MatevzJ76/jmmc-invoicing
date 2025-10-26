@@ -444,7 +444,14 @@ const InvoiceDetail = () => {
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-800">Line Items</h2>
-            <Button onClick={addLine} size="sm" variant="outline" className="rounded-full" data-testid="add-line-button">
+            <Button 
+              onClick={addLine} 
+              disabled={invoice.status === 'posted'}
+              size="sm" 
+              variant="outline" 
+              className="rounded-full disabled:opacity-50 disabled:cursor-not-allowed" 
+              data-testid="add-line-button"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add Line
             </Button>
