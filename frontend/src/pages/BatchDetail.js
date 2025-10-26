@@ -222,6 +222,13 @@ const BatchDetail = () => {
         passedCount: totalChecked - flaggedCount
       });
       
+      // Sort verification data to put flagged entries on top
+      setVerificationData(prevData => ({
+        jmmcHP: sortVerificationData([...prevData.jmmcHP]),
+        jmmcFinance: sortVerificationData([...prevData.jmmcFinance]),
+        noClient: sortVerificationData([...prevData.noClient])
+      }));
+      
       // Show modal after completion
       setShowResultsModal(true);
       
