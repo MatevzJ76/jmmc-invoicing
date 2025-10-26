@@ -499,10 +499,13 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
             
             for idx, entry in enumerate(batch):
                 description = entry.get('notes', '') or '(No description provided)'
+                hours_value = entry.get('hours', 0)
+                # Round hours to 2 decimals for cleaner AI output
+                hours_rounded = round(float(hours_value), 2) if hours_value else 0
                 batch_text += f"\n{idx + 1}. Entry ID: {entry.get('id')}\n"
                 batch_text += f"   Description: {description}\n"
                 batch_text += f"   Employee: {entry.get('employeeName', 'N/A')}\n"
-                batch_text += f"   Hours: {entry.get('hours', 0)}\n"
+                batch_text += f"   Hours: {hours_rounded}\n"
                 batch_text += f"   Date: {entry.get('date', 'N/A')}\n"
             
             batch_text += f"\n{verification_prompt}"
