@@ -1081,12 +1081,14 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
         # Build e-računi API payload
         items = []
         for line in lines:
+            # Use unitPrice directly, don't set to None if 0
+            net_price = line.get("unitPrice", 0)
             items.append({
                 "description": line.get("description", "Services"),
                 "productCode": "000001",
                 "quantity": line.get("quantity", 1),
                 "unit": "h",
-                "netPrice": line.get("unitPrice", 0) if line.get("unitPrice", 0) > 0 else None
+                "netPrice": net_price
             })
         
         payload = {
@@ -1115,7 +1117,8 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
                     "buyerDocumentID": "",
                     "buyerTaxNumber": "",
                     "buyerVatRegistration": "None",
-                    "Items": items
+                    "Items": items,
+                    "city": "Nova Gorica"
                 }
             }
         }
