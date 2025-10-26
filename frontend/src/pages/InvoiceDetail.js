@@ -387,17 +387,51 @@ const InvoiceDetail = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Invoice Date</Label>
-                  <p className="text-sm text-slate-600">{invoice.invoiceDate}</p>
+                  <Label htmlFor="invoiceDate">Invoice Date</Label>
+                  <Input
+                    id="invoiceDate"
+                    type="date"
+                    value={invoice.invoiceDate}
+                    onChange={(e) => setInvoice({...invoice, invoiceDate: e.target.value})}
+                    disabled={invoice.status === 'posted'}
+                    data-testid="invoice-date-input"
+                  />
                 </div>
                 <div>
-                  <Label>Due Date</Label>
-                  <p className="text-sm text-slate-600">{invoice.dueDate}</p>
+                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={invoice.dueDate}
+                    onChange={(e) => setInvoice({...invoice, dueDate: e.target.value})}
+                    disabled={invoice.status === 'posted'}
+                    data-testid="due-date-input"
+                  />
                 </div>
               </div>
-              <div>
-                <Label>Period</Label>
-                <p className="text-sm text-slate-600">{invoice.periodFrom} to {invoice.periodTo}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="periodFrom">Period From</Label>
+                  <Input
+                    id="periodFrom"
+                    type="date"
+                    value={invoice.periodFrom}
+                    onChange={(e) => setInvoice({...invoice, periodFrom: e.target.value})}
+                    disabled={invoice.status === 'posted'}
+                    data-testid="period-from-input"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="periodTo">Period To</Label>
+                  <Input
+                    id="periodTo"
+                    type="date"
+                    value={invoice.periodTo}
+                    onChange={(e) => setInvoice({...invoice, periodTo: e.target.value})}
+                    disabled={invoice.status === 'posted'}
+                    data-testid="period-to-input"
+                  />
+                </div>
               </div>
             </div>
           </div>
