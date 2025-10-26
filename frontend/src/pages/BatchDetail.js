@@ -1026,7 +1026,11 @@ const BatchDetail = () => {
               {filteredInvoices.map((invoice) => (
                 <div
                   key={invoice.id}
-                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                  className={`flex items-center justify-between p-4 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer ${
+                    invoice.status === 'posted' 
+                      ? 'bg-green-50 border-2 border-green-300' 
+                      : 'bg-slate-50'
+                  }`}
                   onClick={() => navigate(`/invoices/${invoice.id}`)}
                   data-testid={`invoice-item-${invoice.id}`}
                 >
