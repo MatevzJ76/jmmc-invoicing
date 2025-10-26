@@ -289,7 +289,13 @@ ${randomFinal}`;
       
       setEracuniTestResult({ success: true, message: response.data.message });
       setApiDebugData(prev => ({ ...prev, response: response.data }));
-      toast.success('e-računi connection test successful!');
+      
+      // Show warning toast for partial success
+      if (response.data.warning) {
+        toast.warning('e-računi API test completed with warnings');
+      } else {
+        toast.success('e-računi connection test successful!');
+      }
     } catch (error) {
       const errorMsg = error.response?.data?.detail || 'e-računi connection test failed';
       setEracuniTestResult({ success: false, message: errorMsg });
