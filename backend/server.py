@@ -1042,6 +1042,12 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
     
+    # Get invoice lines
+    lines = await db.invoiceLines.find({"invoiceId": invoice_id}, {"_id": 0}).to_list(1000)
+    
+    # Get customer details
+    customer = await db.customers.find_one({"id": invoice.get("customerId")})
+    
     if ERACUNI_MODE == "stub":
         external_number = f"ER-STUB-{int(datetime.now(timezone.utc).timestamp())}"
         await db.invoices.update_one(
@@ -1060,8 +1066,113 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
         })
         
         return {"externalNumber": external_number, "status": "posted"}
+    
+    # Real e-računi integration
     else:
-        raise HTTPException(status_code=501, detail="Real eRačuni integration not implemented yet")
+        import httpx
+        
+        # Get e-računi settings
+        user_settings = await db.aiSettings.find_one({"userId": current_user.email})
+        if not user_settings or not user_settings.get("eracuniUsername") or not user_settings.get("eracuniToken"):
+            raise HTTPException(status_code=400, detail="e-računi credentials not configured in Settings")
+        
+        endpoint = user_settings.get("eracuniEndpoint", "https://e-racuni.com/WebServices/API")
+        
+        # Build e-računi API payload
+        items = []
+        for line in lines:
+            items.append({
+                "description": line.get("description", "Services"),
+                "productCode": "000001",
+                "quantity": line.get("quantity", 1),
+                "unit": "h",
+                "netPrice": line.get("unitPrice", 0) if line.get("unitPrice", 0) > 0 else None
+            })
+        
+        payload = {
+            "username": user_settings["eracuniUsername"],
+            "secretKey": user_settings["eracuniSecretKey"],
+            "token": user_settings["eracuniToken"],
+            "method": "SalesInvoiceCreate",
+            "parameters": {
+                "SalesInvoice": {
+                    "status": "IssuedInvoice",
+                    "dateOfSupplyFrom": invoice.get("invoiceDate"),
+                    "date": invoice.get("invoiceDate"),
+                    "documentCurrency": "EUR",
+                    "documentLanguage": "English",
+                    "vatTransactionType": "0",
+                    "type": "Gross",
+                    "methodOfPayment": "BankTransfer",
+                    "buyerName": customer.get("name", "") if customer else "",
+                    "buyerStreet": "",
+                    "buyerPostalCode": "",
+                    "buyerCity": "",
+                    "buyerCountry": "SI",
+                    "buyerEMail": "",
+                    "buyerPhone": "",
+                    "buyerCode": "",
+                    "buyerDocumentID": "",
+                    "buyerTaxNumber": "",
+                    "buyerVatRegistration": "None",
+                    "Items": items
+                }
+            }
+        }
+        
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    endpoint,
+                    json=payload,
+                    headers={"Content-Type": "application/json"}
+                )
+                
+                logger.info(f"e-računi post - Status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check for errors in response
+                    if result.get("response", {}).get("status") == "ok":
+                        # Success! Extract document info
+                        result_data = result.get("response", {}).get("result", {})
+                        external_number = result_data.get("number")
+                        document_id = result_data.get("documentID")
+                        
+                        await db.invoices.update_one(
+                            {"id": invoice_id},
+                            {"$set": {
+                                "status": "posted",
+                                "externalNumber": external_number,
+                                "documentID": document_id
+                            }}
+                        )
+                        
+                        # Audit event
+                        await db.auditEvents.insert_one({
+                            "id": str(uuid.uuid4()),
+                            "actorId": current_user.email,
+                            "action": "post_invoice",
+                            "entity": "Invoice",
+                            "entityId": invoice_id,
+                            "metadata": {"externalNumber": external_number, "documentID": document_id},
+                            "at": datetime.now(timezone.utc).isoformat()
+                        })
+                        
+                        return {"externalNumber": external_number, "documentID": document_id, "status": "posted"}
+                    else:
+                        # API returned error
+                        error_msg = result.get("response", {}).get("error", "Unknown error")
+                        raise HTTPException(status_code=400, detail=f"e-računi API error: {error_msg}")
+                else:
+                    raise HTTPException(status_code=400, detail=f"e-računi API returned {response.status_code}")
+        
+        except httpx.TimeoutException:
+            raise HTTPException(status_code=400, detail="e-računi API timeout")
+        except Exception as e:
+            logger.error(f"e-računi posting error: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Failed to post to e-računi: {str(e)}")
 
 @api_router.get("/invoices")
 async def list_invoices(current_user: User = Depends(get_current_user)):
