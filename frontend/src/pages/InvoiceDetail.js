@@ -209,13 +209,49 @@ const InvoiceDetail = () => {
     try {
       const token = localStorage.getItem('access_token');
       
-      // Store API debug data before posting
+      // Build complete e-računi API request structure for debugging
+      const eracuniItems = lines.map(line => ({
+        description: line.description || "Services",
+        productCode: "000001",
+        quantity: line.quantity,
+        unit: "h",
+        netPrice: line.unitPrice > 0 ? line.unitPrice : null
+      }));
+      
+      const eracuniRequest = {
+        username: "ERACUNAPI",
+        secretKey: "4df213a39d7acbc16cc0f58444D363cb",
+        token: "E746E154C9F2D00DB0379EF30737090A",
+        method: "SalesInvoiceCreate",
+        parameters: {
+          SalesInvoice: {
+            status: "IssuedInvoice",
+            dateOfSupplyFrom: invoice.invoiceDate,
+            date: invoice.invoiceDate,
+            documentCurrency: "EUR",
+            documentLanguage: "English",
+            vatTransactionType: "0",
+            type: "Gross",
+            methodOfPayment: "BankTransfer",
+            buyerName: invoice.customerName || "",
+            buyerStreet: "",
+            buyerPostalCode: "",
+            buyerCity: "",
+            buyerCountry: "SI",
+            buyerEMail: "",
+            buyerPhone: "",
+            buyerCode: "",
+            buyerDocumentID: "",
+            buyerTaxNumber: "",
+            buyerVatRegistration: "None",
+            Items: eracuniItems
+          }
+        }
+      };
+      
+      // Store complete API debug data
       setApiDebugData({
-        request: {
-          method: "SalesInvoiceCreate",
-          invoice: invoice,
-          lines: lines
-        },
+        request: eracuniRequest,
         response: null,
         timestamp: new Date().toISOString()
       });
