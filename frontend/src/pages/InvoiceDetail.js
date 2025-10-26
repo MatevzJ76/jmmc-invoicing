@@ -297,16 +297,27 @@ const InvoiceDetail = () => {
             <div className="flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2">
               <Sparkles className="w-4 h-4 text-purple-600" />
               <span className="text-sm font-medium text-slate-700">AI Agent</span>
-              <Switch checked={aiEnabled} onCheckedChange={setAiEnabled} data-testid="ai-toggle" />
+              <Switch 
+                checked={aiEnabled} 
+                onCheckedChange={setAiEnabled} 
+                disabled={invoice.status === 'posted'}
+                data-testid="ai-toggle" 
+              />
             </div>
-            <Button onClick={handleSave} disabled={saving} className="rounded-full bg-blue-600 hover:bg-blue-700" data-testid="save-invoice-button">
+            <Button 
+              onClick={handleSave} 
+              disabled={saving || invoice.status === 'posted'} 
+              className="rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" 
+              data-testid="save-invoice-button"
+            >
               <Save className="w-4 h-4 mr-2" />
               {saving ? 'Saving...' : 'Save'}
             </Button>
             <Button 
               onClick={handleConfirmDraft} 
+              disabled={invoice.status === 'posted'}
               variant="outline"
-              className="rounded-full border-green-500 text-green-700 hover:bg-green-50"
+              className="rounded-full border-green-500 text-green-700 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="confirm-draft-button"
             >
               <FileCheck className="w-4 h-4 mr-2" />
@@ -316,7 +327,8 @@ const InvoiceDetail = () => {
               <>
                 <Button 
                   onClick={handleIssueInvoice} 
-                  className="rounded-full bg-green-600 hover:bg-green-700" 
+                  disabled={invoice.status === 'posted'}
+                  className="rounded-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" 
                   data-testid="issue-invoice-button"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
@@ -335,8 +347,9 @@ const InvoiceDetail = () => {
             )}
             <Button 
               onClick={handleDeleteInvoice} 
+              disabled={invoice.status === 'posted'}
               variant="destructive"
-              className="rounded-full"
+              className="rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="delete-invoice-button"
             >
               <Trash2 className="w-4 h-4 mr-2" />
