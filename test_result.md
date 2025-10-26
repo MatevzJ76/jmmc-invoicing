@@ -131,7 +131,7 @@ backend:
 
   - task: "POST /api/invoices/{invoice_id}/post - e-računi integration"
     implemented: true
-    working: false
+    working: "testing"
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "high"
@@ -139,9 +139,12 @@ backend:
     status_history:
         - working: false
           agent: "main"
-          comment: "User reports no invoices being created in e-računi system. Investigation reveals: (1) ERACUNI_MODE is set to 'stub' in backend/.env, preventing real API calls. (2) Real integration exists but requires user credentials in Settings. (3) Frontend shows hardcoded demo credentials in 'View API' modal which is misleading. Need to: confirm user has real credentials, configure them in Settings page, change ERACUNI_MODE to enable real API, test actual integration."
+          comment: "User reports no invoices being created in e-računi system. Investigation reveals: (1) ERACUNI_MODE is set to 'stub' in backend/.env, preventing real API calls. (2) Real integration exists but requires user credentials in Settings. (3) Frontend shows hardcoded demo credentials in 'View API' modal which is misleading."
         - agent: "user"
-          comment: "Confirmed: no new invoices in e-računi, API calls not working"
+          comment: "Confirmed: no new invoices in e-računi, API calls not working. Provided credentials via screenshot."
+        - working: "testing"
+          agent: "main"
+          comment: "Fixed configuration: (1) Extracted e-računi credentials from user's screenshot (username: ERACUNIAPI, token, secretKey). (2) Saved credentials to database for admin@local user. (3) Changed ERACUNI_MODE from 'stub' to 'real' in backend/.env. (4) Restarted backend service. (5) All previously posted invoices were done in stub mode (ER-STUB-* numbers). Ready to test real API posting with draft invoice."
 
 frontend:
 
