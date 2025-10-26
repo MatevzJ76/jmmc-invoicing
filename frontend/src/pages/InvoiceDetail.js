@@ -471,11 +471,15 @@ const InvoiceDetail = () => {
                 <Input
                   id="number"
                   value={invoice.number || ''}
-                  onChange={(e) => setInvoice({...invoice, number: e.target.value})}
-                  placeholder="INV-2025-001"
-                  disabled={invoice.status === 'posted'}
+                  placeholder="Will be set after posting to e-računi"
+                  disabled={true}
+                  readOnly={true}
+                  className="bg-slate-50 cursor-not-allowed"
                   data-testid="invoice-number-input"
                 />
+                <p className="text-xs text-slate-500 mt-1">
+                  Invoice number is automatically assigned when posting to e-računi
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
