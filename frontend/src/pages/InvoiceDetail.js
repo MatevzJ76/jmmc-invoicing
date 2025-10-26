@@ -208,14 +208,38 @@ const InvoiceDetail = () => {
 
     try {
       const token = localStorage.getItem('access_token');
+      
+      // Store API debug data before posting
+      setApiDebugData({
+        request: {
+          method: "SalesInvoiceCreate",
+          invoice: invoice,
+          lines: lines
+        },
+        response: null,
+        timestamp: new Date().toISOString()
+      });
+      
       const response = await axios.post(
         `${BACKEND_URL}/api/invoices/${id}/post`,
         {},
         { headers: { Authorization: `Bearer ${token}` }}
       );
+      
+      // Update debug data with response
+      setApiDebugData(prev => ({
+        ...prev,
+        response: response.data
+      }));
+      
       toast.success(`Invoice posted: ${response.data.externalNumber}`);
       loadInvoice();
     } catch (error) {
+      // Store error response
+      setApiDebugData(prev => ({
+        ...prev,
+        response: { error: error.response?.data?.detail || error.message }
+      }));
       toast.error('Failed to post invoice');
     }
   };
