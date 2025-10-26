@@ -497,6 +497,7 @@ const InvoiceDetail = () => {
                         value={line.quantity}
                         onChange={(e) => updateLine(index, 'quantity', parseFloat(e.target.value) || 0)}
                         onFocus={(e) => e.target.select()}
+                        disabled={invoice.status === 'posted'}
                         data-testid={`quantity-input-${index}`}
                       />
                     </div>
@@ -509,6 +510,7 @@ const InvoiceDetail = () => {
                         value={line.unitPrice}
                         onChange={(e) => updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)}
                         onFocus={(e) => e.target.select()}
+                        disabled={invoice.status === 'posted'}
                         data-testid={`unit-price-input-${index}`}
                       />
                     </div>
@@ -523,8 +525,8 @@ const InvoiceDetail = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowMoveDropdown(showMoveDropdown === line.id ? null : line.id)}
-                        disabled={movingLine === line.id}
-                        className="w-full rounded-full"
+                        disabled={movingLine === line.id || invoice.status === 'posted'}
+                        className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move to different customer"
                       >
                         <ArrowRightLeft className="w-4 h-4" />
