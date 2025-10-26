@@ -22,6 +22,8 @@ const Settings = () => {
   const [eracuniTestResult, setEracuniTestResult] = useState(null);
   const [aiTestPrompt, setAiTestPrompt] = useState('');
   const [showEracuniCreds, setShowEracuniCreds] = useState(false);
+  const [showApiDebugModal, setShowApiDebugModal] = useState(false);
+  const [apiDebugData, setApiDebugData] = useState(null);
   
   // Prompt testing states
   const [testInputs, setTestInputs] = useState({
