@@ -120,6 +120,7 @@ class AISettings(BaseModel):
     fraudPrompt: str = "Analyze this invoice description for potential fraud indicators or suspicious patterns. Provide a brief risk assessment."
     gdprPrompt: str = "Identify and mask any personal data (names, emails, phone numbers, addresses) in this text. Return the masked version with [REDACTED] in place of sensitive data."
     verificationPrompt: str = "Analyze this work description for suspicious patterns, irregularities, or fraud indicators. Look for: vague descriptions, unusual time patterns, duplicate entries, inconsistent work details, or missing descriptions. If suspicious, respond with JSON: {\"flagged\": true, \"reason\": \"brief explanation\"}. If normal, respond with: {\"flagged\": false, \"reason\": \"\"}"
+    eracuniEndpoint: Optional[str] = "https://eurofaktura.com/WebServices/API"
     eracuniUsername: Optional[str] = None
     eracuniSecretKey: Optional[str] = None
     eracuniToken: Optional[str] = None
