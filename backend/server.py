@@ -1160,15 +1160,15 @@ async def test_eracuni_connection(
     username: str = Form(...),
     secretKey: str = Form(...),
     apiToken: str = Form(...),
+    endpoint: str = Form(default="https://e-racuni.com/WebServices/API"),
     current_user: User = Depends(get_current_user)
 ):
     """Test e-računi API connection"""
     import httpx
     
     try:
-        # e-računi API endpoint (adjust based on organization)
-        # This is a generic endpoint - actual URL may vary
-        api_url = "https://eurofaktura.com/WebServices/API"
+        # Use configured endpoint or default
+        api_url = endpoint or "https://e-racuni.com/WebServices/API"
         
         # Test with a simple PartnerList method (least intrusive)
         payload = {
