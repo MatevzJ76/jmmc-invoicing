@@ -1198,11 +1198,10 @@ async def test_eracuni_connection(
                 
                 # Check if there's an error in the response
                 if result.get("error"):
-                    return {
-                        "message": f"API returned error: {result.get('error')}",
-                        "fullResponse": result,
-                        "statusCode": 200
-                    }
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"API Error: {result.get('error', 'Unknown error')}"
+                    )
                 
                 return {
                     "message": "e-računi connection successful! Credentials are valid.",
@@ -1210,11 +1209,12 @@ async def test_eracuni_connection(
                     "statusCode": 200
                 }
             else:
-                return {
-                    "message": f"Connection failed with status {response.status_code}",
-                    "fullResponse": {"statusCode": response.status_code, "body": response.text[:500]},
-                    "statusCode": response.status_code
-                }
+                # Return error with details
+                error_body = response.text[:500] if response.text else "No response body"
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"e-računi API returned {response.status_code}. Response: {error_body}"
+                )
     
     except httpx.TimeoutException:
         raise HTTPException(status_code=400, detail="Connection timeout - please check your network")
