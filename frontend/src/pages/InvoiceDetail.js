@@ -360,6 +360,7 @@ const InvoiceDetail = () => {
                         step="0.01"
                         value={line.quantity}
                         onChange={(e) => updateLine(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
                         data-testid={`quantity-input-${index}`}
                       />
                     </div>
