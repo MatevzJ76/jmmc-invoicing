@@ -131,11 +131,11 @@ backend:
 
   - task: "POST /api/invoices/{invoice_id}/post - e-računi integration"
     implemented: true
-    working: false
+    working: "testing"
     file: "/app/backend/server.py"
     stuck_count: 3
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: false
           agent: "main"
@@ -154,6 +154,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "Re-tested e-računi API integration after endpoint fix. RESULT: Endpoint URL is now CORRECT (WebServicesSI confirmed in API response). However, NEW ISSUE: e-računi API returns HTTP 500 with error 'Invalid web services token supplied'. Tested with TWO different draft invoices (0e4c2b84-10b8-4500-af52-60f3be1cd6cd and 83b8ef3d-3058-49f2-96c6-0ac0f43a11d2), both failed with same authentication error. Database verification confirms credentials are saved: endpoint=https://e-racuni.com/WebServicesSI/API, username=ERACUNIAPI, token and secretKey present. CONCLUSION: The endpoint fix was successful, but the provided e-računi credentials (token/secretKey) are either INCORRECT, EXPIRED, or INVALID. User needs to verify credentials with e-računi provider or obtain new valid credentials."
+        - working: "testing"
+          agent: "main"
+          comment: "Discovered OCR extraction error in credentials! Re-extracted from user's screenshot with better accuracy. FIXED: token changed from E746E154C9F2D00DB0379EF30737090A to E746E154C9F20D00BD379EF30737090A (F2D00DB0→F20D00BD at position 11-18). secretKey changed from 4df213a39d7acbc16cc0f58444D363cb to 4df213a39d7acbb16cc0f584440363cb (acbc→acbb, 8444D→58444). Updated database with corrected credentials. Ready for final retest."
 
 frontend:
 
