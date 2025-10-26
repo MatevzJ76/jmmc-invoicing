@@ -156,8 +156,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "GET /api/customers endpoint"
-    - "POST /api/time-entries/{entry_id}/move-customer endpoint"
+    - "POST /api/invoices/{invoice_id}/post - e-računi integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
