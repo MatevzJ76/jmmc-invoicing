@@ -848,6 +848,84 @@ ${randomFinal}`;
           </div>
         </div>
       </div>
+
+      {/* API Debug Modal */}
+      {showApiDebugModal && apiDebugData && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                  <h3 className="text-xl font-bold">e-računi API Debug</h3>
+                </div>
+                <button
+                  onClick={() => setShowApiDebugModal(false)}
+                  className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-100px)]">
+              {/* Search Parameters */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs">1</span>
+                  Search Parameters
+                </h4>
+                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-600 min-w-24">Username:</span>
+                      <code className="text-slate-800 font-mono">{settings.eracuniUsername}</code>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-600 min-w-24">Secret Key:</span>
+                      <code className="text-slate-800 font-mono">{settings.eracuniSecretKey}</code>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-600 min-w-24">Token:</span>
+                      <code className="text-slate-800 font-mono">{settings.eracuniToken}</code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Expected API Call */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-xs">2</span>
+                  Expected e-računi API Call
+                </h4>
+                <div className="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                  <pre className="text-green-400 text-xs font-mono">
+{JSON.stringify(apiDebugData.request, null, 2)}
+                  </pre>
+                </div>
+              </div>
+
+              {/* Backend Response */}
+              <div className="mb-2">
+                <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs">3</span>
+                  Backend Response
+                </h4>
+                <div className="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                  <pre className="text-blue-400 text-xs font-mono">
+{JSON.stringify(apiDebugData.response, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
