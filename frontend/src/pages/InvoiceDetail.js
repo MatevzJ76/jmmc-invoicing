@@ -380,6 +380,7 @@ const InvoiceDetail = () => {
                   value={invoice.number || ''}
                   onChange={(e) => setInvoice({...invoice, number: e.target.value})}
                   placeholder="INV-2025-001"
+                  disabled={invoice.status === 'posted'}
                   data-testid="invoice-number-input"
                 />
               </div>
