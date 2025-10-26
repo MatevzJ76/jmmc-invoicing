@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 # Configuration
 BACKEND_URL = "https://invoice-ai-11.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@local"
-ADMIN_PASSWORD = "admin123"
+ADMIN_PASSWORD = "Admin2025!"
 
 class TestMoveTimeEntry:
     def __init__(self):
