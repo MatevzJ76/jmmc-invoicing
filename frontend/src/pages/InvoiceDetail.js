@@ -373,14 +373,6 @@ const InvoiceDetail = () => {
                 <Label>Period</Label>
                 <p className="text-sm text-slate-600">{invoice.periodFrom} to {invoice.periodTo}</p>
               </div>
-              <div>
-                <Label>Status</Label>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                  invoice.status === 'posted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {invoice.status}
-                </span>
-              </div>
             </div>
           </div>
 
