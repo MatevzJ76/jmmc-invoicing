@@ -678,7 +678,7 @@ const BatchDetail = () => {
                         </div>
                         <div>
                           <span className="text-xs text-slate-500">Hours:</span>
-                          <p className="font-medium">{entry.hours}</p>
+                          <p className="font-medium">{Number(entry.hours).toFixed(2)}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <div>
@@ -804,7 +804,7 @@ const BatchDetail = () => {
                         </div>
                         <div>
                           <span className="text-xs text-slate-500">Hours:</span>
-                          <p className="font-medium">{entry.hours}</p>
+                          <p className="font-medium">{Number(entry.hours).toFixed(2)}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <div>
@@ -930,7 +930,7 @@ const BatchDetail = () => {
                         </div>
                         <div>
                           <span className="text-xs text-slate-500">Hours:</span>
-                          <p className="font-medium">{entry.hours}</p>
+                          <p className="font-medium">{Number(entry.hours).toFixed(2)}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <div>
