@@ -787,8 +787,8 @@ ${randomFinal}`;
               <p className="text-xs text-slate-500">Your e-računi API authentication token</p>
             </div>
 
-            {/* Test Connection Button */}
-            <div className="pt-4">
+            {/* Test Connection Buttons */}
+            <div className="pt-4 flex items-center gap-3">
               <Button
                 onClick={handleTestEracuni}
                 disabled={testingEracuni || !settings.eracuniUsername || !settings.eracuniSecretKey || !settings.eracuniToken}
@@ -798,6 +798,19 @@ ${randomFinal}`;
               >
                 <Zap className="w-4 h-4 mr-2" />
                 {testingEracuni ? 'Testing...' : 'Test Connection'}
+              </Button>
+              
+              <Button
+                onClick={() => setShowApiDebugModal(true)}
+                disabled={!apiDebugData}
+                variant="outline"
+                className="rounded-full"
+                data-testid="view-api-button"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                View API
               </Button>
               
               {eracuniTestResult && (
