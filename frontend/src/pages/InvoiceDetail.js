@@ -104,7 +104,14 @@ const InvoiceDetail = () => {
       const token = localStorage.getItem('access_token');
       await axios.put(
         `${BACKEND_URL}/api/invoices/${id}`,
-        { number: invoice.number, lines },
+        { 
+          number: invoice.number, 
+          invoiceDate: invoice.invoiceDate,
+          dueDate: invoice.dueDate,
+          periodFrom: invoice.periodFrom,
+          periodTo: invoice.periodTo,
+          lines 
+        },
         { headers: { Authorization: `Bearer ${token}` }}
       );
       toast.success('Invoice saved');
