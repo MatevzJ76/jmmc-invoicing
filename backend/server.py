@@ -1150,6 +1150,7 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
                             {"id": invoice_id},
                             {"$set": {
                                 "status": "posted",
+                                "number": external_number,  # Set invoice number from e-računi
                                 "externalNumber": external_number,
                                 "documentID": document_id
                             }}
