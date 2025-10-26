@@ -945,6 +945,75 @@ async def update_invoice(invoice_id: str, update: InvoiceUpdate, current_user: U
     
     await db.invoices.update_one({"id": invoice_id}, {"$set": update_fields})
     
+
+@api_router.put("/invoices/{invoice_id}/status")
+async def update_invoice_status(
+    invoice_id: str, 
+    new_status: str = Form(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Update invoice status"""
+    valid_statuses = ["imported", "edited", "draft", "issued", "deleted"]
+    if new_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
+    
+    invoice = await db.invoices.find_one({"id": invoice_id})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {"status": new_status}}
+    )
+    
+    return {"message": f"Invoice status updated to {new_status}"}
+
+@api_router.post("/invoices/{invoice_id}/confirm-draft")
+async def confirm_draft(invoice_id: str, current_user: User = Depends(get_current_user)):
+    """Confirm invoice as draft"""
+    invoice = await db.invoices.find_one({"id": invoice_id})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {"status": "draft"}}
+    )
+    
+    return {"message": "Invoice confirmed as draft"}
+
+@api_router.post("/invoices/{invoice_id}/issue")
+async def issue_invoice(invoice_id: str, current_user: User = Depends(get_current_user)):
+    """Issue invoice (mark as issued)"""
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin role required")
+    
+    invoice = await db.invoices.find_one({"id": invoice_id})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {"status": "issued"}}
+    )
+    
+    return {"message": "Invoice issued successfully"}
+
+@api_router.delete("/invoices/{invoice_id}")
+async def delete_invoice(invoice_id: str, current_user: User = Depends(get_current_user)):
+    """Soft delete invoice (change status to deleted)"""
+    invoice = await db.invoices.find_one({"id": invoice_id})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {"status": "deleted"}}
+    )
+    
+    return {"message": "Invoice deleted (status set to deleted)"}
+
+
     return {"message": "Invoice updated"}
 
 @api_router.post("/invoices/{invoice_id}/post")
