@@ -579,7 +579,8 @@ const InvoiceDetail = () => {
                         variant="destructive"
                         size="sm"
                         onClick={() => removeLine(index)}
-                        className="w-full rounded-full"
+                        disabled={invoice.status === 'posted'}
+                        className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                         data-testid={`remove-line-${index}`}
                       >
                         <Trash2 className="w-4 h-4" />
