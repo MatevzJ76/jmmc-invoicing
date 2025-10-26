@@ -276,6 +276,7 @@ ${randomFinal}`;
     try {
       const token = localStorage.getItem('access_token');
       const formData = new FormData();
+      formData.append('endpoint', settings.eracuniEndpoint);
       formData.append('username', settings.eracuniUsername);
       formData.append('secretKey', settings.eracuniSecretKey);
       formData.append('apiToken', settings.eracuniToken);
