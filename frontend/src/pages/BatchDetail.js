@@ -608,8 +608,8 @@ const BatchDetail = () => {
                 <SelectItem value="edited">Edited</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="issued">Issued</SelectItem>
-                <SelectItem value="deleted">Deleted</SelectItem>
                 <SelectItem value="posted">Posted</SelectItem>
+                <SelectItem value="deleted">Deleted</SelectItem>
               </SelectContent>
             </Select>
           </div>
