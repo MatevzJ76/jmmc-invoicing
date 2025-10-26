@@ -418,16 +418,28 @@ const BatchDetail = () => {
                   </Button>
                 </>
               ) : (
-                <Button
-                  onClick={handleEdit}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full"
-                  data-testid="edit-batch-button"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
+                <>
+                  <Button
+                    onClick={() => navigate('/settings')}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    data-testid="settings-button"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </Button>
+                  <Button
+                    onClick={handleEdit}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    data-testid="edit-batch-button"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </Button>
+                </>
               )}
             </div>
           </div>
