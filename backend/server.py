@@ -1136,6 +1136,9 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
                 if response.status_code == 200:
                     result = response.json()
                     
+                    # Log full response for debugging
+                    logger.info(f"e-računi response: {result}")
+                    
                     # Check for errors in response
                     if result.get("response", {}).get("status") == "ok":
                         # Success! Extract document info
@@ -1163,13 +1166,28 @@ async def post_invoice(invoice_id: str, current_user: User = Depends(get_current
                             "at": datetime.now(timezone.utc).isoformat()
                         })
                         
-                        return {"externalNumber": external_number, "documentID": document_id, "status": "posted"}
+                        return {
+                            "externalNumber": external_number, 
+                            "documentID": document_id, 
+                            "status": "posted",
+                            "raw": result  # Include full response for debugging
+                        }
                     else:
-                        # API returned error
-                        error_msg = result.get("response", {}).get("error", "Unknown error")
-                        raise HTTPException(status_code=400, detail=f"e-računi API error: {error_msg}")
+                        # API returned error in response body
+                        error_details = result.get("response", {})
+                        logger.error(f"e-računi API error in response: {error_details}")
+                        raise HTTPException(
+                            status_code=400, 
+                            detail=f"e-računi API error: {error_details.get('error', error_details)}"
+                        )
                 else:
-                    raise HTTPException(status_code=400, detail=f"e-računi API returned {response.status_code}")
+                    # Non-200 status code
+                    response_body = response.text[:1000]
+                    logger.error(f"e-računi API HTTP {response.status_code}: {response_body}")
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"e-računi API returned HTTP {response.status_code}. Response: {response_body}"
+                    )
         
         except httpx.TimeoutException:
             raise HTTPException(status_code=400, detail="e-računi API timeout")
