@@ -131,11 +131,11 @@ backend:
 
   - task: "POST /api/invoices/{invoice_id}/post - e-računi integration"
     implemented: true
-    working: "testing"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
           agent: "main"
@@ -151,6 +151,9 @@ backend:
         - working: "testing"
           agent: "main"
           comment: "Fixed endpoint URL: (1) Updated database endpoint for admin@local to https://e-racuni.com/WebServicesSI/API. (2) Updated default endpoint in AISettings model. (3) Updated fallback endpoint in posting logic. (4) Updated frontend Settings.js default. All instances now use correct Slovenian endpoint with 'SI' suffix. Ready for retest with correct endpoint."
+        - working: false
+          agent: "testing"
+          comment: "Re-tested e-računi API integration after endpoint fix. RESULT: Endpoint URL is now CORRECT (WebServicesSI confirmed in API response). However, NEW ISSUE: e-računi API returns HTTP 500 with error 'Invalid web services token supplied'. Tested with TWO different draft invoices (0e4c2b84-10b8-4500-af52-60f3be1cd6cd and 83b8ef3d-3058-49f2-96c6-0ac0f43a11d2), both failed with same authentication error. Database verification confirms credentials are saved: endpoint=https://e-racuni.com/WebServicesSI/API, username=ERACUNIAPI, token and secretKey present. CONCLUSION: The endpoint fix was successful, but the provided e-računi credentials (token/secretKey) are either INCORRECT, EXPIRED, or INVALID. User needs to verify credentials with e-računi provider or obtain new valid credentials."
 
 frontend:
 
