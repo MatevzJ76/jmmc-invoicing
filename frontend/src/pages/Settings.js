@@ -77,7 +77,12 @@ const Settings = () => {
       });
       toast.success('Settings saved successfully');
     } catch (error) {
-      toast.error('Failed to save settings');
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please log in again.');
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        toast.error('Failed to save settings');
+      }
     } finally {
       setSaving(false);
     }
