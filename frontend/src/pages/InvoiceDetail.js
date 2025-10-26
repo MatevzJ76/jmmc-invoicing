@@ -303,12 +303,34 @@ const InvoiceDetail = () => {
               <Save className="w-4 h-4 mr-2" />
               {saving ? 'Saving...' : 'Save'}
             </Button>
-            {user?.role === 'ADMIN' && invoice.status === 'draft' && (
-              <Button onClick={handlePost} className="rounded-full bg-green-600 hover:bg-green-700" data-testid="post-invoice-button">
-                <Send className="w-4 h-4 mr-2" />
-                Post to eRačuni
+            <Button 
+              onClick={handleConfirmDraft} 
+              variant="outline"
+              className="rounded-full border-green-500 text-green-700 hover:bg-green-50"
+              data-testid="confirm-draft-button"
+            >
+              <FileCheck className="w-4 h-4 mr-2" />
+              Confirm Draft
+            </Button>
+            {user?.role === 'ADMIN' && (
+              <Button 
+                onClick={handleIssueInvoice} 
+                className="rounded-full bg-green-600 hover:bg-green-700" 
+                data-testid="issue-invoice-button"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Issue Invoice
               </Button>
             )}
+            <Button 
+              onClick={handleDeleteInvoice} 
+              variant="destructive"
+              className="rounded-full"
+              data-testid="delete-invoice-button"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
           </div>
         </div>
       </nav>
