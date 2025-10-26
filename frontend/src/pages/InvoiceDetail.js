@@ -398,6 +398,7 @@ const InvoiceDetail = () => {
                     <SelectItem value="edited">Edited</SelectItem>
                     <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="issued">Issued</SelectItem>
+                    <SelectItem value="posted">Posted</SelectItem>
                     <SelectItem value="deleted">Deleted</SelectItem>
                   </SelectContent>
                 </Select>
