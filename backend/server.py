@@ -921,7 +921,8 @@ async def update_invoice(invoice_id: str, update: InvoiceUpdate, current_user: U
     
     # Update invoice header fields if provided
     header_updates = {}
-    if update.number:
+    # Don't allow changing invoice number if already posted (set by e-računi)
+    if update.number and invoice.get("status") != "posted":
         header_updates["number"] = update.number
     if update.invoiceDate:
         header_updates["invoiceDate"] = update.invoiceDate
