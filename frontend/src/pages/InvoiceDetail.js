@@ -313,14 +313,25 @@ const InvoiceDetail = () => {
               Confirm Draft
             </Button>
             {user?.role === 'ADMIN' && (
-              <Button 
-                onClick={handleIssueInvoice} 
-                className="rounded-full bg-green-600 hover:bg-green-700" 
-                data-testid="issue-invoice-button"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Issue Invoice
-              </Button>
+              <>
+                <Button 
+                  onClick={handleIssueInvoice} 
+                  className="rounded-full bg-green-600 hover:bg-green-700" 
+                  data-testid="issue-invoice-button"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Issue Invoice
+                </Button>
+                <Button 
+                  onClick={handlePost}
+                  disabled={invoice.status === 'posted'}
+                  className="rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed" 
+                  data-testid="post-eracuni-button"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Post to eRačuni
+                </Button>
+              </>
             )}
             <Button 
               onClick={handleDeleteInvoice} 
