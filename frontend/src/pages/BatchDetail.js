@@ -161,6 +161,25 @@ const BatchDetail = () => {
   };
 
 
+  const sortVerificationData = (data) => {
+    // Sort entries: flagged first (by date desc), then unflagged (by date desc)
+    return data.sort((a, b) => {
+      const aFlagged = isEntryFlagged(a.id);
+      const bFlagged = isEntryFlagged(b.id);
+      
+      // If one is flagged and the other isn't, flagged comes first
+      if (aFlagged && !bFlagged) return -1;
+      if (!aFlagged && bFlagged) return 1;
+      
+      // Both flagged or both not flagged - sort by date descending
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateB - dateA;
+    });
+  };
+
+
+
   const toggleCategory = (category) => {
     setExpandedCategories({
       ...expandedCategories,
