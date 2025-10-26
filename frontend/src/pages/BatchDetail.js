@@ -1040,7 +1040,13 @@ const BatchDetail = () => {
                     <div>
                       <p className="font-bold text-slate-800">€{invoice.total.toFixed(2)}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        invoice.status === 'posted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                        invoice.status === 'issued' ? 'bg-green-100 text-green-700' :
+                        invoice.status === 'draft' ? 'bg-blue-100 text-blue-700' :
+                        invoice.status === 'edited' ? 'bg-purple-100 text-purple-700' :
+                        invoice.status === 'imported' ? 'bg-yellow-100 text-yellow-700' :
+                        invoice.status === 'deleted' ? 'bg-red-100 text-red-700' :
+                        invoice.status === 'posted' ? 'bg-green-100 text-green-700' :
+                        'bg-gray-100 text-gray-700'
                       }`}>
                         {invoice.status}
                       </span>
