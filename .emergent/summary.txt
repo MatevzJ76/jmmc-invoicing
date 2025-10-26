@@ -1,103 +1,83 @@
 <analysis>
-The AI engineer successfully built an invoicing MVP, starting from scratch. Key achievements include establishing user authentication with Argon2 and JWT, robust XLSX import functionality with extensive data parsing and validation (handling merged cells, missing data, and header discrepancies), and a dynamic frontend UI built with React and Shadcn UI components. Major features like multi-phase invoice processing (import, compose, edit, post), customer-specific invoice generation, and a comprehensive batch management system with filtering, archiving, editing, and navigation were implemented. AI agent settings with custom prompts and dynamic API key handling were integrated. Throughout the process, the AI effectively debugged multiple issues, including React rendering errors, backend validation errors (Pydantic ), and complex Excel parsing challenges. The rate limiting for login was also refined. The work progressed iteratively, addressing user feedback and refining features. The latest work involved making the batch status editable via a dropdown.
+The previous AI engineer successfully transformed Emergent into JMMC Invoicing, implementing crucial features like AI content verification, row-moving, and an invoice status lifecycle. The primary focus of this trajectory was to enable real e-računi API integration. Initial efforts debugged a stub mode configuration, identified and corrected an incorrect Slovenian API endpoint, and resolved OCR errors in API credentials. Post-integration success, the engineer addressed a user request to automatically populate and make non-editable the invoice number from e-računi after posting. Backend logic was updated for this, but comprehensive frontend verification of the new invoice number display on a freshly posted invoice was incomplete due to navigation issues. The drag to reorder feature remains an explicit pending task.
 </analysis>
 
 <product_requirements>
-The goal is to build a minimal viable product (MVP) for Emergent for monthly invoicing, utilizing a FastAPI (Python) backend with MongoDB and a React + TypeScript frontend. Authentication uses Username/Password with JWT and Argon2. The application needs to support:
-1.  **Auth & Seed:** Create default admin/user accounts on first run (, ) with OTPs. Implement a login page with autofocus, Enter key submission, remember last email, and a 5 tries/15 min rate limit.
-2.  **XLSX Import:** Allow drag & drop of single-sheet XLSX files with specific headers (, , , , , , , , ). Users input , , ,  on import. Validation includes date parsing, non-negative hours/values.
-3.  **Three Phases:**
-    *   **IMPORT:** Store rows and create .
-    *   **EDIT:** Compose invoices grouped by Customer + Period, allow editing headers + lines, calculate amount (), and enable drag to reorder lines.
-    *   **REVIEW & POST:** Show totals, simple warnings (zero total, missing taxCode/number), and post to  (with 'stub', 'sandbox', 'prod' modes).
-4.  **eRačuni Connector:** Implement a connector with , , .
-5.  **MongoDB Collections:** Define specific collections for , , , , , , , .
-6.  **API (FastAPI):** Implement endpoints for  (login, refresh, change-password),  (POST for XLSX),  (compose, get by id, put by id, post), and  (get).
-7.  **UI Pages (React):** Create ,  (upload XLSX + recent imports),  (file drop + date fields + preview table),  (list left, invoice editor right; editable lines),  (totals, warnings, post button, AI suggestions toggle).
-8.  **Security:** Argon2 hashing, JWT guards, ADMIN role for eRačuni posting.
-9.  **Deliverables:** Seed script printing OTPs, database indexes, README, sample XLSX.
-
-The implementation so far includes seeded users, a functional login, comprehensive XLSX import logic (handling header variations and dynamic customer grouping), batch management with UI (list, detail, navigation, edit metadata, archive status), AI Agent settings with editable prompts, and basic invoice composition/posting.
+The goal is to develop an MVP for JMMC Invoicing for monthly invoicing using FastAPI, MongoDB, and React. Core features include:
+1.  **Auth & Seed:** Username/password with JWT, Argon2, initial admin/user accounts (now with static passwords).
+2.  **XLSX Import:** Drag & drop XLSX files, validation, date inputs.
+3.  **Three Phases:** IMPORT (), EDIT (compose invoices, edit lines, calculate amounts), REVIEW & POST (totals, warnings, post to ).
+4.  **eRačuni Connector:** Integration with , credentials, and API endpoint.
+5.  **MongoDB Collections:** , , , , , , , .
+6.  **API (FastAPI):** , ,  (compose, get, put, post), .
+7.  **UI Pages (React):** , , , , , , .
+8.  **Security:** Argon2, JWT guards, ADMIN role.
+9.  **Implemented features (current state):** Seeded users (fixed passwords), functional login, comprehensive XLSX import, batch management (list, detail, edit metadata, archive status), AI Agent settings with editable prompts, AI-powered content verification,  migration,  API configuration and posting, move row functionality, enhanced invoice status lifecycle, and extensive UI/UX improvements. The  API now successfully posts invoices and the invoice  field is populated from the API response and is read-only.
 </product_requirements>
 
 <key_technical_concepts>
--   **FastAPI:** Backend framework for API endpoints.
--   **React:** Frontend library for building the user interface.
--   **MongoDB:** NoSQL database for data storage, accessed via Motor (AsyncIO driver).
--   **Pydantic:** Data validation and settings management (Backend).
--   **JWT (JSON Web Tokens):** For authentication and authorization.
--   **Argon2:** Password hashing algorithm for security.
--   **Shadcn UI:** Frontend component library for modern UI elements.
--   **Sonner:** Toast notifications for user feedback.
--   **XLSX Parsing:** Custom logic for reading and interpreting Excel files, including complex row and header structures.
+-   **FastAPI:** Python backend for API development.
+-   **React:** Frontend library for UIs.
+-   **MongoDB:** NoSQL database, with Motor.
+-   **Pydantic:** Data validation.
+-   **JWT & Argon2:** Authentication.
+-   **Shadcn UI & Sonner:** UI components and notifications.
+-   **httpx:** Asynchronous HTTP client.
+-   **XLSX Parsing:** Excel file processing.
 </key_technical_concepts>
 
 <code_architecture>
-The application has a standard full-stack structure with a FastAPI backend and a React frontend.
+The application uses a standard full-stack structure with a FastAPI backend and a React frontend.
 
 
 
 -   **/app/backend/server.py**:
-    -   **Importance:** This is the core FastAPI application handling all backend logic, API endpoints, database interactions, authentication, and business logic for imports, invoices, batches, and settings.
+    -   **Importance:** Core FastAPI application handling backend logic, API endpoints, and database interactions.
     -   **Changes Made:**
-        -   Defined MongoDB models and CRUD operations for , , , , , , , .
-        -   Implemented  endpoints (, , ).
-        -   Modified email validation from  to  for local testing compatibility ().
-        -   Implemented  endpoint for XLSX file processing, including robust parsing logic to handle complex Excel structures (headers, merged cells, varying data types, dynamic customer extraction).
-        -   Implemented  endpoints (, , , ) for invoice creation, retrieval, updates, and posting to  stub.
-        -   Added  endpoints.
-        -   Integrated rate limiting for login attempts, counting only failed attempts, and added an admin endpoint to clear limits.
-        -   Added batch-related endpoints to fetch, update, and manage import batches.
-        -   Added AI Agent settings endpoints for configuration and prompt management.
-        -   Added batch status update functionality.
--   **/app/backend/seed_users.py**:
-    -   **Importance:** Script to populate the database with initial admin and user accounts and create database indexes.
-    -   **Changes Made:** Initial creation to seed default users with OTPs and set up database indexes. Modified to regenerate OTPs.
+        -   Existing  endpoint was previously enhanced for real e-računi API integration (removed stub, added  payload, error handling).
+        -   **New Change:** Modified to set the  field of an invoice with  received from  after a successful post.
+        -   **New Change:** Updated stub mode logic to also set a generated  field.
+        -   Existing  endpoint was previously updated to mark as  on changes and handle editable date fields.
+        -   **New Change:** Modified to prevent the  field from being updated if the invoice  is already posted, ensuring the e-računi number is authoritative.
+        -    model updated to include , , , , .
+        -   New endpoint:  for e-računi API connection testing.
 -   **/app/backend/.env**:
-    -   **Importance:** Stores environment variables like , , .
-    -   **Changes Made:** Added  and  for authentication and AI features.
--   **/app/frontend/src/index.js**:
-    -   **Importance:** The main entry point for the React application.
-    -   **Changes Made:** Integrated the  component for global toast notifications. Simplified  import to resolve rendering issues.
--   **/app/frontend/src/App.js**:
-    -   **Importance:** Defines the main application structure and routing for different pages.
-    -   **Changes Made:** Configured  to navigate between , , , , , , , and  pages.
--   **/app/frontend/src/pages/\*.js**:
-    -   **Importance:** Individual React components for different application views.
+    -   **Importance:** Stores environment variables for backend configuration.
+    -   **Changes Made:**  was changed from  to  to enable actual e-računi API calls.
+-   **/app/frontend/src/pages/InvoiceDetail.js**:
+    -   **Importance:** Handles display and interaction for individual invoices.
     -   **Changes Made:**
-        -   **Login.js:** Implemented login form, error handling, displayed OTP credentials, and redirects after successful login. Added better error messaging for rate limiting.
-        -   **Dashboard.js:** Initial placeholder, later refined to show import/invoice summaries. Simplified to debug React rendering issues.
-        -   **Import.js:** Implemented XLSX file upload with drag-and-drop, date input fields, and an auto-suggested/editable Batch Title field. Redirects to  after import.
-        -   **Batches.js:** Displays a table of monthly import batches with filters (filename, status), a New Import button, and an Archive action button. Implemented sorting by period. Added Settings link to navigation.
-        -   **BatchDetail.js:** Shows details of a specific batch, including editable title and date fields, summary cards (period, invoice date, totals, status), Previous/Next navigation, a Verification tile, and a list of invoices within the batch. Status field made editable via dropdown.
-        -   **InvoiceDetail.js:** Displays detailed invoice information, line items (editable), AI Agent toggle, Save, and Post to eRačuni buttons. Renamed AI Suggestions to AI Agent.
-        -   **Settings.js:** New page for configuring AI Agent settings (provider, custom API key, model, editable prompts for grammar, fraud, GDPR).
--   **/app/frontend/src/components/ui/sonner.jsx**:
-    -   **Importance:** Provides the  component for UI notifications.
-    -   **Changes Made:** Modified to use a simpler  import path, removing reliance on .
--   **/app/README.md**:
-    -   **Importance:** Project documentation.
-    -   **Changes Made:** Updated with quickstart instructions and notes on XLSX data values.
+        -    function was updated to display detailed API request/response errors.
+        -   **New Change:** The Invoice Number input field was made read-only and a placeholder Auto-assigned after posting was added when the number is not yet set.
+        -   **New Change:** Removed the Invoice number not set warning previously shown for unposted invoices.
+        -   Action buttons and editable fields disabled/read-only when invoice status is posted.
+-   **/app/frontend/src/pages/Settings.js**:
+    -   **Importance:** Manages application settings, including AI and e-računi configurations.
+    -   **Changes Made:** Redesigned with tile-based layout.  section added with credentials, endpoint fields, and Test Connection button. The default API Endpoint was updated to .
 </code_architecture>
 
 <pending_tasks>
 -   Implement drag to reorder functionality for invoice line items in the Edit phase.
--   Refine simple warnings for invoice review, potentially adding more specific checks for missing  or .
+-   Verify the frontend display of the automatically populated and read-only invoice number after posting a new invoice to e-računi.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was working on enhancing the Batch Detail page. The specific task completed was making the **Status field editable** directly within the batch detail view.
+Immediately before this summary, the AI engineer was addressing the user's request to fix how the invoice number is handled after posting to e-računi. The user wanted the invoice number to be automatically set from the e-računi API response and made non-editable, also removing a Invoice number not set warning.
 
-Previously, the batch status was displayed as a badge. Now, when in edit mode, the status is presented as a **dropdown menu** with options such as Imported, Composed, Posted, and Archived. The user can select a new status, and upon saving the batch details, the change is persisted to the backend and reflected on the UI. This feature allows users to manually update the processing status of an entire batch of invoices.
+The following changes were implemented:
+1.  **Backend ():**
+    *   The  endpoint was modified to extract the  (now confirmed to be the actual invoice number from e-računi) and store it in the invoice's  field in MongoDB.
+    *   The  endpoint was updated to prevent modifications to the  field if the invoice's status is already posted, ensuring the e-računi assigned number is preserved.
+    *   The stub mode for  was also updated to generate and set a  field to mimic the real API.
+2.  **Frontend ():**
+    *   The invoice number input field was made read-only.
+    *   A placeholder text, Auto-assigned after posting, was added to guide the user.
+    *   The warning message Invoice number not set for unposted invoices was removed.
 
-This builds upon previous work that included:
--   Implementing a Verification tile on the Batch Detail page to group specific clients and No Client Specified entries for review.
--   Adding Previous/Next navigation buttons to easily switch between batches.
--   Making the batch title and other metadata fields (Period From, Period To, Invoice Date, Due Date) editable with date pickers on the Batch Detail page.
--   Introducing an Archived status for batches, along with an archive button in the batches table and filtering options.
--   Implementing a Batch Title field with auto-suggestion based on period dates on the XLSX import page.
+At the very end of the trajectory, the AI engineer confirmed that the backend logic for setting the  field from e-računi response is correct for *newly posted invoices* by checking the database. However, due to ongoing frontend navigation and rendering issues (blank pages, incorrect page displays during screenshot attempts), the actual visual verification of these changes on a freshly posted invoice in the  page was not completed.
 </current_work>
 
 <optional_next_step>
-Implement the drag to reorder functionality for invoice line items on the invoice editing page.
+Post a new draft invoice to e-računi via the UI and verify that its  field is auto-populated and read-only on the Invoice Detail page.
 </optional_next_step>
+
