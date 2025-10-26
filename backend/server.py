@@ -317,7 +317,9 @@ async def import_xlsx(
             
             # Parse hours (handle text and various formats)
             try:
-                hours = float(str(hours_val).replace(',', '.')) if hours_val else 0.0
+                hours_raw = float(str(hours_val).replace(',', '.')) if hours_val else 0.0
+                # Round to 2 decimal places to avoid floating-point precision issues
+                hours = round(hours_raw, 2)
             except:
                 hours = 0.0
             
