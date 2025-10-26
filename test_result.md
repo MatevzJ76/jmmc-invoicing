@@ -165,4 +165,4 @@ agent_communication:
     - agent: "testing"
       message: "Completed comprehensive testing of move time entry feature. All 5 test cases passed successfully. Feature is production-ready."
     - agent: "main"
-      message: "Investigating e-računi API integration issue. Found ERACUNI_MODE=stub in .env. Need user's real credentials to test actual API integration. Will guide user through Settings configuration and switch to real mode."
+      message: "Configured e-računi real API mode. Credentials saved to DB for admin@local. ERACUNI_MODE changed to 'real'. Backend restarted. Please test POST /api/invoices/{invoice_id}/post with a draft invoice (first confirm it as draft status, then issue it, then post it). Use invoice ID: 0e4c2b84-10b8-4500-af52-60f3be1cd6cd or any other draft invoice. Capture the full API request/response including any errors from e-računi API."
