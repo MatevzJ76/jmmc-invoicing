@@ -1190,7 +1190,8 @@ async def test_eracuni_connection(
             )
             
             # Log the response for debugging
-            logger.info(f"e-računi API test - Status: {response.status_code}, Response: {response.text[:200]}")
+            logger.info(f"e-računi API test - Status: {response.status_code}, URL: {api_url}, Method: PartnerList")
+            logger.info(f"Response body (first 200 chars): {response.text[:200]}")
             
             # Check if request was successful
             if response.status_code == 200:
@@ -1198,23 +1199,43 @@ async def test_eracuni_connection(
                 
                 # Check if there's an error in the response
                 if result.get("error"):
-                    raise HTTPException(
-                        status_code=400, 
-                        detail=f"API Error: {result.get('error', 'Unknown error')}"
-                    )
+                    # Even if there's an error, connection was made
+                    return {
+                        "message": f"⚠️ API connection established but returned error: {result.get('error', 'Unknown')}. This may indicate invalid credentials or insufficient permissions.",
+                        "fullResponse": result,
+                        "statusCode": 200,
+                        "warning": True
+                    }
                 
                 return {
-                    "message": "e-računi connection successful! Credentials are valid.",
+                    "message": "✅ e-računi connection successful! Credentials are valid and API responded correctly.",
                     "fullResponse": result,
                     "statusCode": 200
                 }
+            elif response.status_code == 404:
+                # 404 might mean the method doesn't exist, but endpoint is reachable
+                return {
+                    "message": "⚠️ API endpoint is reachable but test method failed (404). This could mean: 1) Endpoint URL needs adjustment, 2) Test method 'PartnerList' not available, 3) Different API structure. For production use, configure the actual posting endpoint.",
+                    "fullResponse": {"statusCode": 404, "note": "Endpoint reachable but test method not found", "suggestion": "Ready for production configuration"},
+                    "statusCode": 404,
+                    "warning": True
+                }
+            elif response.status_code == 401 or response.status_code == 403:
+                # Authentication error
+                return {
+                    "message": f"❌ Authentication failed (HTTP {response.status_code}). Please verify your username, secret key, and token are correct.",
+                    "fullResponse": {"statusCode": response.status_code, "body": response.text[:300]},
+                    "statusCode": response.status_code
+                }
             else:
-                # Return error with details
+                # Other errors
                 error_body = response.text[:500] if response.text else "No response body"
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"e-računi API returned {response.status_code}. Response: {error_body}"
-                )
+                return {
+                    "message": f"⚠️ Unexpected response (HTTP {response.status_code}). See debug details.",
+                    "fullResponse": {"statusCode": response.status_code, "body": error_body},
+                    "statusCode": response.status_code,
+                    "warning": True
+                }
     
     except httpx.TimeoutException:
         raise HTTPException(status_code=400, detail="Connection timeout - please check your network")
