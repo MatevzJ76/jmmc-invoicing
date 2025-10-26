@@ -162,3 +162,5 @@ test_plan:
 agent_communication:
     - agent: "testing"
       message: "Completed comprehensive testing of move time entry feature. All 5 test cases passed successfully. Feature is production-ready."
+    - agent: "main"
+      message: "Investigating e-računi API integration issue. Found ERACUNI_MODE=stub in .env. Need user's real credentials to test actual API integration. Will guide user through Settings configuration and switch to real mode."
