@@ -358,7 +358,7 @@ const InvoiceDetail = () => {
   const total = lines.reduce((sum, line) => sum + line.amount, 0);
   const warnings = [];
   if (total === 0) warnings.push('Invoice total is zero');
-  if (!invoice.number) warnings.push('Invoice number not set');
+  // Note: Invoice number is automatically set when posting to e-računi
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
