@@ -746,6 +746,20 @@ ${randomFinal}`;
               </div>
             </div>
 
+            {/* API Endpoint */}
+            <div className="space-y-2 mb-6">
+              <Label htmlFor="eracuniEndpoint">API Endpoint</Label>
+              <Input
+                id="eracuniEndpoint"
+                type="url"
+                value={settings.eracuniEndpoint}
+                onChange={(e) => updateSetting('eracuniEndpoint', e.target.value)}
+                placeholder="https://eurofaktura.com/WebServices/API"
+                data-testid="eracuni-endpoint-input"
+              />
+              <p className="text-xs text-slate-500">Your e-računi API endpoint URL</p>
+            </div>
+
             {/* Username */}
             <div className="space-y-2 mb-6">
               <Label htmlFor="eracuniUsername">Username</Label>
