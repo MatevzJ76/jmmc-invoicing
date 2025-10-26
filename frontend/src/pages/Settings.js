@@ -678,6 +678,25 @@ ${randomFinal}`;
               Configure your e-računi integration for posting invoices. <a href="https://e-racuni.com/si9/ApiDocumentation-Method-SalesInvoiceCreate" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View API Documentation</a>
             </p>
 
+            {/* Credentials Reference Box */}
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-xs font-bold text-blue-700 mb-2">📋 Your e-računi Credentials:</p>
+              <div className="space-y-2 text-xs">
+                <div className="bg-white p-2 rounded border border-blue-300">
+                  <div className="font-semibold text-blue-800">Username:</div>
+                  <div className="font-mono text-slate-700">ERACUNAPI</div>
+                </div>
+                <div className="bg-white p-2 rounded border border-blue-300">
+                  <div className="font-semibold text-blue-800">Secret Key (API Password):</div>
+                  <div className="font-mono text-slate-700">4df213a39d7acbc16cc0f58444D363cb</div>
+                </div>
+                <div className="bg-white p-2 rounded border border-blue-300">
+                  <div className="font-semibold text-blue-800">API Token:</div>
+                  <div className="font-mono text-slate-700">E746E154C9F2D00DB0379EF30737090A</div>
+                </div>
+              </div>
+            </div>
+
             {/* Username */}
             <div className="space-y-2 mb-6">
               <Label htmlFor="eracuniUsername">Username</Label>
