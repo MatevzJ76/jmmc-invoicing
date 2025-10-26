@@ -754,7 +754,7 @@ ${randomFinal}`;
                 type="url"
                 value={settings.eracuniEndpoint}
                 onChange={(e) => updateSetting('eracuniEndpoint', e.target.value)}
-                placeholder="https://eurofaktura.com/WebServices/API"
+                placeholder="https://e-racuni.com/WebServices/API"
                 data-testid="eracuni-endpoint-input"
               />
               <p className="text-xs text-slate-500">Your e-računi API endpoint URL</p>
