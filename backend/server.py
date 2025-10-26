@@ -1189,17 +1189,32 @@ async def test_eracuni_connection(
                 headers={"Content-Type": "application/json"}
             )
             
+            # Log the response for debugging
+            logger.info(f"e-računi API test - Status: {response.status_code}, Response: {response.text[:200]}")
+            
             # Check if request was successful
             if response.status_code == 200:
                 result = response.json()
                 
                 # Check if there's an error in the response
                 if result.get("error"):
-                    return {"message": f"Authentication failed: {result.get('error')}"}
+                    return {
+                        "message": f"API returned error: {result.get('error')}",
+                        "fullResponse": result,
+                        "statusCode": 200
+                    }
                 
-                return {"message": "e-računi connection successful! Credentials are valid."}
+                return {
+                    "message": "e-računi connection successful! Credentials are valid.",
+                    "fullResponse": result,
+                    "statusCode": 200
+                }
             else:
-                return {"message": f"Connection failed with status {response.status_code}"}
+                return {
+                    "message": f"Connection failed with status {response.status_code}",
+                    "fullResponse": {"statusCode": response.status_code, "body": response.text[:500]},
+                    "statusCode": response.status_code
+                }
     
     except httpx.TimeoutException:
         raise HTTPException(status_code=400, detail="Connection timeout - please check your network")
