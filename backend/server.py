@@ -102,6 +102,10 @@ class InvoiceLine(BaseModel):
 
 class InvoiceUpdate(BaseModel):
     number: Optional[str] = None
+    invoiceDate: Optional[str] = None
+    dueDate: Optional[str] = None
+    periodFrom: Optional[str] = None
+    periodTo: Optional[str] = None
     lines: List[Dict[str, Any]]
 
 class AIRequest(BaseModel):
