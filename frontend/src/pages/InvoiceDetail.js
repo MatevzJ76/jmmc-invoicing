@@ -116,6 +116,79 @@ const InvoiceDetail = () => {
     }
   };
 
+
+  const handleConfirmDraft = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(
+        `${BACKEND_URL}/api/invoices/${id}/confirm-draft`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success('Invoice confirmed as draft');
+      loadInvoice();
+    } catch (error) {
+      toast.error('Failed to confirm draft');
+    }
+  };
+
+  const handleIssueInvoice = async () => {
+    if (user?.role !== 'ADMIN') {
+      toast.error('Only admins can issue invoices');
+      return;
+    }
+
+    if (!window.confirm('Issue this invoice? This will mark it as issued.')) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(
+        `${BACKEND_URL}/api/invoices/${id}/issue`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success('Invoice issued successfully');
+      loadInvoice();
+    } catch (error) {
+      toast.error('Failed to issue invoice');
+    }
+  };
+
+  const handleDeleteInvoice = async () => {
+    if (!window.confirm('Delete this invoice? (Soft delete - status will be set to deleted)')) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.delete(
+        `${BACKEND_URL}/api/invoices/${id}`,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success('Invoice deleted');
+      navigate(-1); // Go back to previous page
+    } catch (error) {
+      toast.error('Failed to delete invoice');
+    }
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('new_status', newStatus);
+      
+      await axios.put(
+        `${BACKEND_URL}/api/invoices/${id}/status`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success(`Status updated to ${newStatus}`);
+      loadInvoice();
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
+  };
+
+
   const handlePost = async () => {
     if (user?.role !== 'ADMIN') {
       toast.error('Only admins can post invoices');
