@@ -371,6 +371,7 @@ const InvoiceDetail = () => {
                         step="0.01"
                         value={line.unitPrice}
                         onChange={(e) => updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                        onFocus={(e) => e.target.select()}
                         data-testid={`unit-price-input-${index}`}
                       />
                     </div>
