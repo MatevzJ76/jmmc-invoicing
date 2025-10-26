@@ -953,7 +953,7 @@ async def update_invoice_status(
     current_user: User = Depends(get_current_user)
 ):
     """Update invoice status"""
-    valid_statuses = ["imported", "edited", "draft", "issued", "deleted"]
+    valid_statuses = ["imported", "edited", "draft", "issued", "posted", "deleted"]
     if new_status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
     
