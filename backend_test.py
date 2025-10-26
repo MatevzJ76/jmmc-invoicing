@@ -395,3 +395,327 @@ class TestMoveTimeEntry:
 if __name__ == "__main__":
     tester = TestMoveTimeEntry()
     tester.run_all_tests()
+
+
+class TestEracuniIntegration:
+    def __init__(self):
+        self.token = None
+        self.test_invoice_id = "0e4c2b84-10b8-4500-af52-60f3be1cd6cd"  # Draft invoice ID from user
+        
+    def login(self) -> bool:
+        """Login as admin and get auth token"""
+        print("\n=== Testing Login ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                print(f"✅ Login successful")
+                print(f"User: {data.get('user', {}).get('email')}")
+                print(f"Role: {data.get('user', {}).get('role')}")
+                return True
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
+    
+    def get_headers(self) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.token}"}
+    
+    def get_all_invoices(self) -> list:
+        """Get all invoices to find a draft one"""
+        print("\n=== Getting All Invoices ===")
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/invoices",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                invoices = response.json()
+                print(f"✅ Retrieved {len(invoices)} invoices")
+                
+                # Find draft invoices
+                draft_invoices = [inv for inv in invoices if inv.get("status") in ["draft", "imported", "edited"]]
+                print(f"Found {len(draft_invoices)} draft/imported/edited invoices")
+                
+                if draft_invoices:
+                    print("\nDraft invoices:")
+                    for inv in draft_invoices[:5]:  # Show first 5
+                        print(f"  - ID: {inv.get('id')}, Status: {inv.get('status')}, Customer: {inv.get('customerName')}, Total: {inv.get('total')}")
+                
+                return invoices
+            else:
+                print(f"❌ Failed to get invoices: {response.text}")
+                return []
+        except Exception as e:
+            print(f"❌ Error getting invoices: {str(e)}")
+            return []
+    
+    def get_invoice_details(self, invoice_id: str) -> Optional[Dict[str, Any]]:
+        """Get invoice details including lines"""
+        print(f"\n=== Getting Invoice Details: {invoice_id} ===")
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/invoices/{invoice_id}",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                invoice = data.get("invoice", {})
+                lines = data.get("lines", [])
+                
+                print(f"✅ Invoice found")
+                print(f"  Customer: {invoice.get('customerName')}")
+                print(f"  Status: {invoice.get('status')}")
+                print(f"  Total: {invoice.get('total')}")
+                print(f"  Invoice Date: {invoice.get('invoiceDate')}")
+                print(f"  Due Date: {invoice.get('dueDate')}")
+                print(f"  Lines: {len(lines)}")
+                
+                if lines:
+                    print("\n  Invoice Lines:")
+                    for line in lines:
+                        print(f"    - {line.get('description')}: {line.get('quantity')} x {line.get('unitPrice')} = {line.get('amount')}")
+                
+                return data
+            else:
+                print(f"❌ Failed to get invoice: {response.text}")
+                return None
+        except Exception as e:
+            print(f"❌ Error getting invoice: {str(e)}")
+            return None
+    
+    def confirm_draft(self, invoice_id: str) -> bool:
+        """Confirm invoice as draft"""
+        print(f"\n=== Confirming Invoice as Draft: {invoice_id} ===")
+        try:
+            response = requests.put(
+                f"{BACKEND_URL}/invoices/{invoice_id}/confirm-draft",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                print("✅ Invoice confirmed as draft")
+                return True
+            else:
+                print(f"❌ Failed to confirm draft: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error confirming draft: {str(e)}")
+            return False
+    
+    def issue_invoice(self, invoice_id: str) -> bool:
+        """Issue the invoice"""
+        print(f"\n=== Issuing Invoice: {invoice_id} ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/invoices/{invoice_id}/issue",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                print("✅ Invoice issued successfully")
+                return True
+            else:
+                print(f"❌ Failed to issue invoice: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error issuing invoice: {str(e)}")
+            return False
+    
+    def post_invoice_to_eracuni(self, invoice_id: str) -> Dict[str, Any]:
+        """Post invoice to e-računi API"""
+        print(f"\n=== Posting Invoice to e-računi: {invoice_id} ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/invoices/{invoice_id}/post",
+                headers=self.get_headers()
+            )
+            
+            print(f"\n{'='*80}")
+            print("E-RAČUNI API RESPONSE")
+            print(f"{'='*80}")
+            print(f"HTTP Status Code: {response.status_code}")
+            print(f"\nResponse Headers:")
+            for key, value in response.headers.items():
+                print(f"  {key}: {value}")
+            
+            print(f"\nResponse Body:")
+            try:
+                response_data = response.json()
+                print(json.dumps(response_data, indent=2))
+            except:
+                print(response.text)
+            
+            print(f"{'='*80}\n")
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                
+                # Check if we got a real e-računi response
+                external_number = response_data.get("externalNumber")
+                document_id = response_data.get("documentID")
+                status = response_data.get("status")
+                raw_response = response_data.get("raw")
+                
+                print("✅ Invoice posted successfully!")
+                print(f"  External Number: {external_number}")
+                print(f"  Document ID: {document_id}")
+                print(f"  Status: {status}")
+                
+                # Check if it's a stub response
+                if external_number and external_number.startswith("ER-STUB-"):
+                    print("\n⚠️  WARNING: This is a STUB response, not a real e-računi API call!")
+                    print("  The system is still in stub mode.")
+                    return {
+                        "success": False,
+                        "is_stub": True,
+                        "message": "System is in stub mode, not making real API calls",
+                        "response": response_data
+                    }
+                else:
+                    print("\n✅ This appears to be a REAL e-računi API response!")
+                    if raw_response:
+                        print("\nFull e-računi API Response:")
+                        print(json.dumps(raw_response, indent=2))
+                    
+                    return {
+                        "success": True,
+                        "is_stub": False,
+                        "external_number": external_number,
+                        "document_id": document_id,
+                        "response": response_data
+                    }
+            else:
+                print(f"❌ Failed to post invoice")
+                error_message = response.text
+                
+                try:
+                    error_data = response.json()
+                    error_message = error_data.get("detail", error_message)
+                except:
+                    pass
+                
+                print(f"Error: {error_message}")
+                
+                return {
+                    "success": False,
+                    "is_stub": False,
+                    "error": error_message,
+                    "status_code": response.status_code
+                }
+        except Exception as e:
+            print(f"❌ Error posting invoice: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    def run_eracuni_test(self):
+        """Run the complete e-računi integration test"""
+        print("=" * 80)
+        print("E-RAČUNI API INTEGRATION TEST")
+        print("=" * 80)
+        
+        # 1. Login
+        if not self.login():
+            print("\n❌ CRITICAL: Login failed. Cannot proceed with tests.")
+            return
+        
+        # 2. Get all invoices to find a suitable one
+        invoices = self.get_all_invoices()
+        
+        # Try to use the specified invoice ID first
+        invoice_id = self.test_invoice_id
+        
+        # Check if the specified invoice exists
+        invoice_data = self.get_invoice_details(invoice_id)
+        
+        if not invoice_data:
+            print(f"\n⚠️  Specified invoice {invoice_id} not found.")
+            
+            # Try to find any draft invoice
+            draft_invoices = [inv for inv in invoices if inv.get("status") in ["draft", "imported", "edited"]]
+            
+            if draft_invoices:
+                invoice_id = draft_invoices[0]["id"]
+                print(f"Using alternative draft invoice: {invoice_id}")
+                invoice_data = self.get_invoice_details(invoice_id)
+            else:
+                print("\n❌ No draft invoices available for testing.")
+                print("Please create a draft invoice first.")
+                return
+        
+        invoice = invoice_data.get("invoice", {})
+        current_status = invoice.get("status")
+        
+        print(f"\nCurrent invoice status: {current_status}")
+        
+        # 3. Confirm as draft if needed
+        if current_status in ["imported", "edited"]:
+            if not self.confirm_draft(invoice_id):
+                print("\n❌ Failed to confirm invoice as draft. Cannot proceed.")
+                return
+        
+        # 4. Issue the invoice if not already issued
+        if current_status != "issued":
+            if not self.issue_invoice(invoice_id):
+                print("\n❌ Failed to issue invoice. Cannot proceed.")
+                return
+        
+        # 5. Post to e-računi
+        result = self.post_invoice_to_eracuni(invoice_id)
+        
+        # 6. Summary
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        if result.get("success"):
+            print("✅ E-RAČUNI INTEGRATION TEST PASSED")
+            print(f"  External Number: {result.get('external_number')}")
+            print(f"  Document ID: {result.get('document_id')}")
+            print("\n✅ Invoice successfully posted to e-računi system!")
+        elif result.get("is_stub"):
+            print("⚠️  E-RAČUNI INTEGRATION TEST - STUB MODE DETECTED")
+            print("  The system is configured in stub mode.")
+            print("  No real API calls are being made to e-računi.")
+            print("\n❌ ERACUNI_MODE needs to be set to 'real' in backend/.env")
+        else:
+            print("❌ E-RAČUNI INTEGRATION TEST FAILED")
+            print(f"  Error: {result.get('error', 'Unknown error')}")
+            print(f"  Status Code: {result.get('status_code', 'N/A')}")
+            
+            # Provide debugging hints
+            print("\n🔍 Debugging Hints:")
+            print("  1. Check if e-računi credentials are saved in Settings")
+            print("  2. Verify ERACUNI_MODE is set to 'real' in backend/.env")
+            print("  3. Check backend logs for detailed error messages")
+            print("  4. Verify the e-računi API endpoint is correct")
+            print("  5. Ensure the invoice has valid data (customer, lines, dates)")
+
+if __name__ == "__main__":
+    # Run e-računi integration test
+    print("\n" + "=" * 80)
+    print("RUNNING E-RAČUNI INTEGRATION TEST")
+    print("=" * 80)
+    
+    eracuni_tester = TestEracuniIntegration()
+    eracuni_tester.run_eracuni_test()
+
