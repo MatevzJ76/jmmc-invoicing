@@ -164,6 +164,29 @@ const Batches = () => {
     navigate('/login');
   };
 
+  const SortableHeader = ({ column, label }) => {
+    const isSorted = sortColumn === column;
+    return (
+      <th 
+        className="px-6 py-4 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors select-none"
+        onClick={() => handleSort(column)}
+      >
+        <div className="flex items-center gap-2">
+          <span>{label}</span>
+          {isSorted ? (
+            sortDirection === 'asc' ? (
+              <ArrowUp className="w-4 h-4 text-blue-600" />
+            ) : (
+              <ArrowDown className="w-4 h-4 text-blue-600" />
+            )
+          ) : (
+            <ArrowUpDown className="w-4 h-4 text-slate-400" />
+          )}
+        </div>
+      </th>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
