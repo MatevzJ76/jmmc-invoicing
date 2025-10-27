@@ -99,13 +99,14 @@ const Settings = () => {
     // Use test prompt if provided, otherwise use default
     const testPromptText = aiTestPrompt || "Hello, this is a connection test. Please respond with 'OK'.";
     
-    // Easter egg: Special response for Tjaša variants (tjaš* or tjas*)
+    // Easter egg: Special response for Tjaša variants (tjaš* or tjas*) + number 67
     const words = testPromptText.toLowerCase().split(/\s+/);
     const containsTjasa = words.some(word => 
       word.startsWith('tjaš') || word.startsWith('tjas')
     );
+    const contains67 = /\b67\b/.test(testPromptText);
     
-    if (containsTjasa) {
+    if (containsTjasa && contains67) {
       // Detect language (simple check - if contains Slovenian characters or common words)
       const isSlovenian = /[čšž]/i.test(testPromptText) || 
                           /\b(kaj|kdo|kako|zakaj|je|si|ste|sem)\b/i.test(testPromptText);
