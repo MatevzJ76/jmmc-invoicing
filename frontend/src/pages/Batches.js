@@ -133,6 +133,9 @@ const Batches = () => {
       filtered = filtered.filter(batch => batch.status === statusFilter);
     }
 
+    // Apply sorting
+    filtered = sortBatches(filtered);
+
     setFilteredBatches(filtered);
   };
 
