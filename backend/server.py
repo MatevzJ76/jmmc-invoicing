@@ -649,17 +649,16 @@ async def archive_batch(batch_id: str, current_user: User = Depends(get_current_
 # ============ CUSTOMERS ============
 @api_router.get("/customers")
 async def get_all_customers(current_user: User = Depends(get_current_user)):
-    """Get all customers from database with statistics"""
+    """Get all customers from database with statistics from historical data"""
     customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
     
-    # Add statistics for each customer
+    # Add statistics for each customer based on historical data only
     for customer in customers:
-        # Get all invoices for this customer
-        invoices = await db.invoices.find({"customerId": customer["id"]}, {"_id": 0}).to_list(1000)
+        historical_invoices = customer.get("historicalInvoices", [])
         
-        # Calculate average monthly invoice amount
-        total_amount = sum(invoice.get("total", 0) for invoice in invoices)
-        invoice_count = len(invoices)
+        # Calculate statistics from historical data
+        total_amount = sum(inv.get("amount", 0) for inv in historical_invoices)
+        invoice_count = len(historical_invoices)
         
         customer["invoiceCount"] = invoice_count
         customer["totalInvoiced"] = total_amount
