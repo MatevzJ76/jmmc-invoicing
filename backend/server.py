@@ -417,17 +417,16 @@ async def get_batch_verification(batch_id: str, current_user: User = Depends(get
         customer = await db.customers.find_one({"id": entry["customerId"]})
         customer_name = customer["name"] if customer else ""
         
-        # Get project name
-        project = await db.projects.find_one({"id": entry.get("projectId", "")})
-        project_name = project["name"] if project else ""
+        # Get tariff value
+        tariff_value = entry.get("tariff", "")
         
         # Categorize entries
         if "JMMC HP d.o.o." in customer_name:
             jmmc_hp_entries.append(entry)
         elif "JMMC Finance d.o.o." in customer_name:
             jmmc_finance_entries.append(entry)
-        elif (not customer_name or customer_name.strip() == "" or customer_name == "General") and project_name == "999 - EXTRA":
-            # EXTRA category: no client and project is "999 - EXTRA"
+        elif (not customer_name or customer_name.strip() == "" or customer_name == "General") and tariff_value == "999 - EXTRA":
+            # EXTRA category: no client and tariff is "999 - EXTRA"
             extra_entries.append(entry)
         elif not customer_name or customer_name.strip() == "" or customer_name == "General":
             # No client category (excluding EXTRA entries)
