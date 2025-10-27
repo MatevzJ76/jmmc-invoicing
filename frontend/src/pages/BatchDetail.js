@@ -424,6 +424,14 @@ const BatchDetail = () => {
               ) : (
                 <>
                   <Button
+                    onClick={() => navigate('/customers')}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                  >
+                    Customers
+                  </Button>
+                  <Button
                     onClick={() => navigate('/settings')}
                     variant="outline"
                     size="sm"
