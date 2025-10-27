@@ -27,12 +27,14 @@ const BatchDetail = () => {
   const [verificationData, setVerificationData] = useState({
     jmmcHP: [],
     jmmcFinance: [],
-    noClient: []
+    noClient: [],
+    extra: []
   });
   const [expandedCategories, setExpandedCategories] = useState({
     jmmcHP: false,
     jmmcFinance: false,
-    noClient: false
+    noClient: false,
+    extra: false
   });
   const [aiVerifying, setAiVerifying] = useState(false);
   const [aiResults, setAiResults] = useState({});
