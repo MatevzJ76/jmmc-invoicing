@@ -673,22 +673,29 @@ async def get_all_customers(current_user: User = Depends(get_current_user)):
 
 @api_router.get("/customers/{customer_id}")
 async def get_customer_detail(customer_id: str, current_user: User = Depends(get_current_user)):
-    """Get detailed customer information with last 12 invoices"""
+    """Get detailed customer information with historical invoices from uploaded data"""
     customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     
-    # Get last 12 invoices for this customer, sorted by date descending
-    invoices = await db.invoices.find(
-        {"customerId": customer_id}, 
-        {"_id": 0}
-    ).sort("invoiceDate", -1).limit(12).to_list(12)
+    # Get historical invoices from uploaded data (last 12, sorted by date descending)
+    historical_invoices = customer.get("historicalInvoices", [])
     
-    # Calculate statistics
-    total_amount = sum(invoice.get("total", 0) for invoice in invoices)
-    invoice_count = len(invoices)
+    # Sort by date descending and take last 12
+    if historical_invoices:
+        # Add unique IDs to each historical invoice for deletion
+        for idx, inv in enumerate(historical_invoices):
+            if "id" not in inv:
+                inv["id"] = f"hist_{idx}_{inv.get('date', '')}_{inv.get('amount', 0)}"
+        
+        historical_invoices.sort(key=lambda x: x.get("date", ""), reverse=True)
+        historical_invoices = historical_invoices[:12]
     
-    customer["lastInvoices"] = invoices
+    # Calculate statistics from historical data
+    total_amount = sum(inv.get("amount", 0) for inv in customer.get("historicalInvoices", []))
+    invoice_count = len(customer.get("historicalInvoices", []))
+    
+    customer["lastInvoices"] = historical_invoices
     customer["invoiceCount"] = invoice_count
     customer["totalInvoiced"] = total_amount
     customer["averageInvoice"] = total_amount / invoice_count if invoice_count > 0 else 0
@@ -696,6 +703,31 @@ async def get_customer_detail(customer_id: str, current_user: User = Depends(get
     customer["historicalInvoices"] = customer.get("historicalInvoices", [])
     
     return customer
+
+@api_router.delete("/customers/{customer_id}/historical/{invoice_index}")
+async def delete_historical_invoice(
+    customer_id: str,
+    invoice_index: int,
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a historical invoice entry"""
+    customer = await db.customers.find_one({"id": customer_id})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    historical_invoices = customer.get("historicalInvoices", [])
+    
+    if 0 <= invoice_index < len(historical_invoices):
+        historical_invoices.pop(invoice_index)
+        
+        await db.customers.update_one(
+            {"id": customer_id},
+            {"$set": {"historicalInvoices": historical_invoices}}
+        )
+        
+        return {"message": "Historical invoice deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Historical invoice not found")
 
 @api_router.put("/customers/{customer_id}")
 async def update_customer(
