@@ -804,7 +804,7 @@ async def upload_customer_history(
         # Extract data by month
         monthly_data = {}  # {customer_name: {month_key: {date, total_amount, descriptions[]}}}
         
-        for row in sheet.iter_rows(min_row=2, values_only=True):
+        for row in sheet.iter_rows(min_row=header_row_num + 1, values_only=True):
             if not row or all(cell is None or cell == '' for cell in row):
                 continue
             
