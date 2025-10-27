@@ -889,14 +889,6 @@ async def upload_customer_history(
             
             historical_entries_by_customer[customer_name] = entries
             logger.info(f"Customer '{customer_name}': {len(entries)} monthly entries")
-                entries.append({
-                    "date": month_data['date'],
-                    "month": month_key,
-                    "description": combined_description,
-                    "amount": round(month_data['total_amount'], 2)
-                })
-            
-            historical_entries_by_customer[customer_name] = entries
         
         # Process customers: create if not exists, update historical data
         updated_count = 0
