@@ -637,7 +637,7 @@ const BatchDetail = () => {
               <AlertTriangle className="w-5 h-5 text-orange-600" />
               <h3 className="text-lg font-semibold text-slate-800">Verification</h3>
               <span className="text-xs text-slate-500 ml-2">
-                ({verificationData.jmmcHP.length + verificationData.jmmcFinance.length + verificationData.noClient.length} items need review)
+                ({verificationData.jmmcHP.length + verificationData.jmmcFinance.length + verificationData.noClient.length + verificationData.extra.length} items need review)
               </span>
             </div>
             <Button
