@@ -767,9 +767,21 @@ async def upload_customer_history(
         wb = openpyxl.load_workbook(BytesIO(contents))
         sheet = wb.active
         
-        # Find column indices by header names
-        headers = [cell.value for cell in sheet[1]]
-        logger.info(f"Headers found: {headers}")
+        # Find the header row (look for row containing "Kupec")
+        header_row_num = 1
+        headers = None
+        for row_num in range(1, min(10, sheet.max_row + 1)):  # Check first 10 rows
+            row_values = [cell.value for cell in sheet[row_num]]
+            # Check if this row contains "Kupec" (customer column)
+            if any(cell and 'kupec' in str(cell).lower() for cell in row_values):
+                headers = row_values
+                header_row_num = row_num
+                break
+        
+        if not headers:
+            raise HTTPException(status_code=400, detail="Could not find header row with 'Kupec' column")
+        
+        logger.info(f"Headers found at row {header_row_num}: {headers}")
         
         # Map column names to indices
         col_map = {}
