@@ -82,6 +82,24 @@ const CustomerDetail = () => {
     }
   };
 
+  const handleDeleteHistoricalInvoice = async (invoiceIndex) => {
+    if (!window.confirm('Delete this historical invoice entry?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.delete(
+        `${BACKEND_URL}/api/customers/${id}/historical/${invoiceIndex}`,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success('Historical invoice deleted');
+      loadCustomer();
+    } catch (error) {
+      toast.error('Failed to delete historical invoice');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
