@@ -875,34 +875,57 @@ async def upload_customer_history(
             
             historical_entries_by_customer[customer_name] = entries
         
-        # Filter by customer_ids if provided
-        target_customers = []
-        if customer_ids and customer_ids != "all":
-            target_ids = [cid.strip() for cid in customer_ids.split(",")]
-            target_customers = await db.customers.find({"id": {"$in": target_ids}}, {"_id": 0}).to_list(1000)
-        else:
-            target_customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
-        
-        # Update each customer's historical data
+        # Process customers: create if not exists, update historical data
         updated_count = 0
+        created_count = 0
         total_entries = 0
-        for customer in target_customers:
-            cust_name = customer["name"]
-            if cust_name in historical_entries_by_customer:
-                existing_history = customer.get("historicalInvoices", [])
-                new_entries = historical_entries_by_customer[cust_name]
-                
-                # Append new entries (accumulation only)
-                await db.customers.update_one(
-                    {"id": customer["id"]},
-                    {"$set": {"historicalInvoices": existing_history + new_entries}}
-                )
-                updated_count += 1
-                total_entries += len(new_entries)
+        
+        # Get all customer names from the uploaded data
+        all_customer_names = list(historical_entries_by_customer.keys())
+        
+        for customer_name in all_customer_names:
+            # Check if customer exists
+            customer = await db.customers.find_one({"name": customer_name})
+            
+            # If filtering by specific customer_ids, skip if not in the list
+            if customer_ids and customer_ids != "all":
+                target_ids = [cid.strip() for cid in customer_ids.split(",")]
+                if customer and customer["id"] not in target_ids:
+                    continue
+                elif not customer:
+                    # Skip creating if filtering by specific IDs
+                    continue
+            
+            # Create customer if doesn't exist
+            if not customer:
+                import uuid
+                customer_id = str(uuid.uuid4())
+                customer = {
+                    "id": customer_id,
+                    "name": customer_name,
+                    "unitPrice": 0,
+                    "historicalInvoices": []
+                }
+                await db.customers.insert_one(customer)
+                created_count += 1
+                logger.info(f"Created new customer: {customer_name}")
+            
+            # Update historical invoices
+            existing_history = customer.get("historicalInvoices", [])
+            new_entries = historical_entries_by_customer[customer_name]
+            
+            # Append new entries (accumulation only)
+            await db.customers.update_one(
+                {"id": customer["id"]},
+                {"$set": {"historicalInvoices": existing_history + new_entries}}
+            )
+            updated_count += 1
+            total_entries += len(new_entries)
         
         return {
             "message": f"Historical data uploaded and grouped by month",
             "customersUpdated": updated_count,
+            "customersCreated": created_count,
             "monthlyEntriesCreated": total_entries
         }
         
