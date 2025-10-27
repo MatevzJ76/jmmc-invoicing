@@ -17,7 +17,7 @@ const Batches = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [sortColumn, setSortColumn] = useState('periodTo');
+  const [sortColumn, setSortColumn] = useState('createdAt');
   const [sortDirection, setSortDirection] = useState('desc');
 
   useEffect(() => {
