@@ -243,7 +243,8 @@ const BatchDetail = () => {
       setVerificationData(prevData => ({
         jmmcHP: sortVerificationData([...prevData.jmmcHP], newResults),
         jmmcFinance: sortVerificationData([...prevData.jmmcFinance], newResults),
-        noClient: sortVerificationData([...prevData.noClient], newResults)
+        noClient: sortVerificationData([...prevData.noClient], newResults),
+        extra: sortVerificationData([...prevData.extra], newResults)
       }));
       
       // Show modal after completion
