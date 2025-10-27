@@ -406,28 +406,39 @@ async def get_batch_verification(batch_id: str, current_user: User = Depends(get
     # Get all time entries for this batch
     all_entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
     
-    # Get customer names for each entry
+    # Get customer names and project names for each entry
     jmmc_hp_entries = []
     jmmc_finance_entries = []
     no_client_entries = []
+    extra_entries = []
     
     for entry in all_entries:
         # Get customer name
         customer = await db.customers.find_one({"id": entry["customerId"]})
         customer_name = customer["name"] if customer else ""
         
+        # Get project name
+        project = await db.projects.find_one({"id": entry.get("projectId", "")})
+        project_name = project["name"] if project else ""
+        
         # Categorize entries
         if "JMMC HP d.o.o." in customer_name:
             jmmc_hp_entries.append(entry)
         elif "JMMC Finance d.o.o." in customer_name:
             jmmc_finance_entries.append(entry)
+        elif (not customer_name or customer_name.strip() == "" or customer_name == "General") and project_name == "999 - EXTRA":
+            # EXTRA category: no client and project is "999 - EXTRA"
+            extra_entries.append(entry)
         elif not customer_name or customer_name.strip() == "" or customer_name == "General":
+            # No client category (excluding EXTRA entries)
             no_client_entries.append(entry)
     
     return {
         "jmmcHP": jmmc_hp_entries,
         "jmmcFinance": jmmc_finance_entries,
-        "noClient": no_client_entries
+        "noClient": no_client_entries,
+        "extra": extra_entries
+
     }
 
 @api_router.post("/batches/{batch_id}/verify-entries")
