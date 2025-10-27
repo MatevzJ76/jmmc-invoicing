@@ -96,7 +96,8 @@ const BatchDetail = () => {
       setVerificationData(prevData => ({
         jmmcHP: sortVerificationData([...prevData.jmmcHP], aiResults),
         jmmcFinance: sortVerificationData([...prevData.jmmcFinance], aiResults),
-        noClient: sortVerificationData([...prevData.noClient], aiResults)
+        noClient: sortVerificationData([...prevData.noClient], aiResults),
+        extra: sortVerificationData([...prevData.extra], aiResults)
       }));
     }
   }, [aiResults, showAiWarnings]);
