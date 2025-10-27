@@ -32,7 +32,65 @@ const Batches = () => {
 
   useEffect(() => {
     filterBatches();
-  }, [batches, searchTerm, statusFilter]);
+  }, [batches, searchTerm, statusFilter, sortColumn, sortDirection]);
+
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      // Toggle direction if same column
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New column, default to ascending
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortBatches = (batchesToSort) => {
+    return [...batchesToSort].sort((a, b) => {
+      let aValue, bValue;
+
+      switch (sortColumn) {
+        case 'title':
+          aValue = (a.title || 'Untitled').toLowerCase();
+          bValue = (b.title || 'Untitled').toLowerCase();
+          break;
+        case 'periodFrom':
+          aValue = new Date(a.periodFrom);
+          bValue = new Date(b.periodFrom);
+          break;
+        case 'periodTo':
+          aValue = new Date(a.periodTo);
+          bValue = new Date(b.periodTo);
+          break;
+        case 'invoiceDate':
+          aValue = new Date(a.invoiceDate);
+          bValue = new Date(b.invoiceDate);
+          break;
+        case 'dueDate':
+          aValue = new Date(a.dueDate);
+          bValue = new Date(b.dueDate);
+          break;
+        case 'invoiceCount':
+          aValue = a.invoiceCount || 0;
+          bValue = b.invoiceCount || 0;
+          break;
+        case 'status':
+          aValue = a.status.toLowerCase();
+          bValue = b.status.toLowerCase();
+          break;
+        case 'createdAt':
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
 
   const loadBatches = async () => {
     try {
