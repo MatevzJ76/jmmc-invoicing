@@ -131,24 +131,36 @@ const Import = () => {
             // Try ISO format first
             let date = new Date(dateStr);
             
-            // Try DD.MM.YYYY format (common in European locales)
+            // Try DD.MM.YY or DD.MM.YYYY format (common in European locales)
             if (isNaN(date.getTime()) && dateStr.includes('.')) {
               const parts = dateStr.split('.');
               if (parts.length === 3) {
                 const day = parseInt(parts[0]);
                 const month = parseInt(parts[1]) - 1;
-                const year = parseInt(parts[2]);
+                let year = parseInt(parts[2]);
+                
+                // Handle 2-digit year: assume 00-99 means 2000-2099
+                if (year < 100) {
+                  year += 2000;
+                }
+                
                 date = new Date(year, month, day);
               }
             }
             
-            // Try DD/MM/YYYY format
+            // Try DD/MM/YY or DD/MM/YYYY format
             if (isNaN(date.getTime()) && dateStr.includes('/')) {
               const parts = dateStr.split('/');
               if (parts.length === 3) {
                 const day = parseInt(parts[0]);
                 const month = parseInt(parts[1]) - 1;
-                const year = parseInt(parts[2]);
+                let year = parseInt(parts[2]);
+                
+                // Handle 2-digit year: assume 00-99 means 2000-2099
+                if (year < 100) {
+                  year += 2000;
+                }
+                
                 date = new Date(year, month, day);
               }
             }
