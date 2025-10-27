@@ -248,6 +248,7 @@ const Import = () => {
                   required
                   data-testid="invoice-date-input"
                 />
+                <p className="text-xs text-slate-500">Auto-set to latest date from XLSX</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="dueDate">Due Date</Label>
@@ -270,6 +271,7 @@ const Import = () => {
                   required
                   data-testid="period-from-input"
                 />
+                <p className="text-xs text-slate-500">Auto-set to earliest date from XLSX</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="periodTo">Period To</Label>
@@ -281,6 +283,7 @@ const Import = () => {
                   required
                   data-testid="period-to-input"
                 />
+                <p className="text-xs text-slate-500">Auto-set to latest date from XLSX</p>
               </div>
             </div>
           </div>
