@@ -250,20 +250,6 @@ const CustomerDetail = () => {
             <p className="text-center text-slate-500 py-8">No historical invoices found. Upload historical data to see invoices here.</p>
           )}
         </div>
-                          'bg-blue-100 text-blue-700'
-                        }`}>
-                          {invoice.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-center text-slate-500 py-8">No invoices found</p>
-          )}
-        </div>
       </div>
     </div>
   );
