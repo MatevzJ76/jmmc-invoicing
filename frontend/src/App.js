@@ -8,6 +8,8 @@ import Import from './pages/Import';
 import InvoiceDetail from './pages/InvoiceDetail';
 import ChangePassword from './pages/ChangePassword';
 import Settings from './pages/Settings';
+import Customers from './pages/Customers';
+import CustomerDetail from './pages/CustomerDetail';
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
           <Route path="/invoices/:id" element={<InvoiceDetail />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/customers/:id" element={<CustomerDetail />} />
         </Routes>
       </BrowserRouter>
     </div>
