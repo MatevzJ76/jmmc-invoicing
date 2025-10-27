@@ -649,9 +649,171 @@ async def archive_batch(batch_id: str, current_user: User = Depends(get_current_
 # ============ CUSTOMERS ============
 @api_router.get("/customers")
 async def get_all_customers(current_user: User = Depends(get_current_user)):
-    """Get all customers from database"""
+    """Get all customers from database with statistics"""
     customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
+    
+    # Add statistics for each customer
+    for customer in customers:
+        # Get all invoices for this customer
+        invoices = await db.invoices.find({"customerId": customer["id"]}, {"_id": 0}).to_list(1000)
+        
+        # Calculate average monthly invoice amount
+        total_amount = sum(invoice.get("total", 0) for invoice in invoices)
+        invoice_count = len(invoices)
+        
+        customer["invoiceCount"] = invoice_count
+        customer["totalInvoiced"] = total_amount
+        customer["averageInvoice"] = total_amount / invoice_count if invoice_count > 0 else 0
+        customer["unitPrice"] = customer.get("unitPrice", 0)
+    
+    # Sort by name A-Z
+    customers.sort(key=lambda x: x.get("name", "").lower())
+    
     return customers
+
+@api_router.get("/customers/{customer_id}")
+async def get_customer_detail(customer_id: str, current_user: User = Depends(get_current_user)):
+    """Get detailed customer information with last 12 invoices"""
+    customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Get last 12 invoices for this customer, sorted by date descending
+    invoices = await db.invoices.find(
+        {"customerId": customer_id}, 
+        {"_id": 0}
+    ).sort("invoiceDate", -1).limit(12).to_list(12)
+    
+    # Calculate statistics
+    total_amount = sum(invoice.get("total", 0) for invoice in invoices)
+    invoice_count = len(invoices)
+    
+    customer["lastInvoices"] = invoices
+    customer["invoiceCount"] = invoice_count
+    customer["totalInvoiced"] = total_amount
+    customer["averageInvoice"] = total_amount / invoice_count if invoice_count > 0 else 0
+    customer["unitPrice"] = customer.get("unitPrice", 0)
+    customer["historicalInvoices"] = customer.get("historicalInvoices", [])
+    
+    return customer
+
+@api_router.put("/customers/{customer_id}")
+async def update_customer(
+    customer_id: str, 
+    update_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Update customer information (unit price)"""
+    customer = await db.customers.find_one({"id": customer_id})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Only allow updating specific fields
+    allowed_fields = ["unitPrice"]
+    update_fields = {k: v for k, v in update_data.items() if k in allowed_fields}
+    
+    if update_fields:
+        await db.customers.update_one(
+            {"id": customer_id},
+            {"$set": update_fields}
+        )
+    
+    return {"message": "Customer updated successfully"}
+
+@api_router.post("/customers/upload-history")
+async def upload_customer_history(
+    file: UploadFile = File(...),
+    customer_ids: str = Form(None),  # Comma-separated customer IDs, or "all"
+    current_user: User = Depends(get_current_user)
+):
+    """Upload historical invoice data from XLSX/XLS file"""
+    import openpyxl
+    from io import BytesIO
+    
+    try:
+        contents = await file.read()
+        wb = openpyxl.load_workbook(BytesIO(contents))
+        sheet = wb.active
+        
+        # Expected columns: Customer Name, Date, Description, Amount
+        historical_entries = []
+        
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            if not row or all(cell is None or cell == '' for cell in row):
+                continue
+            
+            customer_name = str(row[0]).strip() if row[0] else None
+            date_val = row[1]
+            description = str(row[2]) if row[2] else ""
+            amount_val = row[3]
+            
+            if not customer_name:
+                continue
+            
+            # Parse date
+            date_str = ""
+            if hasattr(date_val, 'isoformat'):
+                date_str = date_val.isoformat()
+            elif isinstance(date_val, str):
+                date_str = date_val
+            
+            # Parse amount
+            try:
+                amount = float(str(amount_val).replace(',', '.')) if amount_val else 0.0
+            except:
+                amount = 0.0
+            
+            historical_entries.append({
+                "customerName": customer_name,
+                "date": date_str,
+                "description": description,
+                "amount": amount
+            })
+        
+        # Group by customer and update database
+        customer_groups = {}
+        for entry in historical_entries:
+            cust_name = entry["customerName"]
+            if cust_name not in customer_groups:
+                customer_groups[cust_name] = []
+            customer_groups[cust_name].append({
+                "date": entry["date"],
+                "description": entry["description"],
+                "amount": entry["amount"]
+            })
+        
+        # Filter by customer_ids if provided
+        target_customers = []
+        if customer_ids and customer_ids != "all":
+            target_ids = [cid.strip() for cid in customer_ids.split(",")]
+            target_customers = await db.customers.find({"id": {"$in": target_ids}}, {"_id": 0}).to_list(1000)
+        else:
+            target_customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
+        
+        # Update each customer's historical data
+        updated_count = 0
+        for customer in target_customers:
+            cust_name = customer["name"]
+            if cust_name in customer_groups:
+                existing_history = customer.get("historicalInvoices", [])
+                new_entries = customer_groups[cust_name]
+                
+                # Append new entries (accumulation only)
+                await db.customers.update_one(
+                    {"id": customer["id"]},
+                    {"$set": {"historicalInvoices": existing_history + new_entries}}
+                )
+                updated_count += 1
+        
+        return {
+            "message": f"Historical data uploaded successfully",
+            "customersUpdated": updated_count,
+            "entriesProcessed": len(historical_entries)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading historical data: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 # ============ TIME ENTRIES ============
 @api_router.post("/time-entries/{entry_id}/move-customer")
