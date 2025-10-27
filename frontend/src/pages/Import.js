@@ -66,14 +66,49 @@ const Import = () => {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
 
-      // Skip header row and extract dates from the 3rd column (Datum - index 2 after # column)
+      console.log('XLSX parsed rows:', jsonData.length);
+      
+      if (jsonData.length < 2) {
+        toast.info('No data found in XLSX. Please enter dates manually.');
+        return;
+      }
+
+      // Find the header row and locate "Datum" column
+      const headerRow = jsonData[0];
+      console.log('Header row:', headerRow);
+      
+      let datumIndex = -1;
+      for (let i = 0; i < headerRow.length; i++) {
+        const header = String(headerRow[i] || '').trim().toLowerCase();
+        if (header === 'datum') {
+          datumIndex = i;
+          break;
+        }
+      }
+
+      console.log('Datum column index:', datumIndex);
+
+      // If we can't find by header, try common positions (3rd or 4th column)
+      if (datumIndex === -1) {
+        console.log('Datum header not found, trying default positions');
+        // Check if first column looks like row numbers (# column)
+        const firstDataRow = jsonData[1];
+        if (firstDataRow && (firstDataRow[0] === '#' || String(firstDataRow[0]).endsWith('.'))) {
+          datumIndex = 3; // After #, Projekt, Stranka
+        } else {
+          datumIndex = 2; // After Projekt, Stranka
+        }
+      }
+
+      // Extract dates from all data rows
       const dates = [];
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
-        // Check if row has data (accounting for potential # column at start)
-        const dateValue = row[2] || row[3]; // Try both positions
+        if (!row || row.length === 0) continue;
+
+        const dateValue = row[datumIndex];
         
         if (dateValue) {
           let parsedDate;
@@ -90,14 +125,42 @@ const Import = () => {
           } else if (dateValue instanceof Date) {
             dates.push(dateValue);
           } else if (typeof dateValue === 'string') {
-            // Try parsing string date
-            const date = new Date(dateValue);
+            // Try parsing string date formats
+            const dateStr = dateValue.trim();
+            
+            // Try ISO format first
+            let date = new Date(dateStr);
+            
+            // Try DD.MM.YYYY format (common in European locales)
+            if (isNaN(date.getTime()) && dateStr.includes('.')) {
+              const parts = dateStr.split('.');
+              if (parts.length === 3) {
+                const day = parseInt(parts[0]);
+                const month = parseInt(parts[1]) - 1;
+                const year = parseInt(parts[2]);
+                date = new Date(year, month, day);
+              }
+            }
+            
+            // Try DD/MM/YYYY format
+            if (isNaN(date.getTime()) && dateStr.includes('/')) {
+              const parts = dateStr.split('/');
+              if (parts.length === 3) {
+                const day = parseInt(parts[0]);
+                const month = parseInt(parts[1]) - 1;
+                const year = parseInt(parts[2]);
+                date = new Date(year, month, day);
+              }
+            }
+            
             if (!isNaN(date.getTime())) {
               dates.push(date);
             }
           }
         }
       }
+
+      console.log('Total dates found:', dates.length);
 
       if (dates.length > 0) {
         // Find earliest and latest dates
@@ -117,8 +180,9 @@ const Import = () => {
         setPeriodTo(formatDate(latestDate));
         setInvoiceDate(formatDate(latestDate));
 
-        toast.success('Dates auto-populated from XLSX');
+        toast.success(`Dates auto-populated from XLSX (${dates.length} entries)`);
       } else {
+        console.log('No valid dates parsed from XLSX');
         toast.info('No dates found in XLSX. Please enter manually.');
       }
     } catch (error) {
