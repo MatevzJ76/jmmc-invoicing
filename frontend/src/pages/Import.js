@@ -53,7 +53,75 @@ const Import = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      parseXLSXDates(selectedFile);
+    }
+  };
+
+  const parseXLSXDates = async (file) => {
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Skip header row and extract dates from the 3rd column (Datum - index 2 after # column)
+      const dates = [];
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        // Check if row has data (accounting for potential # column at start)
+        const dateValue = row[2] || row[3]; // Try both positions
+        
+        if (dateValue) {
+          let parsedDate;
+          
+          // Handle Excel date serial number
+          if (typeof dateValue === 'number') {
+            parsedDate = XLSX.SSF.parse_date_code(dateValue);
+            if (parsedDate) {
+              const date = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d);
+              if (!isNaN(date.getTime())) {
+                dates.push(date);
+              }
+            }
+          } else if (dateValue instanceof Date) {
+            dates.push(dateValue);
+          } else if (typeof dateValue === 'string') {
+            // Try parsing string date
+            const date = new Date(dateValue);
+            if (!isNaN(date.getTime())) {
+              dates.push(date);
+            }
+          }
+        }
+      }
+
+      if (dates.length > 0) {
+        // Find earliest and latest dates
+        const sortedDates = dates.sort((a, b) => a - b);
+        const earliestDate = sortedDates[0];
+        const latestDate = sortedDates[sortedDates.length - 1];
+
+        // Format dates to YYYY-MM-DD for input fields
+        const formatDate = (date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+
+        setPeriodFrom(formatDate(earliestDate));
+        setPeriodTo(formatDate(latestDate));
+        setInvoiceDate(formatDate(latestDate));
+
+        toast.success('Dates auto-populated from XLSX');
+      } else {
+        toast.info('No dates found in XLSX. Please enter manually.');
+      }
+    } catch (error) {
+      console.error('Error parsing XLSX:', error);
+      toast.error('Could not parse dates from XLSX');
     }
   };
 
