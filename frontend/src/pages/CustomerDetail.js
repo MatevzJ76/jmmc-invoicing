@@ -193,41 +193,63 @@ const CustomerDetail = () => {
           </label>
         </div>
 
-        {/* Last 12 Invoices */}
+        {/* Last 12 Historical Invoices */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
           <h2 className="text-lg font-bold text-slate-800 mb-4">
             <TrendingUp className="inline w-5 h-5 mr-2" />
-            Last 12 Invoices
+            Last 12 Historical Invoices
           </h2>
           {customer.lastInvoices && customer.lastInvoices.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Invoice Date</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Period</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Total</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Description</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Amount</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {customer.lastInvoices.map((invoice) => (
+                  {customer.lastInvoices.map((invoice, index) => (
                     <tr
-                      key={invoice.id}
-                      className="hover:bg-slate-50 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/invoices/${invoice.id}`)}
+                      key={invoice.id || index}
+                      className="hover:bg-slate-50 transition-colors"
                     >
-                      <td className="px-4 py-3 text-sm text-slate-800">{invoice.invoiceDate}</td>
+                      <td className="px-4 py-3 text-sm text-slate-800">{invoice.date}</td>
                       <td className="px-4 py-3 text-sm text-slate-600">
-                        {invoice.periodFrom} - {invoice.periodTo}
+                        {invoice.description || '-'}
                       </td>
                       <td className="px-4 py-3 text-sm font-semibold text-slate-800">
-                        €{(invoice.total || 0).toFixed(2)}
+                        €{(invoice.amount || 0).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          invoice.status === 'posted' ? 'bg-green-100 text-green-700' :
-                          invoice.status === 'draft' ? 'bg-yellow-100 text-yellow-700' :
+                      <td className="px-4 py-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            // Find the actual index in the full historicalInvoices array
+                            const fullIndex = customer.historicalInvoices.findIndex(
+                              h => h.date === invoice.date && h.amount === invoice.amount && h.description === invoice.description
+                            );
+                            if (fullIndex !== -1) {
+                              handleDeleteHistoricalInvoice(fullIndex);
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-center text-slate-500 py-8">No historical invoices found. Upload historical data to see invoices here.</p>
+          )}
+        </div>
                           'bg-blue-100 text-blue-700'
                         }`}>
                           {invoice.status}
