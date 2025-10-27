@@ -87,7 +87,9 @@ const Customers = () => {
           }
         }
       );
-      toast.success(`${response.data.customersUpdated} customers updated with ${response.data.entriesProcessed} entries`);
+      toast.success(
+        `${response.data.customersCreated || 0} customers created, ${response.data.customersUpdated} updated with ${response.data.monthlyEntriesCreated} monthly entries`
+      );
       loadCustomers();
     } catch (error) {
       toast.error('Failed to upload historical data');
