@@ -73,7 +73,9 @@ const CustomerDetail = () => {
           }
         }
       );
-      toast.success(`${response.data.entriesProcessed} historical entries added`);
+      toast.success(
+        `${response.data.customersCreated || 0} customers created, ${response.data.monthlyEntriesCreated} monthly entries added`
+      );
       loadCustomer();
     } catch (error) {
       toast.error('Failed to upload historical data');
