@@ -867,6 +867,8 @@ async def upload_customer_history(
             if description and str(description).strip():
                 monthly_data[customer_name][month_key]['descriptions'].append(str(description).strip())
         
+        logger.info(f"Extracted data for {len(monthly_data)} customers")
+        
         # Convert to historical invoice entries
         historical_entries_by_customer = {}
         for customer_name, months in monthly_data.items():
@@ -878,6 +880,15 @@ async def upload_customer_history(
                 if len(unique_descriptions) > 5:
                     combined_description += f" (+{len(unique_descriptions) - 5} more)"
                 
+                entries.append({
+                    "date": month_data['date'],
+                    "month": month_key,
+                    "description": combined_description,
+                    "amount": round(month_data['total_amount'], 2)
+                })
+            
+            historical_entries_by_customer[customer_name] = entries
+            logger.info(f"Customer '{customer_name}': {len(entries)} monthly entries")
                 entries.append({
                     "date": month_data['date'],
                     "month": month_key,
