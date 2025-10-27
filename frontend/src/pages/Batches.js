@@ -272,13 +272,13 @@ const Batches = () => {
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Title</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Period</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Invoice Date</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Due Date</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Invoices</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Status</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Created</th>
+                    <SortableHeader column="title" label="Title" />
+                    <SortableHeader column="periodTo" label="Period" />
+                    <SortableHeader column="invoiceDate" label="Invoice Date" />
+                    <SortableHeader column="dueDate" label="Due Date" />
+                    <SortableHeader column="invoiceCount" label="Invoices" />
+                    <SortableHeader column="status" label="Status" />
+                    <SortableHeader column="createdAt" label="Created" />
                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">Actions</th>
                   </tr>
                 </thead>
