@@ -760,58 +760,120 @@ async def upload_customer_history(
     """Upload historical invoice data from XLSX/XLS file"""
     import openpyxl
     from io import BytesIO
+    from datetime import datetime
     
     try:
         contents = await file.read()
         wb = openpyxl.load_workbook(BytesIO(contents))
         sheet = wb.active
         
-        # Expected columns: Customer Name, Date, Description, Amount
-        historical_entries = []
+        # Find column indices by header names
+        headers = [cell.value for cell in sheet[1]]
+        logger.info(f"Headers found: {headers}")
+        
+        # Map column names to indices
+        col_map = {}
+        for idx, header in enumerate(headers):
+            if header:
+                header_lower = str(header).lower().strip()
+                if 'kupec' in header_lower:
+                    col_map['customer'] = idx
+                elif 'dat.dok' in header_lower or 'datum dokumenta' in header_lower:
+                    col_map['date'] = idx
+                elif 'naziv artikla' in header_lower:
+                    col_map['description'] = idx
+                elif 'opis artikla' in header_lower and 'description' not in col_map:
+                    col_map['alt_description'] = idx
+                elif 'znesek eur' in header_lower:
+                    col_map['amount'] = idx
+        
+        logger.info(f"Column mapping: {col_map}")
+        
+        # Extract data by month
+        monthly_data = {}  # {customer_name: {month_key: {date, total_amount, descriptions[]}}}
         
         for row in sheet.iter_rows(min_row=2, values_only=True):
             if not row or all(cell is None or cell == '' for cell in row):
                 continue
             
-            customer_name = str(row[0]).strip() if row[0] else None
-            date_val = row[1]
-            description = str(row[2]) if row[2] else ""
-            amount_val = row[3]
+            # Extract values
+            customer_name = row[col_map.get('customer')] if 'customer' in col_map else None
+            date_val = row[col_map.get('date')] if 'date' in col_map else None
+            description = row[col_map.get('description')] if 'description' in col_map else ""
+            if not description:
+                description = row[col_map.get('alt_description')] if 'alt_description' in col_map else ""
+            amount_val = row[col_map.get('amount')] if 'amount' in col_map else None
             
-            if not customer_name:
+            if not customer_name or not date_val:
                 continue
+            
+            customer_name = str(customer_name).strip()
             
             # Parse date
             date_str = ""
             if hasattr(date_val, 'isoformat'):
+                date_obj = date_val
                 date_str = date_val.isoformat()
             elif isinstance(date_val, str):
-                date_str = date_val
+                try:
+                    date_obj = datetime.strptime(date_val, '%Y-%m-%d')
+                    date_str = date_val
+                except:
+                    continue
+            else:
+                continue
+            
+            # Get month key (YYYY-MM)
+            month_key = f"{date_obj.year}-{str(date_obj.month).zfill(2)}"
             
             # Parse amount
             try:
-                amount = float(str(amount_val).replace(',', '.')) if amount_val else 0.0
+                if isinstance(amount_val, (int, float)):
+                    amount = float(amount_val)
+                elif amount_val:
+                    amount = float(str(amount_val).replace(',', '.'))
+                else:
+                    amount = 0.0
             except:
                 amount = 0.0
             
-            historical_entries.append({
-                "customerName": customer_name,
-                "date": date_str,
-                "description": description,
-                "amount": amount
-            })
+            # Initialize customer data
+            if customer_name not in monthly_data:
+                monthly_data[customer_name] = {}
+            
+            # Initialize month data
+            if month_key not in monthly_data[customer_name]:
+                monthly_data[customer_name][month_key] = {
+                    'date': date_str,
+                    'month': month_key,
+                    'total_amount': 0.0,
+                    'descriptions': []
+                }
+            
+            # Accumulate data for the month
+            monthly_data[customer_name][month_key]['total_amount'] += amount
+            if description and str(description).strip():
+                monthly_data[customer_name][month_key]['descriptions'].append(str(description).strip())
         
-        # Group by customer and update database
-        customer_groups = {}
-        for entry in historical_entries:
-            cust_name = entry["customerName"]
-            if cust_name not in customer_groups:
-                customer_groups[cust_name] = []
-            customer_groups[cust_name].append({
-                "date": entry["date"],
-                "description": entry["description"],
-                "amount": entry["amount"]
-            })
+        # Convert to historical invoice entries
+        historical_entries_by_customer = {}
+        for customer_name, months in monthly_data.items():
+            entries = []
+            for month_key, month_data in months.items():
+                # Create a single entry per month with combined description
+                unique_descriptions = list(set(month_data['descriptions']))
+                combined_description = "; ".join(unique_descriptions[:5])  # Limit to 5 unique descriptions
+                if len(unique_descriptions) > 5:
+                    combined_description += f" (+{len(unique_descriptions) - 5} more)"
+                
+                entries.append({
+                    "date": month_data['date'],
+                    "month": month_key,
+                    "description": combined_description,
+                    "amount": round(month_data['total_amount'], 2)
+                })
+            
+            historical_entries_by_customer[customer_name] = entries
         
         # Filter by customer_ids if provided
         target_customers = []
@@ -823,11 +885,12 @@ async def upload_customer_history(
         
         # Update each customer's historical data
         updated_count = 0
+        total_entries = 0
         for customer in target_customers:
             cust_name = customer["name"]
-            if cust_name in customer_groups:
+            if cust_name in historical_entries_by_customer:
                 existing_history = customer.get("historicalInvoices", [])
-                new_entries = customer_groups[cust_name]
+                new_entries = historical_entries_by_customer[cust_name]
                 
                 # Append new entries (accumulation only)
                 await db.customers.update_one(
@@ -835,11 +898,12 @@ async def upload_customer_history(
                     {"$set": {"historicalInvoices": existing_history + new_entries}}
                 )
                 updated_count += 1
+                total_entries += len(new_entries)
         
         return {
-            "message": f"Historical data uploaded successfully",
+            "message": f"Historical data uploaded and grouped by month",
             "customersUpdated": updated_count,
-            "entriesProcessed": len(historical_entries)
+            "monthlyEntriesCreated": total_entries
         }
         
     except Exception as e:
