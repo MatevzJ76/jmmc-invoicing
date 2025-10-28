@@ -391,6 +391,7 @@ const InvoiceDetail = () => {
 
   const handleSave = async () => {
     setSaving(true);
+    setProcessingButtons(prev => ({ ...prev, save: true }));
     try {
       const token = localStorage.getItem('access_token');
       await axios.put(
@@ -409,6 +410,7 @@ const InvoiceDetail = () => {
       loadInvoice();
     } catch (error) {
       toast.error('Failed to save invoice');
+      setProcessingButtons(prev => ({ ...prev, save: false }));
     } finally {
       setSaving(false);
     }
@@ -416,6 +418,11 @@ const InvoiceDetail = () => {
 
 
   const handleConfirmDraft = async () => {
+    setProcessingButtons(prev => ({ 
+      ...prev, 
+      save: true,
+      confirmDraft: true 
+    }));
     try {
       const token = localStorage.getItem('access_token');
       await axios.post(
@@ -427,6 +434,11 @@ const InvoiceDetail = () => {
       loadInvoice();
     } catch (error) {
       toast.error('Failed to confirm draft');
+      setProcessingButtons(prev => ({ 
+        ...prev, 
+        save: false,
+        confirmDraft: false 
+      }));
     }
   };
 
@@ -438,6 +450,12 @@ const InvoiceDetail = () => {
 
     if (!window.confirm('Issue this invoice? This will mark it as issued.')) return;
 
+    setProcessingButtons(prev => ({ 
+      ...prev, 
+      save: true,
+      confirmDraft: true,
+      issue: true 
+    }));
     try {
       const token = localStorage.getItem('access_token');
       await axios.post(
@@ -449,6 +467,12 @@ const InvoiceDetail = () => {
       loadInvoice();
     } catch (error) {
       toast.error('Failed to issue invoice');
+      setProcessingButtons(prev => ({ 
+        ...prev, 
+        save: false,
+        confirmDraft: false,
+        issue: false 
+      }));
     }
   };
 
