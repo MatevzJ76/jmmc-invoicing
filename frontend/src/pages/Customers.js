@@ -176,19 +176,32 @@ const Customers = () => {
               Customers
             </h1>
           </div>
-          <label className="cursor-pointer">
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleUploadHistory}
-              className="hidden"
-              disabled={uploadingHistory}
-            />
-            <div className="inline-flex items-center justify-center rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
-              <Upload className="w-4 h-4 mr-2" />
-              {uploadingHistory ? 'Uploading...' : 'Upload History'}
-            </div>
-          </label>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={() => setShowAddCustomer(true)}
+              className="rounded-full bg-indigo-600 hover:bg-indigo-700"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Customer
+            </Button>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleUploadHistory}
+                className="hidden"
+                disabled={uploadingHistory}
+              />
+              <div className="inline-flex items-center justify-center rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                <Upload className="w-4 h-4 mr-2" />
+                {uploadingHistory ? 'Uploading...' : 'Upload History'}
+              </div>
+            </label>
+          </div>
         </div>
       </nav>
 
