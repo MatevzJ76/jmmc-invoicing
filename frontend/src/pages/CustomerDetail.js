@@ -233,11 +233,11 @@ const CustomerDetail = () => {
           </div>
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Total Invoiced</p>
-            <p className="text-2xl font-bold text-green-600">€{(customer.totalInvoiced || 0).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-green-600">€{formatEuro(customer.totalInvoiced || 0)}</p>
           </div>
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Avg Invoice</p>
-            <p className="text-2xl font-bold text-blue-600">€{(customer.averageInvoice || 0).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-blue-600">€{formatEuro(customer.averageInvoice || 0)}</p>
           </div>
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Historical Entries</p>
