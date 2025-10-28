@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement consecutive button disabling on invoice detail page based on workflow priority (Save → Confirm Draft → Issue Invoice → Post to eRačuni)"
+user_problem_statement: "Fix EUR display format to use European number formatting (1.000,00) instead of American format (1,000.00)"
 
 backend:
   - task: "GET /api/customers endpoint"
