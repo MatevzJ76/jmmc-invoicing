@@ -69,7 +69,7 @@ const BatchDetail = () => {
 
   useEffect(() => {
     filterInvoices();
-  }, [invoices, searchTerm, statusFilter]);
+  }, [invoices, searchTerm, statusFilter, sortField, sortDirection]);
 
   useEffect(() => {
     // Find current batch index whenever batches or id changes
