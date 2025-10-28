@@ -1267,16 +1267,36 @@ async def upload_customer_history(
             for entry in new_entries:
                 entry["source"] = "imported"
             
+            # Extract unit price from last "Računovodstvo" entry
+            unit_price_to_set = None
+            for entry in reversed(new_entries):  # Start from most recent
+                individual_rows = entry.get("individualRows", [])
+                for row in reversed(individual_rows):  # Most recent rows first
+                    description = row.get("description", "").lower()
+                    if "računovodstvo" in description or "racunovodstvo" in description:
+                        if row.get("unitPrice") is not None:
+                            unit_price_to_set = row["unitPrice"]
+                            logger.info(f"Found Računovodstvo unit price for {customer_name}: €{unit_price_to_set}")
+                            break
+                if unit_price_to_set is not None:
+                    break
+            
             # Keep only manually entered rows from existing history
             manual_entries = [entry for entry in existing_history if entry.get("source") == "manual"]
             
             # Combine manual entries with new imported entries
             merged_history = manual_entries + new_entries
             
+            # Prepare update data
+            update_data = {"historicalInvoices": merged_history}
+            if unit_price_to_set is not None:
+                update_data["unitPrice"] = unit_price_to_set
+                logger.info(f"Updating customer '{customer_name}' unit price to: €{unit_price_to_set}")
+            
             # Update in database
             await db.customers.update_one(
                 {"id": customer["id"]},
-                {"$set": {"historicalInvoices": merged_history}}
+                {"$set": update_data}
             )
             updated_count += 1
             total_entries += len(new_entries)
