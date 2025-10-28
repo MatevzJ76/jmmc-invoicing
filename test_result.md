@@ -197,7 +197,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Drag-and-drop functionality for invoice line items"
+    - "Consecutive button disabling based on workflow priority"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
