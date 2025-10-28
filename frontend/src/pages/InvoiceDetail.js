@@ -6,9 +6,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Send, Trash2, Plus, Sparkles, ArrowRightLeft, CheckCircle, FileCheck, X } from 'lucide-react';
+import { ArrowLeft, Save, Send, Trash2, Plus, Sparkles, ArrowRightLeft, CheckCircle, FileCheck, X, ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
