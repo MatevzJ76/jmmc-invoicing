@@ -1214,6 +1214,18 @@ async def upload_customer_history(
                         company_name_from_data = month_data['company_name']
                         break
             
+            # Normalize company name to official names
+            if company_name_from_data:
+                company_lower = company_name_from_data.lower()
+                if 'hp' in company_lower:
+                    company_name_from_data = "JMMC HP d.o.o."
+                elif 'finance' in company_lower or 'financa' in company_lower:
+                    company_name_from_data = "JMMC Finance d.o.o."
+                else:
+                    # Unknown company - set to None to skip assignment
+                    logger.warning(f"Unknown company '{company_name_from_data}' - skipping assignment")
+                    company_name_from_data = None
+            
             # Find or create company if company name exists
             company_id = None
             if company_name_from_data:
