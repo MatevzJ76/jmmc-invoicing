@@ -27,6 +27,8 @@ const InvoiceDetail = () => {
   const [customerSearch, setCustomerSearch] = useState('');
   const [showApiDebugModal, setShowApiDebugModal] = useState(false);
   const [apiDebugData, setApiDebugData] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
