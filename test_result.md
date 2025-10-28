@@ -177,6 +177,18 @@ frontend:
           agent: "testing"
           comment: "COMPREHENSIVE TESTING COMPLETED. Tested invoice ID: ebc34b1b-f934-4591-8e8e-56bced62872e. RESULTS: (1) ✅ All UI elements present: 3 drag handles (GripVertical icons), 3 ChevronUp buttons, 3 ChevronDown buttons. (2) ⚠️ Drag-and-drop test SKIPPED due to system limitations (Playwright cannot test @dnd-kit library's complex mouse events), but UI elements are visible and properly rendered. (3) ✅ Up/Down arrow buttons WORKING PERFECTLY: ChevronDown moves items down with toast 'Line item moved down', ChevronUp moves items up with toast 'Line item moved up', first item's ChevronUp correctly disabled, last item's ChevronDown correctly disabled. (4) ✅ Persistence WORKING: Order preserved after save and page reload. (5) ✅ Posted invoice controls WORKING: All controls (drag handles, up/down buttons, save button) correctly disabled when status is 'posted'. (6) ✅ Multiple consecutive operations WORKING: 3 consecutive move operations completed successfully. (7) ✅ No console errors detected. CONCLUSION: Feature is FULLY FUNCTIONAL. The only limitation is that actual drag-and-drop mouse interaction cannot be tested in this environment, but all other functionality including up/down arrow buttons, persistence, and disabled states work perfectly."
 
+  - task: "Consecutive button disabling based on workflow priority"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/InvoiceDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Implemented button state management for invoice workflow buttons. Added processingButtons state object to track which buttons have been clicked. Updated handlers: (1) handleSave - disables Save button after click, (2) handleConfirmDraft - disables Save + Confirm Draft after click, (3) handleIssueInvoice - disables Save + Confirm Draft + Issue Invoice after click, (4) handlePost - disables all workflow buttons (Save + Confirm Draft + Issue + Post) after click. On error, buttons are re-enabled. View API and Delete buttons are not affected. Tested with Playwright: Before click all buttons enabled, after clicking Confirm Draft, both Save and Confirm Draft are disabled while Issue and Post remain enabled. Feature working as expected."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
