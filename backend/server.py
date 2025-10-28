@@ -649,20 +649,35 @@ async def archive_batch(batch_id: str, current_user: User = Depends(get_current_
 # ============ COMPANIES ============
 @api_router.get("/companies")
 async def get_all_companies(current_user: User = Depends(get_current_user)):
-    """Get all companies"""
-    companies = await db.companies.find({}, {"_id": 0}).to_list(1000)
+    """Get all companies - ensure only JMMC HP d.o.o. and JMMC Finance d.o.o. exist"""
     
-    # If no companies exist, create default ones
-    if not companies:
-        default_companies = [
-            {"id": str(uuid.uuid4()), "name": "JMMC HP"},
-            {"id": str(uuid.uuid4()), "name": "JMMC Finance"}
-        ]
-        await db.companies.insert_many(default_companies)
-        companies = default_companies
+    # Define the two official companies
+    official_companies = [
+        {"name": "JMMC HP d.o.o."},
+        {"name": "JMMC Finance d.o.o."}
+    ]
     
-    companies.sort(key=lambda x: x.get("name", "").lower())
-    return companies
+    # Check if official companies exist
+    existing_companies = await db.companies.find({}, {"_id": 0}).to_list(1000)
+    
+    # Get or create each official company
+    final_companies = []
+    for official in official_companies:
+        company = await db.companies.find_one({"name": official["name"]})
+        if not company:
+            # Create the official company
+            company_id = str(uuid.uuid4())
+            company = {
+                "id": company_id,
+                "name": official["name"]
+            }
+            await db.companies.insert_one(company)
+            logger.info(f"Created official company: {official['name']}")
+        final_companies.append({"id": company["id"], "name": company["name"]})
+    
+    # Sort by name
+    final_companies.sort(key=lambda x: x.get("name", "").lower())
+    return final_companies
 
 # ============ CUSTOMERS ============
 @api_router.post("/customers")
