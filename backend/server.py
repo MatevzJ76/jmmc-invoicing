@@ -767,27 +767,28 @@ async def upload_customer_history(
         wb = openpyxl.load_workbook(BytesIO(contents))
         sheet = wb.active
         
-        # Find the header row (look for row containing "Kupec")
+        # Find the header row (look for row containing multiple key headers)
         header_row_num = 1
         headers = None
         for row_num in range(1, min(20, sheet.max_row + 1)):  # Check first 20 rows
             row_values = [cell.value for cell in sheet[row_num]]
-            # Check if this row contains "Kupec" (customer column)
-            if any(cell and 'kupec' in str(cell).lower() for cell in row_values):
+            # Count how many key columns are present
+            key_columns_found = 0
+            if any(cell and 'poz' in str(cell).lower() and len(str(cell).strip()) < 10 for cell in row_values):
+                key_columns_found += 1
+            if any(cell and 'kupec' in str(cell).lower() and 'kupec:' not in str(cell).lower() for cell in row_values):
+                key_columns_found += 1
+            if any(cell and 'dat.dok' in str(cell).lower() for cell in row_values):
+                key_columns_found += 1
+            if any(cell and 'znesek eur' in str(cell).lower() for cell in row_values):
+                key_columns_found += 1
+            
+            # If we found 3+ key columns, this is likely the header row
+            if key_columns_found >= 3:
                 headers = row_values
                 header_row_num = row_num
-                logger.info(f"Found header row at line {row_num}")
+                logger.info(f"Found header row at line {row_num} with {key_columns_found} key columns")
                 break
-        
-        if not headers:
-            # If still not found, try looking for other key columns
-            for row_num in range(1, min(20, sheet.max_row + 1)):
-                row_values = [cell.value for cell in sheet[row_num]]
-                if any(cell and ('dat.dok' in str(cell).lower() or 'znesek' in str(cell).lower()) for cell in row_values):
-                    headers = row_values
-                    header_row_num = row_num
-                    logger.info(f"Found header row at line {row_num} (alternative method)")
-                    break
         
         if not headers:
             raise HTTPException(status_code=400, detail="Could not find header row. Please ensure XLSX has proper headers.")
