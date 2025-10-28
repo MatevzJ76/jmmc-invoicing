@@ -779,13 +779,13 @@ async def update_customer(
     update_data: dict,
     current_user: User = Depends(get_current_user)
 ):
-    """Update customer information (unit price)"""
+    """Update customer information (unit price, company)"""
     customer = await db.customers.find_one({"id": customer_id})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     
     # Only allow updating specific fields
-    allowed_fields = ["unitPrice"]
+    allowed_fields = ["unitPrice", "companyId"]
     update_fields = {k: v for k, v in update_data.items() if k in allowed_fields}
     
     if update_fields:
