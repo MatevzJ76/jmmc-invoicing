@@ -28,6 +28,16 @@ import { CSS } from '@dnd-kit/utilities';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// European number formatting helper
+const formatEuro = (amount) => {
+  if (amount === null || amount === undefined || isNaN(amount)) return '€0,00';
+  const num = parseFloat(amount);
+  return '€' + num.toLocaleString('de-DE', { 
+    minimumFractionDigits: 2, 
+    maximumFractionDigits: 2 
+  });
+};
+
 // Sortable Line Item Component
 const SortableLineItem = ({ 
   line, 
