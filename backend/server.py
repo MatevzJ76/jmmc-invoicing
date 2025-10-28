@@ -904,7 +904,8 @@ async def upload_customer_history(
                     "date": month_data['date'],
                     "month": month_key,
                     "description": combined_description,
-                    "amount": round(month_data['total_amount'], 2)
+                    "amount": round(month_data['total_amount'], 2),
+                    "individualRows": month_data['individual_rows']  # Include individual row details
                 })
             
             historical_entries_by_customer[customer_name] = entries
