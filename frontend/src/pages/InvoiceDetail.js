@@ -935,7 +935,7 @@ const InvoiceDetail = () => {
               </div>
               <div className="flex justify-between pt-3 border-t border-slate-200">
                 <span className="text-lg font-bold text-slate-800">Total:</span>
-                <span className="text-2xl font-bold text-blue-600">€{total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-blue-600">{formatEuro(total)}</span>
               </div>
               {invoice.externalNumber && (
                 <div className="pt-3 border-t border-slate-200">
