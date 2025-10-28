@@ -886,11 +886,13 @@ async def upload_customer_history(
                     col_map['alt_description'] = idx
                 elif 'znesek eur' in header_lower:
                     col_map['amount'] = idx
+                elif 'podjetje' in header_lower:
+                    col_map['company'] = idx
         
         logger.info(f"Column mapping: {col_map}")
         
         # Extract data by month
-        monthly_data = {}  # {customer_name: {month_key: {date, total_amount, descriptions[]}}}
+        monthly_data = {}  # {customer_name: {month_key: {date, total_amount, descriptions[], company_name}}}
         
         for row in sheet.iter_rows(min_row=header_row_num + 1, values_only=True):
             if not row or all(cell is None or cell == '' for cell in row):
