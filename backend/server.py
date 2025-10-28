@@ -835,6 +835,7 @@ async def upload_customer_history(
 ):
     """Upload historical invoice data from XLSX/XLS file"""
     import openpyxl
+    import uuid
     from io import BytesIO
     from datetime import datetime
     
