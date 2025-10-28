@@ -295,6 +295,105 @@ const Customers = () => {
           )}
         </div>
       </div>
+
+      {/* Add Customer Modal */}
+      {showAddCustomer && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold">Add New Customer</h3>
+                <button
+                  onClick={() => setShowAddCustomer(false)}
+                  className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <form onSubmit={handleCreateCustomer} className="p-6 space-y-4">
+              {/* Customer Name */}
+              <div className="space-y-2">
+                <label htmlFor="new-customer-name" className="text-sm font-semibold text-slate-700">
+                  Customer Name *
+                </label>
+                <Input
+                  id="new-customer-name"
+                  type="text"
+                  value={newCustomer.name}
+                  onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})}
+                  placeholder="Enter customer name"
+                  required
+                  autoFocus
+                />
+              </div>
+
+              {/* Company */}
+              <div className="space-y-2">
+                <label htmlFor="new-customer-company" className="text-sm font-semibold text-slate-700">
+                  Company (Optional)
+                </label>
+                <select
+                  id="new-customer-company"
+                  value={newCustomer.companyId}
+                  onChange={(e) => setNewCustomer({...newCustomer, companyId: e.target.value})}
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">No Company</option>
+                  {companies.map((company) => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Unit Price */}
+              <div className="space-y-2">
+                <label htmlFor="new-customer-price" className="text-sm font-semibold text-slate-700">
+                  Unit Price (€)
+                </label>
+                <Input
+                  id="new-customer-price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newCustomer.unitPrice}
+                  onChange={(e) => setNewCustomer({...newCustomer, unitPrice: parseFloat(e.target.value) || 0})}
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAddCustomer(false)}
+                  className="rounded-full"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={creating || !newCustomer.name.trim()}
+                  className="rounded-full bg-indigo-600 hover:bg-indigo-700"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  {creating ? 'Creating...' : 'Create Customer'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
