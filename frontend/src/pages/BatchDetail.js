@@ -45,6 +45,8 @@ const BatchDetail = () => {
   const [movingEntry, setMovingEntry] = useState(null);
   const [showMoveDropdown, setShowMoveDropdown] = useState(null);
   const [customerSearch, setCustomerSearch] = useState('');
+  const [sortField, setSortField] = useState('');
+  const [sortDirection, setSortDirection] = useState('asc');
 
   useEffect(() => {
     loadBatchAndInvoices();
