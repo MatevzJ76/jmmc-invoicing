@@ -15,14 +15,29 @@ const Customers = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadingHistory, setUploadingHistory] = useState(false);
+  const [companies, setCompanies] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState('');
 
   useEffect(() => {
+    loadCompanies();
     loadCustomers();
   }, []);
 
   useEffect(() => {
     filterCustomers();
-  }, [customers, searchTerm]);
+  }, [customers, searchTerm, selectedCompany]);
+
+  const loadCompanies = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/companies`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCompanies(response.data);
+    } catch (error) {
+      console.error('Failed to load companies:', error);
+    }
+  };
 
   const loadCustomers = async () => {
     try {
