@@ -12,6 +12,138 @@ import { Switch } from '@/components/ui/switch';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// AddCustomerForm Component
+const AddCustomerForm = () => {
+  const navigate = useNavigate();
+  const [companies, setCompanies] = useState([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    companyId: '',
+    unitPrice: 0
+  });
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    loadCompanies();
+  }, []);
+
+  const loadCompanies = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/companies`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCompanies(response.data);
+    } catch (error) {
+      console.error('Failed to load companies:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      toast.error('Customer name is required');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(
+        `${BACKEND_URL}/api/customers`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Customer created successfully!');
+      
+      // Reset form
+      setFormData({
+        name: '',
+        companyId: '',
+        unitPrice: 0
+      });
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.detail || 'Customer already exists');
+      } else if (error.response?.status === 401) {
+        toast.error('Session expired. Please log in again.');
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        toast.error('Failed to create customer');
+      }
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Customer Name */}
+        <div className="space-y-2">
+          <Label htmlFor="customer-name">Customer Name *</Label>
+          <Input
+            id="customer-name"
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            placeholder="Enter customer name"
+            required
+          />
+        </div>
+
+        {/* Company */}
+        <div className="space-y-2">
+          <Label htmlFor="customer-company">Company (Optional)</Label>
+          <select
+            id="customer-company"
+            value={formData.companyId}
+            onChange={(e) => setFormData({...formData, companyId: e.target.value})}
+            className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="">No Company</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Unit Price */}
+        <div className="space-y-2">
+          <Label htmlFor="customer-unit-price">Unit Price (€)</Label>
+          <Input
+            id="customer-unit-price"
+            type="number"
+            step="0.01"
+            min="0"
+            value={formData.unitPrice}
+            onChange={(e) => setFormData({...formData, unitPrice: parseFloat(e.target.value) || 0})}
+            placeholder="0.00"
+          />
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <div className="flex justify-end pt-2">
+        <Button
+          type="submit"
+          disabled={creating || !formData.name.trim()}
+          className="rounded-full bg-indigo-600 hover:bg-indigo-700"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          {creating ? 'Creating...' : 'Create Customer'}
+        </Button>
+      </div>
+    </form>
+  );
+};
+
 const Settings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
