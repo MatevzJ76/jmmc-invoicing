@@ -295,6 +295,27 @@ const InvoiceDetail = () => {
     toast.success('Line item moved down');
   };
 
+  // Determine button states based on invoice status
+  const getButtonStates = () => {
+    if (!invoice) return { save: false, confirmDraft: false, issue: false, post: false };
+    
+    const status = invoice.status;
+    
+    // Define workflow order
+    const statusOrder = ['imported', 'edited', 'draft', 'issued', 'posted'];
+    const currentStatusIndex = statusOrder.indexOf(status);
+    const draftIndex = statusOrder.indexOf('draft');
+    const issuedIndex = statusOrder.indexOf('issued');
+    const postedIndex = statusOrder.indexOf('posted');
+    
+    return {
+      save: currentStatusIndex >= draftIndex || processingButtons.save,
+      confirmDraft: currentStatusIndex >= draftIndex || processingButtons.confirmDraft,
+      issue: currentStatusIndex >= issuedIndex || processingButtons.issue,
+      post: currentStatusIndex >= postedIndex || processingButtons.post
+    };
+  };
+
   useEffect(() => {
     const userStr = localStorage.getItem('user');
     if (userStr) setUser(JSON.parse(userStr));
