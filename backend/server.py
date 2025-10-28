@@ -962,13 +962,20 @@ async def upload_customer_history(
             # Check if customer exists
             customer = await db.customers.find_one({"name": customer_name})
             
+            logger.info(f"Processing customer '{customer_name}' - Found in DB: {customer is not None}")
+            
             # If filtering by specific customer_ids, skip if not in the list
             if customer_ids and customer_ids != "all":
                 target_ids = [cid.strip() for cid in customer_ids.split(",")]
+                logger.info(f"Filtering by customer IDs: {target_ids}")
+                
                 if customer and customer["id"] not in target_ids:
+                    logger.info(f"Skipping {customer_name} - ID {customer['id']} not in target list")
                     continue
                 elif not customer:
-                    # Skip creating if filtering by specific IDs
+                    # Customer doesn't exist, but we're filtering by ID
+                    # Check if we should create it anyway when uploading to "all"
+                    logger.info(f"Customer '{customer_name}' not found in DB and filtering by IDs - skipping creation")
                     continue
             
             # Create customer if doesn't exist
