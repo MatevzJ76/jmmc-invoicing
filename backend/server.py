@@ -677,14 +677,17 @@ async def get_customer_detail(customer_id: str, current_user: User = Depends(get
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     
-    # Get historical invoices from uploaded data (last 12, sorted by date descending)
+    # Get all historical invoices from uploaded data (sorted by date descending)
     historical_invoices = customer.get("historicalInvoices", [])
     
-    # Filter to only show entries with individualRows (new format)
+    # Filter to only show entries with individualRows (new format) OR manual entries
     # This removes old plain entries without expandable details
-    historical_invoices = [inv for inv in historical_invoices if inv.get("individualRows")]
+    historical_invoices = [
+        inv for inv in historical_invoices 
+        if inv.get("individualRows") or inv.get("source") == "manual"
+    ]
     
-    # Sort by date descending and take last 12
+    # Sort by date descending (show all, no limit)
     if historical_invoices:
         # Add unique IDs to each historical invoice for deletion
         for idx, inv in enumerate(historical_invoices):
@@ -692,7 +695,7 @@ async def get_customer_detail(customer_id: str, current_user: User = Depends(get
                 inv["id"] = f"hist_{idx}_{inv.get('date', '')}_{inv.get('amount', 0)}"
         
         historical_invoices.sort(key=lambda x: x.get("date", ""), reverse=True)
-        historical_invoices = historical_invoices[:12]
+        # No limit - show all periods
     
     # Calculate statistics from all historical data (including old format)
     all_historical = customer.get("historicalInvoices", [])
