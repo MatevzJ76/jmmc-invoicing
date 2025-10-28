@@ -17,6 +17,13 @@ const Customers = () => {
   const [uploadingHistory, setUploadingHistory] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState('');
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    name: '',
+    companyId: '',
+    unitPrice: 0
+  });
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     loadCompanies();
