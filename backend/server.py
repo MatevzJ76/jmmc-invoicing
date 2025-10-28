@@ -756,6 +756,37 @@ async def update_customer(
     
     return {"message": "Customer updated successfully"}
 
+@api_router.post("/customers/{customer_id}/add-manual-entry")
+async def add_manual_historical_entry(
+    customer_id: str,
+    entry_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Manually add a historical invoice entry"""
+    customer = await db.customers.find_one({"id": customer_id})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Create manual entry
+    manual_entry = {
+        "date": entry_data.get("date"),
+        "description": entry_data.get("description", ""),
+        "amount": float(entry_data.get("amount", 0)),
+        "source": "manual",
+        "individualRows": []  # Manual entries don't have sub-rows
+    }
+    
+    # Add to historical invoices
+    existing_history = customer.get("historicalInvoices", [])
+    existing_history.append(manual_entry)
+    
+    await db.customers.update_one(
+        {"id": customer_id},
+        {"$set": {"historicalInvoices": existing_history}}
+    )
+    
+    return {"message": "Manual entry added successfully"}
+
 @api_router.post("/customers/upload-history")
 async def upload_customer_history(
     file: UploadFile = File(...),
