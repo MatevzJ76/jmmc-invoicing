@@ -421,15 +421,44 @@ const CustomerDetail = () => {
                         {isExpanded && hasIndividualRows && (
                           <tr>
                             <td colSpan="4" className="px-4 py-2 bg-blue-50/50">
-                              <div className="space-y-1">
+                              <div className="overflow-x-auto">
                                 <p className="text-xs font-semibold text-slate-600 mb-2">Individual Transactions:</p>
-                                {invoice.individualRows.map((row, rowIdx) => (
-                                  <div key={rowIdx} className="flex items-center justify-between p-2 bg-white rounded border border-slate-200 text-xs">
-                                    <span className="text-slate-600 w-32">{formatDate(row.date)}</span>
-                                    <span className="text-slate-700 flex-1">{row.description || '-'}</span>
-                                    <span className="text-slate-800 font-medium w-24 text-right">€{(row.amount || 0).toFixed(2)}</span>
-                                  </div>
-                                ))}
+                                <table className="w-full text-xs">
+                                  <thead className="bg-slate-100 border-b border-slate-300">
+                                    <tr>
+                                      <th className="px-2 py-2 text-left text-slate-700 font-semibold">Date</th>
+                                      <th className="px-2 py-2 text-left text-slate-700 font-semibold">Article</th>
+                                      <th className="px-2 py-2 text-left text-slate-700 font-semibold">Description</th>
+                                      <th className="px-2 py-2 text-right text-slate-700 font-semibold">Qty</th>
+                                      <th className="px-2 py-2 text-left text-slate-700 font-semibold">Unit</th>
+                                      <th className="px-2 py-2 text-right text-slate-700 font-semibold">Unit Price</th>
+                                      <th className="px-2 py-2 text-right text-slate-700 font-semibold">Amount</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {invoice.individualRows.map((row, rowIdx) => (
+                                      <tr key={rowIdx} className="border-b border-slate-200 hover:bg-white transition-colors">
+                                        <td className="px-2 py-2 text-slate-600 whitespace-nowrap">{formatDate(row.date)}</td>
+                                        <td className="px-2 py-2 text-slate-700">{row.description || '-'}</td>
+                                        <td className="px-2 py-2 text-slate-600 max-w-xs">
+                                          <div className="truncate" title={row.detailedDescription}>
+                                            {row.detailedDescription || '-'}
+                                          </div>
+                                        </td>
+                                        <td className="px-2 py-2 text-slate-700 text-right">
+                                          {row.quantity != null ? row.quantity.toFixed(2) : '-'}
+                                        </td>
+                                        <td className="px-2 py-2 text-slate-600">{row.unit || '-'}</td>
+                                        <td className="px-2 py-2 text-slate-700 text-right">
+                                          {row.unitPrice != null ? `€${row.unitPrice.toFixed(2)}` : '-'}
+                                        </td>
+                                        <td className="px-2 py-2 text-slate-800 font-medium text-right whitespace-nowrap">
+                                          €{(row.amount || 0).toFixed(2)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
                             </td>
                           </tr>
