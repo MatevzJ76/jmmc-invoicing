@@ -129,7 +129,7 @@ const SortableLineItem = ({
               value={parseFloat(line.quantity).toFixed(2)}
               onChange={(e) => updateLine(index, 'quantity', parseFloat(e.target.value) || 0)}
               onFocus={(e) => e.target.select()}
-              disabled={invoice.status === 'posted'}
+              disabled={!isEditingAllowed}
               data-testid={`quantity-input-${index}`}
             />
           </div>
@@ -142,7 +142,7 @@ const SortableLineItem = ({
               value={parseFloat(line.unitPrice).toFixed(2)}
               onChange={(e) => updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)}
               onFocus={(e) => e.target.select()}
-              disabled={invoice.status === 'posted'}
+              disabled={!isEditingAllowed}
               data-testid={`unit-price-input-${index}`}
             />
           </div>
@@ -157,7 +157,7 @@ const SortableLineItem = ({
               variant="outline"
               size="sm"
               onClick={() => setShowMoveDropdown(showMoveDropdown === line.id ? null : line.id)}
-              disabled={movingLine === line.id || invoice.status === 'posted'}
+              disabled={movingLine === line.id || !isEditingAllowed}
               className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
               title="Move to different customer"
             >
