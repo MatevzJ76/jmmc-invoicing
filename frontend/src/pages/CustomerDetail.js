@@ -23,10 +23,25 @@ const CustomerDetail = () => {
     description: '',
     amount: 0
   });
+  const [companies, setCompanies] = useState([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
 
   useEffect(() => {
+    loadCompanies();
     loadCustomer();
   }, [id]);
+
+  const loadCompanies = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/companies`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCompanies(response.data);
+    } catch (error) {
+      console.error('Failed to load companies:', error);
+    }
+  };
 
   const loadCustomer = async () => {
     try {
@@ -36,6 +51,7 @@ const CustomerDetail = () => {
       });
       setCustomer(response.data);
       setUnitPrice(response.data.unitPrice || 0);
+      setSelectedCompanyId(response.data.companyId || '');
     } catch (error) {
       toast.error('Failed to load customer');
       console.error(error);
