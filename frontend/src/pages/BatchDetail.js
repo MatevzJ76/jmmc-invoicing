@@ -363,7 +363,39 @@ const BatchDetail = () => {
       filtered = filtered.filter(invoice => invoice.status === statusFilter);
     }
 
+    // Sorting
+    if (sortField) {
+      filtered.sort((a, b) => {
+        let aVal, bVal;
+        
+        if (sortField === 'customerName') {
+          aVal = a.customerName.toLowerCase();
+          bVal = b.customerName.toLowerCase();
+        } else if (sortField === 'amount') {
+          aVal = a.total || 0;
+          bVal = b.total || 0;
+        }
+        
+        if (sortDirection === 'asc') {
+          return aVal > bVal ? 1 : -1;
+        } else {
+          return aVal < bVal ? 1 : -1;
+        }
+      });
+    }
+
     setFilteredInvoices(filtered);
+  };
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      // Toggle direction
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New field, default to ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
   };
 
   if (loading) {
