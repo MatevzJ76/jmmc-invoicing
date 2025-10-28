@@ -1294,8 +1294,6 @@ const BatchDetail = () => {
               </table>
             </div>
           )}
-            </div>
-          )}
         </div>
 
         <div className="mt-4 text-center text-sm text-slate-500">
