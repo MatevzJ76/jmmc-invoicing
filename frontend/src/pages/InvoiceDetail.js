@@ -148,7 +148,7 @@ const SortableLineItem = ({
           <div>
             <Label>Amount (€)</Label>
             <p className="mt-2 text-lg font-semibold text-slate-800" data-testid={`amount-${index}`}>
-              €{line.amount.toFixed(2)}
+              {formatEuro(line.amount)}
             </p>
           </div>
           <div className="flex items-end relative">
