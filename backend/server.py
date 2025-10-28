@@ -1013,6 +1013,38 @@ async def upload_customer_history(
                 if target_customer:
                     logger.info(f"Single customer upload mode: applying all data to {target_customer['name']}")
                     
+                    # Extract company name from uploaded data
+                    company_name_from_data = None
+                    for customer_months in monthly_data.values():
+                        for month_data in customer_months.values():
+                            if month_data.get('company_name'):
+                                company_name_from_data = month_data['company_name']
+                                break
+                        if company_name_from_data:
+                            break
+                    
+                    # Update company if present in data
+                    if company_name_from_data:
+                        # Find or create company
+                        company = await db.companies.find_one({"name": company_name_from_data})
+                        if not company:
+                            company_id = str(uuid.uuid4())
+                            company = {
+                                "id": company_id,
+                                "name": company_name_from_data
+                            }
+                            await db.companies.insert_one(company)
+                            logger.info(f"Created new company: {company_name_from_data}")
+                        else:
+                            company_id = company["id"]
+                        
+                        # Update customer's company
+                        await db.customers.update_one(
+                            {"id": target_customer["id"]},
+                            {"$set": {"companyId": company_id}}
+                        )
+                        logger.info(f"Updated customer '{target_customer['name']}' with company: {company_name_from_data}")
+                    
                     # Combine all entries from all customers in the file
                     all_new_entries = []
                     for entries in historical_entries_by_customer.values():
