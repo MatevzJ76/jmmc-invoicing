@@ -28,6 +28,216 @@ import { CSS } from '@dnd-kit/utilities';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Sortable Line Item Component
+const SortableLineItem = ({ 
+  line, 
+  index, 
+  invoice, 
+  aiEnabled,
+  lines,
+  allCustomers,
+  showMoveDropdown,
+  setShowMoveDropdown,
+  movingLine,
+  customerSearch,
+  setCustomerSearch,
+  updateLine,
+  removeLine,
+  handleAISuggestion,
+  handleMoveLineItem,
+  moveLineUp,
+  moveLineDown
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: line.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className="bg-slate-50 rounded-lg p-4 border border-slate-200" 
+      data-testid={`line-item-${index}`}
+    >
+      <div className="grid gap-4">
+        <div className="flex items-start gap-2">
+          {/* Drag Handle */}
+          <button
+            {...attributes}
+            {...listeners}
+            disabled={invoice.status === 'posted'}
+            className="mt-6 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Drag to reorder"
+          >
+            <GripVertical className="w-5 h-5" />
+          </button>
+          
+          <div className="flex-1">
+            <Label htmlFor={`desc-${index}`}>Description</Label>
+            <Textarea
+              id={`desc-${index}`}
+              value={line.description}
+              onChange={(e) => updateLine(index, 'description', e.target.value)}
+              placeholder="Service description"
+              rows={2}
+              disabled={invoice.status === 'posted'}
+              data-testid={`description-input-${index}`}
+            />
+          </div>
+          {aiEnabled && invoice.status !== 'posted' && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleAISuggestion(index, 'description')}
+              className="mt-6"
+              title="Apply AI grammar correction"
+            >
+              <Sparkles className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-7 gap-4">
+          <div>
+            <Label htmlFor={`qty-${index}`}>Quantity</Label>
+            <Input
+              id={`qty-${index}`}
+              type="number"
+              step="0.01"
+              value={parseFloat(line.quantity).toFixed(2)}
+              onChange={(e) => updateLine(index, 'quantity', parseFloat(e.target.value) || 0)}
+              onFocus={(e) => e.target.select()}
+              disabled={invoice.status === 'posted'}
+              data-testid={`quantity-input-${index}`}
+            />
+          </div>
+          <div>
+            <Label htmlFor={`price-${index}`}>Unit Price (€)</Label>
+            <Input
+              id={`price-${index}`}
+              type="number"
+              step="0.01"
+              value={parseFloat(line.unitPrice).toFixed(2)}
+              onChange={(e) => updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+              onFocus={(e) => e.target.select()}
+              disabled={invoice.status === 'posted'}
+              data-testid={`unit-price-input-${index}`}
+            />
+          </div>
+          <div>
+            <Label>Amount (€)</Label>
+            <p className="mt-2 text-lg font-semibold text-slate-800" data-testid={`amount-${index}`}>
+              €{line.amount.toFixed(2)}
+            </p>
+          </div>
+          <div className="flex items-end relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowMoveDropdown(showMoveDropdown === line.id ? null : line.id)}
+              disabled={movingLine === line.id || invoice.status === 'posted'}
+              className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Move to different customer"
+            >
+              <ArrowRightLeft className="w-4 h-4" />
+            </Button>
+            
+            {showMoveDropdown === line.id && (
+              <div className="absolute left-0 top-full mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
+                <div className="p-3 border-b border-slate-200 bg-slate-50">
+                  <p className="text-xs font-semibold text-slate-700 mb-2">Move to Customer:</p>
+                  <Input
+                    type="text"
+                    placeholder="Search customers..."
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    className="text-sm h-8"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  {allCustomers
+                    .filter(customer => 
+                      customer.name.toLowerCase().includes(customerSearch.toLowerCase())
+                    )
+                    .map(customer => (
+                      <button
+                        key={customer.id}
+                        onClick={() => {
+                          handleMoveLineItem(line, customer.id);
+                          setCustomerSearch('');
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
+                      >
+                        {customer.name}
+                      </button>
+                    ))}
+                  {allCustomers.filter(customer => 
+                    customer.name.toLowerCase().includes(customerSearch.toLowerCase())
+                  ).length === 0 && (
+                    <div className="px-3 py-4 text-center text-sm text-slate-500">
+                      No customers found
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Up/Down Arrow Buttons */}
+          <div className="flex items-end gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => moveLineUp(index)}
+              disabled={index === 0 || invoice.status === 'posted'}
+              className="rounded-full disabled:opacity-30 disabled:cursor-not-allowed px-2"
+              title="Move up"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => moveLineDown(index)}
+              disabled={index === lines.length - 1 || invoice.status === 'posted'}
+              className="rounded-full disabled:opacity-30 disabled:cursor-not-allowed px-2"
+              title="Move down"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className="flex items-end">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => removeLine(index)}
+              disabled={invoice.status === 'posted'}
+              className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid={`remove-line-${index}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const InvoiceDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
