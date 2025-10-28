@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement drag-and-drop functionality for invoice line items with up/down arrow buttons in the Edit phase"
+user_problem_statement: "Implement consecutive button disabling on invoice detail page based on workflow priority (Save → Confirm Draft → Issue Invoice → Post to eRačuni)"
 
 backend:
   - task: "GET /api/customers endpoint"
