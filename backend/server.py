@@ -871,13 +871,21 @@ async def upload_customer_history(
                     'date': date_str,
                     'month': month_key,
                     'total_amount': 0.0,
-                    'descriptions': []
+                    'descriptions': [],
+                    'individual_rows': []  # Store individual row details
                 }
             
             # Accumulate data for the month
             monthly_data[customer_name][month_key]['total_amount'] += amount
             if description and str(description).strip():
                 monthly_data[customer_name][month_key]['descriptions'].append(str(description).strip())
+            
+            # Store individual row
+            monthly_data[customer_name][month_key]['individual_rows'].append({
+                'date': date_str,
+                'description': str(description).strip() if description else "",
+                'amount': amount
+            })
         
         logger.info(f"Extracted data for {len(monthly_data)} customers")
         
