@@ -124,6 +124,44 @@ const Customers = () => {
     }
   };
 
+  const handleCreateCustomer = async (e) => {
+    e.preventDefault();
+    
+    if (!newCustomer.name.trim()) {
+      toast.error('Customer name is required');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(
+        `${BACKEND_URL}/api/customers`,
+        newCustomer,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Customer created successfully!');
+      
+      // Reset form and close modal
+      setNewCustomer({
+        name: '',
+        companyId: '',
+        unitPrice: 0
+      });
+      setShowAddCustomer(false);
+      loadCustomers();
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.detail || 'Customer already exists');
+      } else {
+        toast.error('Failed to create customer');
+      }
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
