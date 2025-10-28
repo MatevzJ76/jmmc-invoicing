@@ -887,140 +887,41 @@ const InvoiceDetail = () => {
             </Button>
           </div>
 
-          <div className="space-y-4">
-            {lines.map((line, index) => (
-              <div key={line.id} className="bg-slate-50 rounded-lg p-4 border border-slate-200" data-testid={`line-item-${index}`}>
-                <div className="grid gap-4">
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1">
-                      <Label htmlFor={`desc-${index}`}>Description</Label>
-                      <Textarea
-                        id={`desc-${index}`}
-                        value={line.description}
-                        onChange={(e) => updateLine(index, 'description', e.target.value)}
-                        placeholder="Service description"
-                        rows={2}
-                        disabled={invoice.status === 'posted'}
-                        data-testid={`description-input-${index}`}
-                      />
-                    </div>
-                    {aiEnabled && invoice.status !== 'posted' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleAISuggestion(index, 'description')}
-                        className="mt-6"
-                        title="Apply AI grammar correction"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-5 gap-4">
-                    <div>
-                      <Label htmlFor={`qty-${index}`}>Quantity</Label>
-                      <Input
-                        id={`qty-${index}`}
-                        type="number"
-                        step="0.01"
-                        value={parseFloat(line.quantity).toFixed(2)}
-                        onChange={(e) => updateLine(index, 'quantity', parseFloat(e.target.value) || 0)}
-                        onFocus={(e) => e.target.select()}
-                        disabled={invoice.status === 'posted'}
-                        data-testid={`quantity-input-${index}`}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`price-${index}`}>Unit Price (€)</Label>
-                      <Input
-                        id={`price-${index}`}
-                        type="number"
-                        step="0.01"
-                        value={parseFloat(line.unitPrice).toFixed(2)}
-                        onChange={(e) => updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        onFocus={(e) => e.target.select()}
-                        disabled={invoice.status === 'posted'}
-                        data-testid={`unit-price-input-${index}`}
-                      />
-                    </div>
-                    <div>
-                      <Label>Amount (€)</Label>
-                      <p className="mt-2 text-lg font-semibold text-slate-800" data-testid={`amount-${index}`}>
-                        €{line.amount.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="flex items-end relative">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowMoveDropdown(showMoveDropdown === line.id ? null : line.id)}
-                        disabled={movingLine === line.id || invoice.status === 'posted'}
-                        className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Move to different customer"
-                      >
-                        <ArrowRightLeft className="w-4 h-4" />
-                      </Button>
-                      
-                      {showMoveDropdown === line.id && (
-                        <div className="absolute left-0 top-full mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
-                          <div className="p-3 border-b border-slate-200 bg-slate-50">
-                            <p className="text-xs font-semibold text-slate-700 mb-2">Move to Customer:</p>
-                            <Input
-                              type="text"
-                              placeholder="Search customers..."
-                              value={customerSearch}
-                              onChange={(e) => setCustomerSearch(e.target.value)}
-                              className="text-sm h-8"
-                              autoFocus
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
-                          <div className="max-h-48 overflow-y-auto">
-                            {allCustomers
-                              .filter(customer => 
-                                customer.name.toLowerCase().includes(customerSearch.toLowerCase())
-                              )
-                              .map(customer => (
-                                <button
-                                  key={customer.id}
-                                  onClick={() => {
-                                    handleMoveLineItem(line, customer.id);
-                                    setCustomerSearch('');
-                                  }}
-                                  className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
-                                >
-                                  {customer.name}
-                                </button>
-                              ))}
-                            {allCustomers.filter(customer => 
-                              customer.name.toLowerCase().includes(customerSearch.toLowerCase())
-                            ).length === 0 && (
-                              <div className="px-3 py-4 text-center text-sm text-slate-500">
-                                No customers found
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-end">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeLine(index)}
-                        disabled={invoice.status === 'posted'}
-                        className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                        data-testid={`remove-line-${index}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={lines.map(line => line.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-4">
+                {lines.map((line, index) => (
+                  <SortableLineItem
+                    key={line.id}
+                    line={line}
+                    index={index}
+                    invoice={invoice}
+                    aiEnabled={aiEnabled}
+                    lines={lines}
+                    allCustomers={allCustomers}
+                    showMoveDropdown={showMoveDropdown}
+                    setShowMoveDropdown={setShowMoveDropdown}
+                    movingLine={movingLine}
+                    customerSearch={customerSearch}
+                    setCustomerSearch={setCustomerSearch}
+                    updateLine={updateLine}
+                    removeLine={removeLine}
+                    handleAISuggestion={handleAISuggestion}
+                    handleMoveLineItem={handleMoveLineItem}
+                    moveLineUp={moveLineUp}
+                    moveLineDown={moveLineDown}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         </div>
       </div>
 
