@@ -1046,6 +1046,34 @@ async def upload_customer_history(
         
         # For "all" mode or multiple customers, match by name
         for customer_name in all_customer_names:
+            # Get company name from first month's data (they should all be the same)
+            company_name_from_data = None
+            first_month = list(historical_entries_by_customer[customer_name])[0] if historical_entries_by_customer[customer_name] else None
+            if first_month:
+                months = monthly_data.get(customer_name, {})
+                for month_data in months.values():
+                    if month_data.get('company_name'):
+                        company_name_from_data = month_data['company_name']
+                        break
+            
+            # Find or create company if company name exists
+            company_id = None
+            if company_name_from_data:
+                # Check if company exists
+                company = await db.companies.find_one({"name": company_name_from_data})
+                if not company:
+                    # Create company
+                    company_id = str(uuid.uuid4())
+                    company = {
+                        "id": company_id,
+                        "name": company_name_from_data
+                    }
+                    await db.companies.insert_one(company)
+                    logger.info(f"Created new company: {company_name_from_data}")
+                else:
+                    company_id = company["id"]
+                    logger.info(f"Found existing company: {company_name_from_data} (ID: {company_id})")
+            
             # Check if customer exists
             customer = await db.customers.find_one({"name": customer_name})
             
