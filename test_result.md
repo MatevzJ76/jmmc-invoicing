@@ -188,6 +188,9 @@ frontend:
         - working: true
           agent: "main"
           comment: "Implemented button state management for invoice workflow buttons. Added processingButtons state object to track which buttons have been clicked. Updated handlers: (1) handleSave - disables Save button after click, (2) handleConfirmDraft - disables Save + Confirm Draft after click, (3) handleIssueInvoice - disables Save + Confirm Draft + Issue Invoice after click, (4) handlePost - disables all workflow buttons (Save + Confirm Draft + Issue + Post) after click. On error, buttons are re-enabled. View API and Delete buttons are not affected. Tested with Playwright: Before click all buttons enabled, after clicking Confirm Draft, both Save and Confirm Draft are disabled while Issue and Post remain enabled. Feature working as expected."
+        - working: true
+          agent: "main"
+          comment: "FIXED button state persistence issue and changed Confirm Draft button color to amber. Added getButtonStates() function that determines button disabled states based on invoice.status from database, not just local state. Button logic: status >= 'draft' disables Save + Confirm Draft, status >= 'issued' disables Issue Invoice, status = 'posted' disables all. Changed Confirm Draft button from green outline to solid amber (bg-amber-500 hover:bg-amber-600). Tested with Playwright: (1) Opened invoice with 'Imported' status - all buttons enabled. (2) Clicked Confirm Draft, status changed to 'Draft'. (3) Navigated away and back to same invoice. (4) Result: Save and Confirm Draft remained disabled (Save: true, Confirm: true), Issue remained enabled (Issue: false). Persistence working correctly - button states now survive page navigation and are based on actual invoice status."
 
 metadata:
   created_by: "testing_agent"
