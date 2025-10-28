@@ -921,10 +921,16 @@ async def upload_customer_history(
             customer_name = row[col_map.get('customer')] if 'customer' in col_map else None
             date_val = row[col_map.get('date')] if 'date' in col_map else None
             description = row[col_map.get('description')] if 'description' in col_map else ""
+            alt_description = row[col_map.get('alt_description')] if 'alt_description' in col_map else ""
             if not description:
-                description = row[col_map.get('alt_description')] if 'alt_description' in col_map else ""
+                description = alt_description
             amount_val = row[col_map.get('amount')] if 'amount' in col_map else None
             company_name = row[col_map.get('company')] if 'company' in col_map else None
+            
+            # Extract additional columns
+            quantity_val = row[col_map.get('quantity')] if 'quantity' in col_map else None
+            unit_val = row[col_map.get('unit')] if 'unit' in col_map else None
+            unit_price_val = row[col_map.get('unit_price')] if 'unit_price' in col_map else None
             
             if not customer_name or not date_val:
                 continue
@@ -963,6 +969,28 @@ async def upload_customer_history(
             except:
                 amount = 0.0
             
+            # Parse quantity
+            try:
+                if isinstance(quantity_val, (int, float)):
+                    quantity = float(quantity_val)
+                elif quantity_val:
+                    quantity = float(str(quantity_val).replace(',', '.'))
+                else:
+                    quantity = None
+            except:
+                quantity = None
+            
+            # Parse unit price
+            try:
+                if isinstance(unit_price_val, (int, float)):
+                    unit_price = float(unit_price_val)
+                elif unit_price_val:
+                    unit_price = float(str(unit_price_val).replace(',', '.'))
+                else:
+                    unit_price = None
+            except:
+                unit_price = None
+            
             # Initialize customer data
             if customer_name not in monthly_data:
                 monthly_data[customer_name] = {}
@@ -985,9 +1013,23 @@ async def upload_customer_history(
             if description and str(description).strip():
                 monthly_data[customer_name][month_key]['descriptions'].append(str(description).strip())
             
-            # Store individual row
-            monthly_data[customer_name][month_key]['individual_rows'].append({
+            # Store individual row with all details
+            individual_row = {
                 'date': date_str,
+                'description': str(description).strip() if description else "",
+                'detailedDescription': str(alt_description).strip() if alt_description else "",
+                'amount': amount
+            }
+            
+            # Add optional fields if available
+            if quantity is not None:
+                individual_row['quantity'] = quantity
+            if unit_val:
+                individual_row['unit'] = str(unit_val).strip()
+            if unit_price is not None:
+                individual_row['unitPrice'] = unit_price
+            
+            monthly_data[customer_name][month_key]['individual_rows'].append(individual_row)
                 'description': str(description).strip() if description else "",
                 'amount': amount
             })
