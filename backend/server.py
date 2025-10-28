@@ -646,11 +646,34 @@ async def archive_batch(batch_id: str, current_user: User = Depends(get_current_
     return {"message": "Batch archived successfully"}
 
 
+# ============ COMPANIES ============
+@api_router.get("/companies")
+async def get_all_companies(current_user: User = Depends(get_current_user)):
+    """Get all companies"""
+    companies = await db.companies.find({}, {"_id": 0}).to_list(1000)
+    
+    # If no companies exist, create default ones
+    if not companies:
+        default_companies = [
+            {"id": str(uuid.uuid4()), "name": "JMMC HP"},
+            {"id": str(uuid.uuid4()), "name": "JMMC Finance"}
+        ]
+        await db.companies.insert_many(default_companies)
+        companies = default_companies
+    
+    companies.sort(key=lambda x: x.get("name", "").lower())
+    return companies
+
 # ============ CUSTOMERS ============
 @api_router.get("/customers")
-async def get_all_customers(current_user: User = Depends(get_current_user)):
+async def get_all_customers(company_id: Optional[str] = None, current_user: User = Depends(get_current_user)):
     """Get all customers from database with statistics from historical data"""
-    customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
+    # Build query filter
+    query = {}
+    if company_id:
+        query["companyId"] = company_id
+    
+    customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
     
     # Add statistics for each customer based on historical data only
     for customer in customers:
@@ -664,6 +687,13 @@ async def get_all_customers(current_user: User = Depends(get_current_user)):
         customer["totalInvoiced"] = total_amount
         customer["averageInvoice"] = total_amount / invoice_count if invoice_count > 0 else 0
         customer["unitPrice"] = customer.get("unitPrice", 0)
+        
+        # Add company name if customer has companyId
+        if customer.get("companyId"):
+            company = await db.companies.find_one({"id": customer["companyId"]}, {"_id": 0})
+            customer["companyName"] = company.get("name", "") if company else ""
+        else:
+            customer["companyName"] = ""
     
     # Sort by name A-Z
     customers.sort(key=lambda x: x.get("name", "").lower())
