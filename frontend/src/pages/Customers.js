@@ -63,6 +63,10 @@ const Customers = () => {
       );
     }
 
+    if (selectedCompany) {
+      filtered = filtered.filter(customer => customer.companyId === selectedCompany);
+    }
+
     setFilteredCustomers(filtered);
   };
 
