@@ -464,14 +464,14 @@ const CustomerDetail = () => {
                                           </div>
                                         </td>
                                         <td className="px-2 py-2 text-slate-700 text-right">
-                                          {row.quantity != null ? row.quantity.toFixed(2) : '-'}
+                                          {row.quantity != null ? formatEuro(row.quantity).replace('€', '') : '-'}
                                         </td>
                                         <td className="px-2 py-2 text-slate-600">{row.unit || '-'}</td>
                                         <td className="px-2 py-2 text-slate-700 text-right">
-                                          {row.unitPrice != null ? `€${row.unitPrice.toFixed(2)}` : '-'}
+                                          {row.unitPrice != null ? `€${formatEuro(row.unitPrice)}` : '-'}
                                         </td>
                                         <td className="px-2 py-2 text-slate-800 font-medium text-right whitespace-nowrap">
-                                          €{(row.amount || 0).toFixed(2)}
+                                          €{formatEuro(row.amount || 0)}
                                         </td>
                                       </tr>
                                     ))}
