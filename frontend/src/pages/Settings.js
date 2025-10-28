@@ -231,8 +231,28 @@ const Settings = () => {
     // Use test prompt if provided, otherwise use default
     const testPromptText = aiTestPrompt || "Hello, this is a connection test. Please respond with 'OK'.";
     
-    // Easter egg: Special response for Tjaša variants (tjaš* or tjas*) + number 67
+    // Easter egg: Special response for Matevž variants (matevz, matevž, tevzi, tevži) + number 69
     const words = testPromptText.toLowerCase().split(/\s+/);
+    const containsMatevz = words.some(word => 
+      word.includes('matevz') || word.includes('matevž') || 
+      word.includes('tevzi') || word.includes('tevži')
+    );
+    const contains69 = /\b69\b/.test(testPromptText);
+    
+    if (containsMatevz && contains69) {
+      setTimeout(() => {
+        setTestResult({ 
+          success: true, 
+          message: "✨ Special Message Detected ✨",
+          fullResponse: "☀️"
+        });
+        toast.success('☀️ Sunshine for you!');
+        setTesting(false);
+      }, 1000);
+      return;
+    }
+    
+    // Easter egg: Special response for Tjaša variants (tjaš* or tjas*) + number 67
     const containsTjasa = words.some(word => 
       word.startsWith('tjaš') || word.startsWith('tjas')
     );
