@@ -563,6 +563,21 @@ const InvoiceDetail = () => {
                 <span className="text-slate-600">Customer:</span>
                 <span className="font-semibold text-slate-800">{invoice.customerName}</span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">Company:</span>
+                <select
+                  value={selectedCompanyId}
+                  disabled
+                  className="w-48 h-9 px-3 rounded-md border border-input bg-slate-50 text-sm font-bold ring-offset-background cursor-not-allowed"
+                >
+                  <option value="">No Company</option>
+                  {companies.map((company) => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Line Items:</span>
                 <span className="font-semibold text-slate-800">{lines.length}</span>
