@@ -1243,7 +1243,17 @@ const BatchDetail = () => {
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Period</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Status</th>
+                    <th 
+                      className="px-4 py-3 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Status
+                        {sortField === 'status' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
                     <th 
                       className="px-4 py-3 text-right text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
                       onClick={() => handleSort('amount')}
