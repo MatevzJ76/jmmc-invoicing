@@ -963,13 +963,15 @@ async def upload_customer_history(
             
             # Initialize month data
             if month_key not in monthly_data[customer_name]:
+                # Use company from column, or fall back to metadata company
+                effective_company_name = company_name if company_name else company_name_from_metadata
                 monthly_data[customer_name][month_key] = {
                     'date': date_str,
                     'month': month_key,
                     'total_amount': 0.0,
                     'descriptions': [],
                     'individual_rows': [],  # Store individual row details
-                    'company_name': company_name  # Store company name from first row
+                    'company_name': effective_company_name  # Store company name (from column or metadata)
                 }
             
             # Accumulate data for the month
