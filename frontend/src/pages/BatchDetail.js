@@ -1206,42 +1206,76 @@ const BatchDetail = () => {
           {filteredInvoices.length === 0 ? (
             <p className="text-center py-12 text-slate-500">No invoices found</p>
           ) : (
-            <div className="space-y-2">
-              {filteredInvoices.map((invoice) => (
-                <div
-                  key={invoice.id}
-                  className={`flex items-center justify-between p-4 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer ${
-                    invoice.status === 'posted' 
-                      ? 'bg-green-50 border-2 border-green-300' 
-                      : 'bg-slate-50'
-                  }`}
-                  onClick={() => navigate(`/invoices/${invoice.id}`)}
-                  data-testid={`invoice-item-${invoice.id}`}
-                >
-                  <div>
-                    <p className="font-semibold text-slate-800">{invoice.customerName}</p>
-                    <p className="text-sm text-slate-600">
-                      {invoice.periodFrom} - {invoice.periodTo}
-                    </p>
-                  </div>
-                  <div className="text-right flex items-center gap-4">
-                    <div>
-                      <p className="font-bold text-slate-800">€{invoice.total.toFixed(2)}</p>
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        invoice.status === 'posted' ? 'bg-emerald-100 text-emerald-800 font-bold' :
-                        invoice.status === 'issued' ? 'bg-green-100 text-green-700' :
-                        invoice.status === 'draft' ? 'bg-blue-100 text-blue-700' :
-                        invoice.status === 'edited' ? 'bg-purple-100 text-purple-700' :
-                        invoice.status === 'imported' ? 'bg-yellow-100 text-yellow-700' :
-                        invoice.status === 'deleted' ? 'bg-red-100 text-red-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {invoice.status}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b-2 border-slate-200">
+                  <tr>
+                    <th 
+                      className="px-4 py-3 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('customerName')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Customer Name
+                        {sortField === 'customerName' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Period</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Status</th>
+                    <th 
+                      className="px-4 py-3 text-right text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('amount')}
+                    >
+                      <div className="flex items-center justify-end gap-2">
+                        Amount
+                        {sortField === 'amount' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredInvoices.map((invoice) => (
+                    <tr
+                      key={invoice.id}
+                      className={`hover:bg-slate-100 transition-colors cursor-pointer ${
+                        invoice.status === 'posted' 
+                          ? 'bg-green-50' 
+                          : ''
+                      }`}
+                      onClick={() => navigate(`/invoices/${invoice.id}`)}
+                      data-testid={`invoice-item-${invoice.id}`}
+                    >
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-slate-800">{invoice.customerName}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-600">
+                        {invoice.periodFrom} - {invoice.periodTo}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          invoice.status === 'posted' ? 'bg-emerald-100 text-emerald-800 font-bold' :
+                          invoice.status === 'issued' ? 'bg-green-100 text-green-700' :
+                          invoice.status === 'draft' ? 'bg-blue-100 text-blue-700' :
+                          invoice.status === 'edited' ? 'bg-purple-100 text-purple-700' :
+                          invoice.status === 'imported' ? 'bg-yellow-100 text-yellow-700' :
+                          invoice.status === 'deleted' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {invoice.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <p className="font-bold text-slate-800">€{invoice.total.toFixed(2)}</p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
             </div>
           )}
         </div>
