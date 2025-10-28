@@ -292,10 +292,10 @@ const Customers = () => {
                         {customer.invoiceCount || 0}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
-                        €{(customer.totalInvoiced || 0).toFixed(2)}
+                        €{formatEuro(customer.totalInvoiced || 0)}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
-                        €{(customer.averageInvoice || 0).toFixed(2)}
+                        €{formatEuro(customer.averageInvoice || 0)}
                       </td>
                       <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                         <Input
