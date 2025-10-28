@@ -1103,9 +1103,19 @@ async def upload_customer_history(
                     "unitPrice": 0,
                     "historicalInvoices": []
                 }
+                if company_id:
+                    customer["companyId"] = company_id
                 await db.customers.insert_one(customer)
                 created_count += 1
-                logger.info(f"Created new customer: {customer_name}")
+                logger.info(f"Created new customer: {customer_name} with company: {company_name_from_data if company_id else 'None'}")
+            else:
+                # Update company if it exists in the data
+                if company_id:
+                    await db.customers.update_one(
+                        {"id": customer["id"]},
+                        {"$set": {"companyId": company_id}}
+                    )
+                    logger.info(f"Updated customer '{customer_name}' with company: {company_name_from_data}")
             
             # Update historical invoices - keep manual entries, replace imported ones
             existing_history = customer.get("historicalInvoices", [])
