@@ -951,25 +951,19 @@ async def upload_customer_history(
                 created_count += 1
                 logger.info(f"Created new customer: {customer_name}")
             
-            # Update historical invoices - smart merge (replace duplicate months)
+            # Update historical invoices - keep manual entries, replace imported ones
             existing_history = customer.get("historicalInvoices", [])
             new_entries = historical_entries_by_customer[customer_name]
             
-            # Create a map of existing entries by month
-            existing_by_month = {}
-            for entry in existing_history:
-                month = entry.get("month")
-                if month:
-                    existing_by_month[month] = entry
+            # Mark new entries as imported
+            for entry in new_entries:
+                entry["source"] = "imported"
             
-            # Merge: replace if month exists, add if new
-            for new_entry in new_entries:
-                month = new_entry.get("month")
-                if month:
-                    existing_by_month[month] = new_entry  # Replace or add
+            # Keep only manually entered rows from existing history
+            manual_entries = [entry for entry in existing_history if entry.get("source") == "manual"]
             
-            # Convert back to list
-            merged_history = list(existing_by_month.values())
+            # Combine manual entries with new imported entries
+            merged_history = manual_entries + new_entries
             
             # Update in database
             await db.customers.update_one(
