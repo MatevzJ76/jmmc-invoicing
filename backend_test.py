@@ -3,7 +3,7 @@ import json
 from typing import Dict, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://jmmc-invoice.preview.emergentagent.com/api"
+BACKEND_URL = "https://invoice-portal-8.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@local"
 ADMIN_PASSWORD = "Admin2025!"
 
