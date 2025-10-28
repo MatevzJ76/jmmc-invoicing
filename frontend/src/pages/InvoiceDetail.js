@@ -56,7 +56,8 @@ const SortableLineItem = ({
   handleAISuggestion,
   handleMoveLineItem,
   moveLineUp,
-  moveLineDown
+  moveLineDown,
+  isEditingAllowed
 }) => {
   const {
     attributes,
