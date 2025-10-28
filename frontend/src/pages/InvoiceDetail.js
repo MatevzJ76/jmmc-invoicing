@@ -737,7 +737,7 @@ const InvoiceDetail = () => {
             </div>
             <Button 
               onClick={handleSave} 
-              disabled={saving || invoice.status === 'posted' || processingButtons.save} 
+              disabled={saving || invoice.status === 'posted' || getButtonStates().save} 
               className="rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" 
               data-testid="save-invoice-button"
             >
@@ -746,9 +746,8 @@ const InvoiceDetail = () => {
             </Button>
             <Button 
               onClick={handleConfirmDraft} 
-              disabled={invoice.status === 'posted' || processingButtons.confirmDraft}
-              variant="outline"
-              className="rounded-full border-green-500 text-green-700 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={invoice.status === 'posted' || getButtonStates().confirmDraft}
+              className="rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="confirm-draft-button"
             >
               <FileCheck className="w-4 h-4 mr-2" />
@@ -758,7 +757,7 @@ const InvoiceDetail = () => {
               <>
                 <Button 
                   onClick={handleIssueInvoice} 
-                  disabled={invoice.status === 'posted' || processingButtons.issue}
+                  disabled={invoice.status === 'posted' || getButtonStates().issue}
                   className="rounded-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" 
                   data-testid="issue-invoice-button"
                 >
@@ -767,7 +766,7 @@ const InvoiceDetail = () => {
                 </Button>
                 <Button 
                   onClick={handlePost}
-                  disabled={invoice.status === 'posted' || processingButtons.post}
+                  disabled={invoice.status === 'posted' || getButtonStates().post}
                   className="rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed" 
                   data-testid="post-eracuni-button"
                 >
