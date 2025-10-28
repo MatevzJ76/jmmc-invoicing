@@ -392,6 +392,9 @@ const BatchDetail = () => {
         } else if (sortField === 'amount') {
           aVal = a.total || 0;
           bVal = b.total || 0;
+        } else if (sortField === 'status') {
+          aVal = a.status.toLowerCase();
+          bVal = b.status.toLowerCase();
         }
         
         if (sortDirection === 'asc') {
