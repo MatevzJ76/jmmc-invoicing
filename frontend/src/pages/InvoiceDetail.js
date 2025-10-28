@@ -326,6 +326,13 @@ const InvoiceDetail = () => {
     };
   };
 
+  // Check if editing is allowed based on invoice status
+  const isEditingAllowed = () => {
+    if (!invoice) return false;
+    const editableStatuses = ['imported', 'edited', 'draft'];
+    return editableStatuses.includes(invoice.status);
+  };
+
   useEffect(() => {
     const userStr = localStorage.getItem('user');
     if (userStr) setUser(JSON.parse(userStr));
