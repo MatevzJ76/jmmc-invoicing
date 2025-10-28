@@ -905,11 +905,16 @@ async def upload_customer_history(
             if not description:
                 description = row[col_map.get('alt_description')] if 'alt_description' in col_map else ""
             amount_val = row[col_map.get('amount')] if 'amount' in col_map else None
+            company_name = row[col_map.get('company')] if 'company' in col_map else None
             
             if not customer_name or not date_val:
                 continue
             
             customer_name = str(customer_name).strip()
+            
+            # Clean company name if present
+            if company_name:
+                company_name = str(company_name).strip()
             
             # Parse date
             date_str = ""
@@ -950,7 +955,8 @@ async def upload_customer_history(
                     'month': month_key,
                     'total_amount': 0.0,
                     'descriptions': [],
-                    'individual_rows': []  # Store individual row details
+                    'individual_rows': [],  # Store individual row details
+                    'company_name': company_name  # Store company name from first row
                 }
             
             # Accumulate data for the month
