@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix e-računi API integration - no new invoices being created in e-računi system"
+user_problem_statement: "Implement drag-and-drop functionality for invoice line items with up/down arrow buttons in the Edit phase"
 
 backend:
   - task: "GET /api/customers endpoint"
