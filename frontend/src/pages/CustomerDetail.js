@@ -75,6 +75,22 @@ const CustomerDetail = () => {
     }
   };
 
+  const handleUpdateCompany = async (companyId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(
+        `${BACKEND_URL}/api/customers/${id}`,
+        { companyId: companyId || null },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success('Company updated');
+      setSelectedCompanyId(companyId);
+      loadCustomer();
+    } catch (error) {
+      toast.error('Failed to update company');
+    }
+  };
+
   const handleUploadHistory = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
