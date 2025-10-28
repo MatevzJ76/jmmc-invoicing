@@ -335,6 +335,13 @@ const CustomerDetail = () => {
                               {hasIndividualRows && (
                                 <span className="text-xs text-slate-500">({invoice.individualRows.length} rows)</span>
                               )}
+                              {invoice.source === 'manual' && (
+                                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Manual</span>
+                              )}
+                            </div>
+                          </td>
+                                <span className="text-xs text-slate-500">({invoice.individualRows.length} rows)</span>
+                              )}
                             </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-slate-600">
