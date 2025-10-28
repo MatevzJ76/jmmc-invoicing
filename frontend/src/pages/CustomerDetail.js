@@ -17,6 +17,12 @@ const CustomerDetail = () => {
   const [unitPrice, setUnitPrice] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [manualEntry, setManualEntry] = useState({
+    date: '',
+    description: '',
+    amount: 0
+  });
 
   useEffect(() => {
     loadCustomer();
