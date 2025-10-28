@@ -960,7 +960,7 @@ const InvoiceDetail = () => {
             <h2 className="text-lg font-bold text-slate-800">Line Items</h2>
             <Button 
               onClick={addLine} 
-              disabled={invoice.status === 'posted'}
+              disabled={!isEditingAllowed()}
               size="sm" 
               variant="outline" 
               className="rounded-full disabled:opacity-50 disabled:cursor-not-allowed" 
