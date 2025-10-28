@@ -519,6 +519,14 @@ const InvoiceDetail = () => {
 
     if (!window.confirm('Post this invoice to eRačuni?')) return;
 
+    setProcessingButtons(prev => ({ 
+      ...prev, 
+      save: true,
+      confirmDraft: true,
+      issue: true,
+      post: true 
+    }));
+
     try {
       const token = localStorage.getItem('access_token');
       
