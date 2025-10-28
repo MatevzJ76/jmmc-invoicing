@@ -255,6 +255,12 @@ const InvoiceDetail = () => {
   const [apiDebugData, setApiDebugData] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [processingButtons, setProcessingButtons] = useState({
+    save: false,
+    confirmDraft: false,
+    issue: false,
+    post: false
+  });
 
   // Drag and drop sensors
   const sensors = useSensors(
