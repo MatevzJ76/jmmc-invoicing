@@ -109,6 +109,28 @@ const CustomerDetail = () => {
     }
   };
 
+  const handleAddManualEntry = async () => {
+    if (!manualEntry.date || !manualEntry.amount) {
+      toast.error('Please enter date and amount');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(
+        `${BACKEND_URL}/api/customers/${id}/add-manual-entry`,
+        manualEntry,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success('Manual entry added');
+      setShowAddForm(false);
+      setManualEntry({ date: '', description: '', amount: 0 });
+      loadCustomer();
+    } catch (error) {
+      toast.error('Failed to add manual entry');
+    }
+  };
+
   const toggleRow = (index) => {
     setExpandedRows({
       ...expandedRows,
