@@ -162,6 +162,17 @@ backend:
           comment: "FINAL TEST SUCCESSFUL! E-računi API integration is now FULLY WORKING with corrected credentials. Test details: (1) Tested with fresh draft invoice ID 0a235cb4-70f8-49fc-a415-76424466c3e7 dated 2025-10-31. (2) Workflow: Draft → Issue → Post to e-računi. (3) RESULT: HTTP 200 SUCCESS - Invoice created in e-računi system with external number 2025-01516 and document ID 60:3894415. (4) Full API response received: {status: ok, result: {date: 2025-10-31, documentID: 60:3894415, number: 2025-01516, paymentReference: 00 2025-01516}}. (5) Authentication is working correctly with corrected token (E746E154C9F20D00BD379EF30737090A) and secretKey (4df213a39d7acbb16cc0f584440363cb). (6) Endpoint URL is correct (https://e-racuni.com/WebServicesSI/API). CONCLUSION: The OCR correction was successful. The integration is production-ready and creating real invoices in the e-računi system."
 
 frontend:
+  - task: "Drag-and-drop functionality for invoice line items"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/InvoiceDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented drag-and-drop functionality using @dnd-kit library. Added: (1) DndContext and SortableContext for drag-and-drop, (2) SortableLineItem component with useSortable hook, (3) GripVertical icon as drag handle, (4) ChevronUp and ChevronDown buttons for manual reordering, (5) moveLineUp and moveLineDown functions, (6) handleDragEnd function to reorder lines array. Visual verification shows grip icons and up/down arrows are visible. Ready for comprehensive testing."
 
 metadata:
   created_by: "testing_agent"
