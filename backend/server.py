@@ -680,6 +680,10 @@ async def get_customer_detail(customer_id: str, current_user: User = Depends(get
     # Get historical invoices from uploaded data (last 12, sorted by date descending)
     historical_invoices = customer.get("historicalInvoices", [])
     
+    # Filter to only show entries with individualRows (new format)
+    # This removes old plain entries without expandable details
+    historical_invoices = [inv for inv in historical_invoices if inv.get("individualRows")]
+    
     # Sort by date descending and take last 12
     if historical_invoices:
         # Add unique IDs to each historical invoice for deletion
@@ -690,9 +694,10 @@ async def get_customer_detail(customer_id: str, current_user: User = Depends(get
         historical_invoices.sort(key=lambda x: x.get("date", ""), reverse=True)
         historical_invoices = historical_invoices[:12]
     
-    # Calculate statistics from historical data
-    total_amount = sum(inv.get("amount", 0) for inv in customer.get("historicalInvoices", []))
-    invoice_count = len(customer.get("historicalInvoices", []))
+    # Calculate statistics from all historical data (including old format)
+    all_historical = customer.get("historicalInvoices", [])
+    total_amount = sum(inv.get("amount", 0) for inv in all_historical)
+    invoice_count = len(all_historical)
     
     customer["lastInvoices"] = historical_invoices
     customer["invoiceCount"] = invoice_count
