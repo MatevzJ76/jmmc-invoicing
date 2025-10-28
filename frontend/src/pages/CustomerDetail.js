@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { ArrowLeft, Upload, TrendingUp, Trash2 } from 'lucide-react';
+import { ArrowLeft, Upload, TrendingUp, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -16,6 +16,7 @@ const CustomerDetail = () => {
   const [loading, setLoading] = useState(true);
   const [unitPrice, setUnitPrice] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
 
   useEffect(() => {
     loadCustomer();
