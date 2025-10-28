@@ -256,6 +256,39 @@ const InvoiceDetail = () => {
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
 
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setLines((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+      toast.success('Line item reordered');
+    }
+  };
+
+  const moveLineUp = (index) => {
+    if (index === 0) return;
+    setLines((items) => arrayMove(items, index, index - 1));
+    toast.success('Line item moved up');
+  };
+
+  const moveLineDown = (index) => {
+    if (index === lines.length - 1) return;
+    setLines((items) => arrayMove(items, index, index + 1));
+    toast.success('Line item moved down');
+  };
+
   useEffect(() => {
     const userStr = localStorage.getItem('user');
     if (userStr) setUser(JSON.parse(userStr));
