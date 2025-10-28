@@ -739,6 +739,13 @@ async def get_customer_detail(customer_id: str, current_user: User = Depends(get
     customer["unitPrice"] = customer.get("unitPrice", 0)
     customer["historicalInvoices"] = customer.get("historicalInvoices", [])
     
+    # Add company name if customer has companyId
+    if customer.get("companyId"):
+        company = await db.companies.find_one({"id": customer["companyId"]}, {"_id": 0})
+        customer["companyName"] = company.get("name", "") if company else ""
+    else:
+        customer["companyName"] = ""
+    
     return customer
 
 @api_router.delete("/customers/{customer_id}/historical/{invoice_index}")
