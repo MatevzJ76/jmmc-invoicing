@@ -608,6 +608,14 @@ const InvoiceDetail = () => {
         response: errorDetails
       }));
       
+      setProcessingButtons(prev => ({ 
+        ...prev, 
+        save: false,
+        confirmDraft: false,
+        issue: false,
+        post: false 
+      }));
+      
       toast.error(`Failed to post invoice: ${error.response?.data?.detail || error.message}`);
     }
   };
