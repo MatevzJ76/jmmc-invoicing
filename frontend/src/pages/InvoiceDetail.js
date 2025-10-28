@@ -856,7 +856,7 @@ const InvoiceDetail = () => {
                     type="date"
                     value={invoice.invoiceDate}
                     onChange={(e) => setInvoice({...invoice, invoiceDate: e.target.value})}
-                    disabled={invoice.status === 'posted'}
+                    disabled={!isEditingAllowed()}
                     data-testid="invoice-date-input"
                   />
                 </div>
@@ -867,7 +867,7 @@ const InvoiceDetail = () => {
                     type="date"
                     value={invoice.dueDate}
                     onChange={(e) => setInvoice({...invoice, dueDate: e.target.value})}
-                    disabled={invoice.status === 'posted'}
+                    disabled={!isEditingAllowed()}
                     data-testid="due-date-input"
                   />
                 </div>
@@ -880,7 +880,7 @@ const InvoiceDetail = () => {
                     type="date"
                     value={invoice.periodFrom}
                     onChange={(e) => setInvoice({...invoice, periodFrom: e.target.value})}
-                    disabled={invoice.status === 'posted'}
+                    disabled={!isEditingAllowed()}
                     data-testid="period-from-input"
                   />
                 </div>
@@ -891,7 +891,7 @@ const InvoiceDetail = () => {
                     type="date"
                     value={invoice.periodTo}
                     onChange={(e) => setInvoice({...invoice, periodTo: e.target.value})}
-                    disabled={invoice.status === 'posted'}
+                    disabled={!isEditingAllowed()}
                     data-testid="period-to-input"
                   />
                 </div>
