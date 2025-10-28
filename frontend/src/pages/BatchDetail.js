@@ -10,6 +10,24 @@ import { ArrowLeft, Search, Filter, Edit, Save, X, ChevronLeft, ChevronRight, Ch
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// European number formatting: 1.000,00
+const formatEuro = (number) => {
+  if (number === null || number === undefined) return '0,00';
+  
+  const num = parseFloat(number);
+  if (isNaN(num)) return '0,00';
+  
+  // Format with 2 decimals
+  const fixed = num.toFixed(2);
+  const [integer, decimal] = fixed.split('.');
+  
+  // Add thousands separator (period)
+  const withThousands = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  
+  // Combine with comma as decimal separator
+  return `${withThousands},${decimal}`;
+};
+
 const BatchDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
