@@ -239,10 +239,70 @@ const CustomerDetail = () => {
 
         {/* Last 12 Historical Invoices */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-          <h2 className="text-lg font-bold text-slate-800 mb-4">
-            <TrendingUp className="inline w-5 h-5 mr-2" />
-            Last 12 Historical Invoices
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-slate-800">
+              <TrendingUp className="inline w-5 h-5 mr-2" />
+              Last 12 Historical Invoices
+            </h2>
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+            >
+              {showAddForm ? 'Cancel' : '+ Add Row'}
+            </Button>
+          </div>
+
+          {/* Manual Entry Form */}
+          {showAddForm && (
+            <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-semibold text-slate-700 mb-3">Add Manual Entry</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label htmlFor="manual-date" className="text-xs">Date</Label>
+                  <Input
+                    id="manual-date"
+                    type="date"
+                    value={manualEntry.date}
+                    onChange={(e) => setManualEntry({...manualEntry, date: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="manual-description" className="text-xs">Description</Label>
+                  <Input
+                    id="manual-description"
+                    type="text"
+                    value={manualEntry.description}
+                    onChange={(e) => setManualEntry({...manualEntry, description: e.target.value})}
+                    placeholder="e.g., Custom service"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="manual-amount" className="text-xs">Amount (€)</Label>
+                  <Input
+                    id="manual-amount"
+                    type="number"
+                    step="0.01"
+                    value={manualEntry.amount}
+                    onChange={(e) => setManualEntry({...manualEntry, amount: parseFloat(e.target.value) || 0})}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              <div className="mt-3 flex justify-end">
+                <Button
+                  onClick={handleAddManualEntry}
+                  size="sm"
+                  className="rounded-full"
+                >
+                  Add Entry
+                </Button>
+              </div>
+            </div>
+          )}
           {customer.lastInvoices && customer.lastInvoices.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
