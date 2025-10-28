@@ -665,6 +665,37 @@ async def get_all_companies(current_user: User = Depends(get_current_user)):
     return companies
 
 # ============ CUSTOMERS ============
+@api_router.post("/customers")
+async def create_customer(
+    customer_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new customer manually"""
+    # Generate unique ID
+    customer_id = str(uuid.uuid4())
+    
+    # Build customer object
+    new_customer = {
+        "id": customer_id,
+        "name": customer_data.get("name", "").strip(),
+        "unitPrice": float(customer_data.get("unitPrice", 0)),
+        "historicalInvoices": []
+    }
+    
+    # Add company if provided
+    if customer_data.get("companyId"):
+        new_customer["companyId"] = customer_data["companyId"]
+    
+    # Check if customer with same name already exists
+    existing = await db.customers.find_one({"name": new_customer["name"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Customer with this name already exists")
+    
+    # Insert into database
+    await db.customers.insert_one(new_customer)
+    
+    return {"message": "Customer created successfully", "customerId": customer_id}
+
 @api_router.get("/customers")
 async def get_all_customers(company_id: Optional[str] = None, current_user: User = Depends(get_current_user)):
     """Get all customers from database with statistics from historical data"""
