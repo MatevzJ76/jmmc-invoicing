@@ -103,6 +103,19 @@ const CustomerDetail = () => {
     }
   };
 
+  const toggleRow = (index) => {
+    setExpandedRows({
+      ...expandedRows,
+      [index]: !expandedRows[index]
+    });
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    // Remove time portion (T00:00:00)
+    return dateStr.split('T')[0];
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
