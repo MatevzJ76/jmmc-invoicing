@@ -844,6 +844,18 @@ async def upload_customer_history(
         wb = openpyxl.load_workbook(BytesIO(contents))
         sheet = wb.active
         
+        # Check for company name in metadata format (Row 3: "Podjetje: JMMC HP d.o.o.")
+        company_name_from_metadata = None
+        for row_num in range(1, min(10, sheet.max_row + 1)):
+            row_values = [cell.value for cell in sheet[row_num]]
+            # Look for "Podjetje:" in first column
+            if row_values and row_values[0] and 'podjetje:' in str(row_values[0]).lower():
+                # Company name is usually in the next column
+                if len(row_values) > 1 and row_values[1]:
+                    company_name_from_metadata = str(row_values[1]).strip()
+                    logger.info(f"Found company in metadata: {company_name_from_metadata}")
+                break
+        
         # Find the header row (look for row containing multiple key headers)
         header_row_num = 1
         headers = None
