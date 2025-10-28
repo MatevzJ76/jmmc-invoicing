@@ -901,6 +901,12 @@ async def upload_customer_history(
                     col_map['amount'] = idx
                 elif 'podjetje' in header_lower:
                     col_map['company'] = idx
+                elif 'kol.' in header_lower or 'količina' in header_lower:
+                    col_map['quantity'] = idx
+                elif header_lower == 'em' or 'enota mere' in header_lower:
+                    col_map['unit'] = idx
+                elif 'cena' in header_lower and 'brez' not in header_lower:
+                    col_map['unit_price'] = idx
         
         logger.info(f"Column mapping: {col_map}")
         
