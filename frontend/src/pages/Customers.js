@@ -190,6 +190,7 @@ const Customers = () => {
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Company</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Customer Name</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Invoices</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Total Invoiced</th>
@@ -204,6 +205,9 @@ const Customers = () => {
                       className="hover:bg-slate-50 transition-colors cursor-pointer"
                       onClick={() => navigate(`/customers/${customer.id}`)}
                     >
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {customer.companyName || '-'}
+                      </td>
                       <td className="px-6 py-4">
                         <div className="font-semibold text-slate-800">{customer.name}</div>
                       </td>
