@@ -1286,7 +1286,7 @@ const BatchDetail = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <p className="font-bold text-slate-800">€{invoice.total.toFixed(2)}</p>
+                        <p className="font-bold text-slate-800">€{formatEuro(invoice.total)}</p>
                       </td>
                     </tr>
                   ))}
