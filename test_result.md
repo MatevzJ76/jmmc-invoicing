@@ -192,6 +192,18 @@ frontend:
           agent: "main"
           comment: "FIXED button state persistence issue and changed Confirm Draft button color to amber. Added getButtonStates() function that determines button disabled states based on invoice.status from database, not just local state. Button logic: status >= 'draft' disables Save + Confirm Draft, status >= 'issued' disables Issue Invoice, status = 'posted' disables all. Changed Confirm Draft button from green outline to solid amber (bg-amber-500 hover:bg-amber-600). Tested with Playwright: (1) Opened invoice with 'Imported' status - all buttons enabled. (2) Clicked Confirm Draft, status changed to 'Draft'. (3) Navigated away and back to same invoice. (4) Result: Save and Confirm Draft remained disabled (Save: true, Confirm: true), Issue remained enabled (Issue: false). Persistence working correctly - button states now survive page navigation and are based on actual invoice status."
 
+  - task: "European number formatting for EUR amounts"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/InvoiceDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Implemented European number formatting for all EUR amounts on invoice detail page. Created formatEuro() helper function using toLocaleString('de-DE') to format numbers with dot (.) as thousands separator and comma (,) as decimal separator. Applied to: (1) Line item amounts in SortableLineItem component, (2) Total amount in Summary section. Tested with invoice containing €3,000.00 - now correctly displays as €3.000,00. Line items showing €500,00, €1.000,00, €1.500,00 all with correct European formatting. Feature working perfectly."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
