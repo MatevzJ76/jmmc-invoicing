@@ -414,7 +414,7 @@ const CustomerDetail = () => {
                             {invoice.description || '-'}
                           </td>
                           <td className="px-4 py-3 text-sm font-semibold text-slate-800">
-                            €{(invoice.amount || 0).toFixed(2)}
+                            €{formatEuro(invoice.amount || 0)}
                           </td>
                           <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                             <Button
