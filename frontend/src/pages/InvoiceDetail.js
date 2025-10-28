@@ -1001,6 +1001,7 @@ const InvoiceDetail = () => {
                     handleMoveLineItem={handleMoveLineItem}
                     moveLineUp={moveLineUp}
                     moveLineDown={moveLineDown}
+                    isEditingAllowed={isEditingAllowed()}
                   />
                 ))}
               </div>
