@@ -87,7 +87,7 @@ const SortableLineItem = ({
           <button
             {...attributes}
             {...listeners}
-            disabled={invoice.status === 'posted'}
+            disabled={!isEditingAllowed}
             className="mt-6 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Drag to reorder"
           >
@@ -102,11 +102,11 @@ const SortableLineItem = ({
               onChange={(e) => updateLine(index, 'description', e.target.value)}
               placeholder="Service description"
               rows={2}
-              disabled={invoice.status === 'posted'}
+              disabled={!isEditingAllowed}
               data-testid={`description-input-${index}`}
             />
           </div>
-          {aiEnabled && invoice.status !== 'posted' && (
+          {aiEnabled && isEditingAllowed && (
             <Button
               size="sm"
               variant="outline"
