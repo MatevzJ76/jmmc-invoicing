@@ -749,13 +749,13 @@ const InvoiceDetail = () => {
               <Switch 
                 checked={aiEnabled} 
                 onCheckedChange={setAiEnabled} 
-                disabled={invoice.status === 'posted'}
+                disabled={!isEditingAllowed()}
                 data-testid="ai-toggle" 
               />
             </div>
             <Button 
               onClick={handleSave} 
-              disabled={saving || invoice.status === 'posted' || getButtonStates().save} 
+              disabled={saving || !isEditingAllowed() || getButtonStates().save} 
               className="rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" 
               data-testid="save-invoice-button"
             >
