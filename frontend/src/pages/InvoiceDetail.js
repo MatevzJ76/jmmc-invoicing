@@ -213,7 +213,7 @@ const SortableLineItem = ({
               variant="outline"
               size="sm"
               onClick={() => moveLineUp(index)}
-              disabled={index === 0 || invoice.status === 'posted'}
+              disabled={index === 0 || !isEditingAllowed}
               className="rounded-full disabled:opacity-30 disabled:cursor-not-allowed px-2"
               title="Move up"
             >
@@ -223,7 +223,7 @@ const SortableLineItem = ({
               variant="outline"
               size="sm"
               onClick={() => moveLineDown(index)}
-              disabled={index === lines.length - 1 || invoice.status === 'posted'}
+              disabled={index === lines.length - 1 || !isEditingAllowed}
               className="rounded-full disabled:opacity-30 disabled:cursor-not-allowed px-2"
               title="Move down"
             >
@@ -236,7 +236,7 @@ const SortableLineItem = ({
               variant="destructive"
               size="sm"
               onClick={() => removeLine(index)}
-              disabled={invoice.status === 'posted'}
+              disabled={!isEditingAllowed}
               className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid={`remove-line-${index}`}
             >
