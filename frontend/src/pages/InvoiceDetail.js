@@ -33,9 +33,22 @@ const InvoiceDetail = () => {
   useEffect(() => {
     const userStr = localStorage.getItem('user');
     if (userStr) setUser(JSON.parse(userStr));
+    loadCompanies();
     loadInvoice();
     loadAllCustomers();
   }, [id]);
+
+  const loadCompanies = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/companies`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCompanies(response.data);
+    } catch (error) {
+      console.error('Failed to load companies:', error);
+    }
+  };
 
   const loadInvoice = async () => {
     try {
@@ -45,6 +58,15 @@ const InvoiceDetail = () => {
       });
       setInvoice(response.data.invoice);
       setLines(response.data.lines);
+      
+      // Load customer details to get their company
+      if (response.data.invoice.customerId) {
+        const customerResponse = await axios.get(
+          `${BACKEND_URL}/api/customers/${response.data.invoice.customerId}`,
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        setSelectedCompanyId(customerResponse.data.companyId || '');
+      }
     } catch (error) {
       toast.error('Failed to load invoice');
       console.error(error);
