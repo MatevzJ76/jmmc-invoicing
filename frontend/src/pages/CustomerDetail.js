@@ -227,38 +227,73 @@ const CustomerDetail = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {customer.lastInvoices.map((invoice, index) => (
-                    <tr
-                      key={invoice.id || index}
-                      className="hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="px-4 py-3 text-sm text-slate-800">{invoice.date}</td>
-                      <td className="px-4 py-3 text-sm text-slate-600">
-                        {invoice.description || '-'}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-semibold text-slate-800">
-                        €{(invoice.amount || 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            // Find the actual index in the full historicalInvoices array
-                            const fullIndex = customer.historicalInvoices.findIndex(
-                              h => h.date === invoice.date && h.amount === invoice.amount && h.description === invoice.description
-                            );
-                            if (fullIndex !== -1) {
-                              handleDeleteHistoricalInvoice(fullIndex);
-                            }
-                          }}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  {customer.lastInvoices.map((invoice, index) => {
+                    const isExpanded = expandedRows[index];
+                    const hasIndividualRows = invoice.individualRows && invoice.individualRows.length > 0;
+                    
+                    return (
+                      <>
+                        <tr
+                          key={invoice.id || index}
+                          className={`transition-colors ${hasIndividualRows ? 'cursor-pointer hover:bg-blue-50' : 'hover:bg-slate-50'}`}
+                          onClick={() => hasIndividualRows && toggleRow(index)}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                          <td className="px-4 py-3 text-sm text-slate-800">
+                            <div className="flex items-center gap-2">
+                              {hasIndividualRows && (
+                                isExpanded ? <ChevronUp className="w-4 h-4 text-blue-600" /> : <ChevronDown className="w-4 h-4 text-blue-600" />
+                              )}
+                              {formatDate(invoice.date)}
+                              {hasIndividualRows && (
+                                <span className="text-xs text-slate-500">({invoice.individualRows.length} rows)</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-slate-600">
+                            {invoice.description || '-'}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-semibold text-slate-800">
+                            €{(invoice.amount || 0).toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const fullIndex = customer.historicalInvoices.findIndex(
+                                  h => h.date === invoice.date && h.amount === invoice.amount && h.description === invoice.description
+                                );
+                                if (fullIndex !== -1) {
+                                  handleDeleteHistoricalInvoice(fullIndex);
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                        
+                        {/* Expanded individual rows */}
+                        {isExpanded && hasIndividualRows && (
+                          <tr>
+                            <td colSpan="4" className="px-4 py-2 bg-blue-50/50">
+                              <div className="space-y-1">
+                                <p className="text-xs font-semibold text-slate-600 mb-2">Individual Transactions:</p>
+                                {invoice.individualRows.map((row, rowIdx) => (
+                                  <div key={rowIdx} className="flex items-center justify-between p-2 bg-white rounded border border-slate-200 text-xs">
+                                    <span className="text-slate-600 w-32">{formatDate(row.date)}</span>
+                                    <span className="text-slate-700 flex-1">{row.description || '-'}</span>
+                                    <span className="text-slate-800 font-medium w-24 text-right">€{(row.amount || 0).toFixed(2)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
