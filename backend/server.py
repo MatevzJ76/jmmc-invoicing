@@ -1128,7 +1128,6 @@ async def upload_customer_history(
             
             # Create customer if doesn't exist
             if not customer:
-                import uuid
                 customer_id = str(uuid.uuid4())
                 customer = {
                     "id": customer_id,
