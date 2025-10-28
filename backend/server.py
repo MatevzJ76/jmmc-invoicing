@@ -1145,6 +1145,20 @@ async def upload_customer_history(
                     for entry in all_new_entries:
                         entry["source"] = "imported"
                     
+                    # Extract unit price from last "Računovodstvo" entry
+                    unit_price_to_set = None
+                    for entry in reversed(all_new_entries):  # Start from most recent
+                        individual_rows = entry.get("individualRows", [])
+                        for row in reversed(individual_rows):  # Most recent rows first
+                            description = row.get("description", "").lower()
+                            if "računovodstvo" in description or "racunovodstvo" in description:
+                                if row.get("unitPrice") is not None:
+                                    unit_price_to_set = row["unitPrice"]
+                                    logger.info(f"Found Računovodstvo unit price: €{unit_price_to_set}")
+                                    break
+                        if unit_price_to_set is not None:
+                            break
+                    
                     # Keep only manual entries
                     existing_history = target_customer.get("historicalInvoices", [])
                     manual_entries = [entry for entry in existing_history if entry.get("source") == "manual"]
@@ -1152,10 +1166,16 @@ async def upload_customer_history(
                     # Combine manual + new imported
                     merged_history = manual_entries + all_new_entries
                     
+                    # Prepare update data
+                    update_data = {"historicalInvoices": merged_history}
+                    if unit_price_to_set is not None:
+                        update_data["unitPrice"] = unit_price_to_set
+                        logger.info(f"Updating customer unit price to: €{unit_price_to_set}")
+                    
                     # Update in database
                     await db.customers.update_one(
                         {"id": target_customer["id"]},
-                        {"$set": {"historicalInvoices": merged_history}}
+                        {"$set": update_data}
                     )
                     updated_count = 1
                     total_entries = len(all_new_entries)
