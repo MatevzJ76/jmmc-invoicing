@@ -958,6 +958,48 @@ async def upload_customer_history(
         # Get all customer names from the uploaded data
         all_customer_names = list(historical_entries_by_customer.keys())
         
+        # If filtering by specific customer_id (single customer upload from detail page)
+        if customer_ids and customer_ids != "all":
+            target_ids = [cid.strip() for cid in customer_ids.split(",")]
+            
+            # For single customer upload, apply ALL data from file to that customer
+            if len(target_ids) == 1:
+                target_customer = await db.customers.find_one({"id": target_ids[0]})
+                if target_customer:
+                    logger.info(f"Single customer upload mode: applying all data to {target_customer['name']}")
+                    
+                    # Combine all entries from all customers in the file
+                    all_new_entries = []
+                    for entries in historical_entries_by_customer.values():
+                        all_new_entries.extend(entries)
+                    
+                    # Mark as imported
+                    for entry in all_new_entries:
+                        entry["source"] = "imported"
+                    
+                    # Keep only manual entries
+                    existing_history = target_customer.get("historicalInvoices", [])
+                    manual_entries = [entry for entry in existing_history if entry.get("source") == "manual"]
+                    
+                    # Combine manual + new imported
+                    merged_history = manual_entries + all_new_entries
+                    
+                    # Update in database
+                    await db.customers.update_one(
+                        {"id": target_customer["id"]},
+                        {"$set": {"historicalInvoices": merged_history}}
+                    )
+                    updated_count = 1
+                    total_entries = len(all_new_entries)
+                    
+                    return {
+                        "message": f"Historical data uploaded and grouped by month",
+                        "customersUpdated": updated_count,
+                        "customersCreated": 0,
+                        "monthlyEntriesCreated": total_entries
+                    }
+        
+        # For "all" mode or multiple customers, match by name
         for customer_name in all_customer_names:
             # Check if customer exists
             customer = await db.customers.find_one({"name": customer_name})
