@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix EUR display format to use European number formatting (1.000,00) instead of American format (1,000.00)"
+user_problem_statement: "Disable all editable fields (except status dropdown) after Issue Invoice button is clicked. Enable editing only when invoice status is draft, imported, or edited."
 
 backend:
   - task: "GET /api/customers endpoint"
