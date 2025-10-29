@@ -236,7 +236,7 @@ const CustomerDetail = () => {
                 <Input
                   id="unitPrice"
                   type="text"
-                  value={unitPrice.toString().replace('.', ',')}
+                  value={parseFloat(unitPrice || 0).toFixed(2).replace('.', ',')}
                   onChange={(e) => {
                     const value = e.target.value.replace(',', '.');
                     setUnitPrice(value);
@@ -245,6 +245,8 @@ const CustomerDetail = () => {
                     const num = parseFloat(e.target.value.replace(',', '.'));
                     if (!isNaN(num)) {
                       setUnitPrice(num.toFixed(2));
+                    } else {
+                      setUnitPrice('0.00');
                     }
                   }}
                   placeholder="0,00"
