@@ -157,7 +157,12 @@ const UserManagement = () => {
             JMMC Invoicing
           </h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-600">{user?.email}</span>
+            <button 
+              onClick={() => navigate('/profile')}
+              className="text-sm text-slate-600 hover:text-slate-800 hover:underline cursor-pointer transition-colors"
+            >
+              {user?.email}
+            </button>
             <Button variant="outline" size="sm" onClick={() => navigate('/batches')} className="rounded-full">
               Dashboard
             </Button>
