@@ -158,22 +158,6 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
-            <p className="text-xs text-blue-200 font-bold mb-3">🔑 Test Credentials:</p>
-            <div className="space-y-3 text-xs">
-              <div className="bg-white/10 p-3 rounded-lg border border-white/20">
-                <div className="font-semibold text-white mb-1">Admin Account:</div>
-                <div className="font-mono text-blue-200">Email: admin@local</div>
-                <div className="font-mono text-blue-200">Password: Admin2025!</div>
-              </div>
-              <div className="bg-white/10 p-3 rounded-lg border border-white/20">
-                <div className="font-semibold text-white mb-1">User Account:</div>
-                <div className="font-mono text-blue-200">Email: user@local</div>
-                <div className="font-mono text-blue-200">Password: User2025!</div>
-              </div>
-            </div>
-          </div>
-
           {/* AI Badge */}
           <div className="mt-4 flex items-center justify-center gap-2 text-white/60 text-xs">
             <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
