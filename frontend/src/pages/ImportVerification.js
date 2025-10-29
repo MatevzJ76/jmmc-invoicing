@@ -159,6 +159,17 @@ const ImportVerification = () => {
 
   const totalHours = verificationData.rows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0);
   const totalValue = verificationData.rows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
+  
+  // Get unique values for filters
+  const uniqueProjects = [...new Set(verificationData.rows.map(r => r.project).filter(Boolean))];
+  const uniqueCustomers = [...new Set(verificationData.rows.map(r => r.customer).filter(Boolean))];
+  const uniqueEmployees = [...new Set(verificationData.rows.map(r => r.employee).filter(Boolean))];
+  const uniqueTariffs = [...new Set(verificationData.rows.map(r => r.tariff).filter(Boolean))];
+  
+  // Use filtered rows for display
+  const displayRows = filteredRows.length > 0 || searchTerm || projectFilter !== 'all' || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' 
+    ? filteredRows 
+    : verificationData.rows;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
