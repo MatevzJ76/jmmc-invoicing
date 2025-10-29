@@ -373,6 +373,7 @@ const InvoiceDetail = () => {
         );
         setSelectedCompanyId(customerResponse.data.companyId || '');
         setCustomerDefaultUnitPrice(customerResponse.data.unitPrice || 0);
+        setCustomerDetails(customerResponse.data);
       }
     } catch (error) {
       toast.error('Failed to load invoice');
