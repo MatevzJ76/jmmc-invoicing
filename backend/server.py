@@ -808,11 +808,10 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
         api_key = EMERGENT_LLM_KEY
         model = "gpt-5"
     
-    # Limit verification to prevent long processing
-    MAX_ENTRIES = 100
-    entries_to_check = rows[:MAX_ENTRIES] if len(rows) > MAX_ENTRIES else rows
+    # Process all rows (frontend handles chunking for progress)
+    entries_to_check = rows
     
-    logger.info(f"Verifying {len(entries_to_check)} import rows (total: {len(rows)})")
+    logger.info(f"Verifying {len(entries_to_check)} import rows")
     
     verification_prompt = user_settings.get("verificationPrompt", 
         "Analyze this work description for suspicious patterns. Respond with JSON: {\"flagged\": true/false, \"reason\": \"explanation\", \"suggestions\": {\"description\": \"corrected text or null\", \"hours\": \"suggested hours or null\"}}")
