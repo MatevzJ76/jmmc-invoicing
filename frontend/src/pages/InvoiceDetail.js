@@ -913,9 +913,15 @@ const InvoiceDetail = () => {
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <h2 className="text-lg font-bold text-slate-800 mb-4">Summary</h2>
             <div className="space-y-3">
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-slate-600">Customer:</span>
-                <span className="font-semibold text-slate-800">{invoice.customerName}</span>
+                <button
+                  onClick={() => navigate(`/customers/${invoice.customerId}`)}
+                  className="font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                  title="View customer details"
+                >
+                  {invoice.customerName}
+                </button>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-600">Company:</span>
@@ -932,6 +938,29 @@ const InvoiceDetail = () => {
                   ))}
                 </select>
               </div>
+              
+              {/* Customer Statistics */}
+              {customerDetails && (
+                <>
+                  <div className="flex justify-between pt-2 border-t border-slate-200">
+                    <span className="text-slate-600 text-sm">Default Unit Price:</span>
+                    <span className="font-semibold text-slate-800 text-sm">{formatEuro(customerDetails.unitPrice || 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600 text-sm">Total Invoices:</span>
+                    <span className="font-semibold text-slate-800 text-sm">{customerDetails.invoice_count || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600 text-sm">Total Invoiced:</span>
+                    <span className="font-semibold text-green-600 text-sm">{formatEuro(customerDetails.total_invoiced || 0)}</span>
+                  </div>
+                  <div className="flex justify-between pb-2 border-b border-slate-200">
+                    <span className="text-slate-600 text-sm">Avg Invoice:</span>
+                    <span className="font-semibold text-blue-600 text-sm">{formatEuro(customerDetails.avg_invoice || 0)}</span>
+                  </div>
+                </>
+              )}
+              
               <div className="flex justify-between">
                 <span className="text-slate-600">Line Items:</span>
                 <span className="font-semibold text-slate-800">{lines.length}</span>
