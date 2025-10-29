@@ -281,7 +281,7 @@ const ImportVerification = () => {
         </div>
 
         {/* Summary Tiles */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-4 gap-4 mb-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-3 bg-blue-100 rounded-xl">
@@ -303,6 +303,33 @@ const ImportVerification = () => {
                 <p className="text-sm text-slate-600">Vrednost</p>
                 <p className="text-2xl font-bold text-slate-800">€{totalValue.toFixed(2)}</p>
               </div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-6 shadow-lg border border-purple-600">
+            <div className="flex flex-col items-center justify-center h-full">
+              <Button
+                onClick={handleAIVerification}
+                disabled={aiVerifying}
+                className="bg-white text-purple-700 hover:bg-purple-50 rounded-full font-semibold px-6 py-3 text-base shadow-md"
+              >
+                {aiVerifying ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-purple-700/30 border-t-purple-700 rounded-full animate-spin mr-2"></span>
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    AI Verify Data
+                  </>
+                )}
+              </Button>
+              {Object.keys(aiResults).length > 0 && (
+                <p className="text-white text-xs mt-2 font-medium">
+                  {Object.keys(aiResults).length} issues found
+                </p>
+              )}
             </div>
           </div>
           
