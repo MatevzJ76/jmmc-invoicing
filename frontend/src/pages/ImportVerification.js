@@ -12,6 +12,7 @@ const ImportVerification = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [verificationData, setVerificationData] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
