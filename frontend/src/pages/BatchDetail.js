@@ -83,16 +83,19 @@ const BatchDetail = () => {
         console.error('Failed to load saved AI results:', e);
       }
     }
-    
-    // Reload invoices when page regains focus (e.g., navigating back from invoice detail)
-    const handleFocus = () => {
+  }, [id]);
+  
+  // Reload invoices when navigating back to this page
+  useEffect(() => {
+    const reloadInvoices = () => {
       loadBatchAndInvoices();
     };
     
-    window.addEventListener('focus', handleFocus);
+    // Listen for custom event to reload data
+    window.addEventListener('invoiceUpdated', reloadInvoices);
     
     return () => {
-      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('invoiceUpdated', reloadInvoices);
     };
   }, [id]);
 
