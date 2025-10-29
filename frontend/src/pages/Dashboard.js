@@ -51,7 +51,12 @@ const Dashboard = () => {
             JMMC Invoicing
           </h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-600">{user?.email}</span>
+            <button 
+              onClick={() => navigate('/profile')}
+              className="text-sm text-slate-600 hover:text-slate-800 hover:underline cursor-pointer transition-colors"
+            >
+              {user?.email}
+            </button>
             <Button variant="outline" size="sm" onClick={handleLogout} className="rounded-full">
               <LogOut className="w-4 h-4 mr-2" />
               Logout
