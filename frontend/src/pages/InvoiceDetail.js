@@ -907,6 +907,22 @@ const InvoiceDetail = () => {
                   />
                 </div>
               </div>
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select value={invoice.status} onValueChange={handleStatusChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="imported">Imported</SelectItem>
+                    <SelectItem value="edited">Edited</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="issued">Issued</SelectItem>
+                    <SelectItem value="posted">Posted</SelectItem>
+                    <SelectItem value="deleted">Deleted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
