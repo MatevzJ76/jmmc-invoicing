@@ -304,6 +304,104 @@ const ImportVerification = () => {
           </div>
         </div>
 
+        {/* Filters */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="w-5 h-5 text-slate-600" />
+            <h3 className="text-lg font-semibold text-slate-800">Filters</h3>
+            {(searchTerm || projectFilter !== 'all' || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all') && (
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                Showing {displayRows.length} of {verificationData.rows.length} rows
+              </span>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search customer, employee, comments..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Project Filter */}
+            <Select value={projectFilter} onValueChange={setProjectFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Projects" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {uniqueProjects.map(project => (
+                  <SelectItem key={project} value={project}>{project}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Customer Filter */}
+            <Select value={customerFilter} onValueChange={setCustomerFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Customers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Customers</SelectItem>
+                {uniqueCustomers.map(customer => (
+                  <SelectItem key={customer} value={customer}>{customer}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Employee Filter */}
+            <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Employees" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Employees</SelectItem>
+                {uniqueEmployees.map(employee => (
+                  <SelectItem key={employee} value={employee}>{employee}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Tariff Filter */}
+            <Select value={tariffFilter} onValueChange={setTariffFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Tariffs" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tariffs</SelectItem>
+                {uniqueTariffs.map(tariff => (
+                  <SelectItem key={tariff} value={tariff}>{tariff}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Clear Filters Button */}
+          {(searchTerm || projectFilter !== 'all' || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all') && (
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setProjectFilter('all');
+                  setCustomerFilter('all');
+                  setEmployeeFilter('all');
+                  setTariffFilter('all');
+                }}
+                className="rounded-full"
+              >
+                Clear All Filters
+              </Button>
+            </div>
+          )}
+        </div>
+
         {/* Data Table */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-6">
           <div className="overflow-x-auto">
