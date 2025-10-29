@@ -263,6 +263,143 @@ async def clear_rate_limit(email: str, current_user: User = Depends(get_current_
     
     return {"message": f"Rate limit cleared for {email}"}
 
+# ============ USER MANAGEMENT ENDPOINTS (ADMIN) ============
+@api_router.get("/user/profile")
+async def get_user_profile(current_user: User = Depends(get_current_user)):
+    """Get current user's profile"""
+    user_doc = await db.users.find_one({"email": current_user.email})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "email": user_doc["email"],
+        "username": user_doc.get("username"),
+        "role": user_doc["role"],
+        "status": user_doc.get("status", "active"),
+        "createdAt": user_doc.get("createdAt")
+    }
+
+@api_router.get("/admin/users")
+async def list_users(current_user: User = Depends(get_current_user)):
+    """List all users (admin only)"""
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    users = await db.users.find({}).to_list(length=None)
+    
+    return [{
+        "id": user.get("id"),
+        "email": user["email"],
+        "username": user.get("username"),
+        "role": user["role"],
+        "status": user.get("status", "active"),
+        "createdAt": user.get("createdAt"),
+        "mustReset": user.get("mustReset", False)
+    } for user in users]
+
+@api_router.post("/admin/users")
+async def create_user(request: CreateUserRequest, current_user: User = Depends(get_current_user)):
+    """Create a new user (admin only)"""
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Validate password strength
+    if len(request.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
+    if not any(c.isupper() for c in request.password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter")
+    if not any(c.islower() for c in request.password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one lowercase letter")
+    if not any(c.isdigit() for c in request.password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one number")
+    if not any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in request.password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one special character")
+    
+    # Check if user already exists
+    existing = await db.users.find_one({"email": request.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    # Validate role
+    if request.role not in ["ADMIN", "USER"]:
+        raise HTTPException(status_code=400, detail="Role must be either ADMIN or USER")
+    
+    # Create user
+    user_id = str(uuid.uuid4())
+    password_hash = ph.hash(request.password)
+    
+    new_user = {
+        "id": user_id,
+        "email": request.email,
+        "username": request.username,
+        "role": request.role,
+        "status": "active",
+        "passwordHash": password_hash,
+        "mustReset": False,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(new_user)
+    
+    return {
+        "id": user_id,
+        "email": request.email,
+        "username": request.username,
+        "role": request.role,
+        "status": "active",
+        "message": "User created successfully"
+    }
+
+@api_router.put("/admin/users/{user_id}/archive")
+async def archive_user(user_id: str, current_user: User = Depends(get_current_user)):
+    """Archive a user (admin only)"""
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Find user by ID
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent archiving self
+    if user_doc["email"] == current_user.email:
+        raise HTTPException(status_code=400, detail="Cannot archive your own account")
+    
+    # Archive user
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"status": "archived", "archivedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "User archived successfully"}
+
+@api_router.put("/admin/users/{user_id}/role")
+async def update_user_role(user_id: str, request: UpdateUserRoleRequest, current_user: User = Depends(get_current_user)):
+    """Update user role (admin only)"""
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Validate role
+    if request.role not in ["ADMIN", "USER"]:
+        raise HTTPException(status_code=400, detail="Role must be either ADMIN or USER")
+    
+    # Find user by ID
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent changing own role
+    if user_doc["email"] == current_user.email:
+        raise HTTPException(status_code=400, detail="Cannot change your own role")
+    
+    # Update role
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"role": request.role}}
+    )
+    
+    return {"message": f"User role updated to {request.role}"}
+
 # ============ IMPORT ENDPOINTS ============
 @api_router.post("/imports")
 async def import_xlsx(
