@@ -845,11 +845,12 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
                 batch_text += f"  Hours: {hours}\n"
             
             # Call AI
+            logger.info(f"Calling AI with model: {model}, batch size: {len(batch)}")
             chat = LlmChat(llm_api_key=api_key, model=model)
             ai_response = chat.run([UserMessage(content=batch_text)])
             response_text = ai_response.content.strip()
             
-            logger.info(f"Batch {i//batch_size + 1} AI response: {response_text[:200]}")
+            logger.info(f"Batch {i//batch_size + 1} AI response (first 500 chars): {response_text[:500]}")
             
             # Parse JSON response
             try:
