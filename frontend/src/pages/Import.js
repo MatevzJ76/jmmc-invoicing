@@ -211,36 +211,58 @@ const Import = () => {
     }
 
     setLoading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', title);
-    formData.append('invoiceDate', invoiceDate);
-    formData.append('periodFrom', periodFrom);
-    formData.append('periodTo', periodTo);
-    formData.append('dueDate', dueDate);
-
+    
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+      // Parse XLSX/XLS file to extract raw data for verification
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+      
+      // Extract rows (skip header row)
+      const rows = [];
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (row && row.length > 0) {
+          // Map to expected columns
+          rows.push({
+            project: row[0] || '',
+            customer: row[1] || '',
+            date: row[2] || '',
+            tariff: row[3] || '',
+            employee: row[4] || '',
+            comments: row[5] || '',
+            hours: row[6] || 0,
+            value: row[7] || 0,
+            invoiceNumber: row[8] || ''
+          });
+        }
+      }
+      
+      // Read file as binary data for later upload
+      const fileData = await file.arrayBuffer();
+      
+      // Navigate to verification page with data
+      navigate('/import/verify', {
+        state: {
+          verificationData: {
+            fileName: file.name,
+            fileType: file.type,
+            fileData: Array.from(new Uint8Array(fileData)),
+            metadata: {
+              title,
+              invoiceDate,
+              periodFrom,
+              periodTo,
+              dueDate
+            },
+            rows
+          }
         }
       });
-
-      toast.success(`Imported ${response.data.rowCount} rows`);
-      
-      // Compose invoices
-      const composeResponse = await axios.post(
-        `${BACKEND_URL}/api/invoices/compose?batchId=${response.data.batchId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-
-      toast.success(`Created ${composeResponse.data.invoiceIds.length} invoices`);
-      navigate('/batches');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Import failed');
+      toast.error('Failed to parse file. Please check the format.');
+      console.error(error);
     } finally {
       setLoading(false);
     }
