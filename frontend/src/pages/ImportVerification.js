@@ -421,22 +421,30 @@ const ImportVerification = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {verificationData.rows.map((row, index) => (
-                  <tr key={index} className="hover:bg-slate-50">
-                    <td className="px-3 py-2 text-slate-600">{index + 1}</td>
-                    <td className="px-3 py-2 text-slate-700">{row.project}</td>
-                    <td className="px-3 py-2 text-slate-700 font-medium">{row.customer}</td>
-                    <td className="px-3 py-2 text-slate-600">{row.date}</td>
-                    <td className="px-3 py-2 text-slate-600">{row.tariff}</td>
-                    <td className="px-3 py-2 text-slate-700">{row.employee}</td>
-                    <td className="px-3 py-2 text-slate-600 max-w-md truncate" title={row.comments}>
-                      {row.comments}
+                {displayRows.length > 0 ? (
+                  displayRows.map((row, index) => (
+                    <tr key={index} className="hover:bg-slate-50">
+                      <td className="px-3 py-2 text-slate-600">{index + 1}</td>
+                      <td className="px-3 py-2 text-slate-700">{row.project}</td>
+                      <td className="px-3 py-2 text-slate-700 font-medium">{row.customer}</td>
+                      <td className="px-3 py-2 text-slate-600">{row.date}</td>
+                      <td className="px-3 py-2 text-slate-600">{row.tariff}</td>
+                      <td className="px-3 py-2 text-slate-700">{row.employee}</td>
+                      <td className="px-3 py-2 text-slate-600 max-w-md truncate" title={row.comments}>
+                        {row.comments}
+                      </td>
+                      <td className="px-3 py-2 text-right text-slate-700 font-medium">{row.hours}</td>
+                      <td className="px-3 py-2 text-right text-slate-700">€{parseFloat(row.value || 0).toFixed(2)}</td>
+                      <td className="px-3 py-2 text-slate-600">{row.invoiceNumber || '-'}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="10" className="px-3 py-8 text-center text-slate-500">
+                      No rows match the current filters
                     </td>
-                    <td className="px-3 py-2 text-right text-slate-700 font-medium">{row.hours}</td>
-                    <td className="px-3 py-2 text-right text-slate-700">€{parseFloat(row.value || 0).toFixed(2)}</td>
-                    <td className="px-3 py-2 text-slate-600">{row.invoiceNumber || '-'}</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
