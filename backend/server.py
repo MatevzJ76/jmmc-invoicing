@@ -1083,20 +1083,21 @@ async def upload_customer_history(
     current_user: User = Depends(get_current_user)
 ):
     """Upload historical invoice data from XLSX/XLS file"""
-    import openpyxl
     import uuid
-    from io import BytesIO
     from datetime import datetime
     
     try:
         contents = await file.read()
-        wb = openpyxl.load_workbook(BytesIO(contents))
-        sheet = wb.active
+        sheet, wb = load_excel_file(contents, file.filename)
         
         # Check for company name in metadata format (Row 3: "Podjetje: JMMC HP d.o.o.")
         company_name_from_metadata = None
-        for row_num in range(1, min(10, sheet.max_row + 1)):
-            row_values = [cell.value for cell in sheet[row_num]]
+        max_row = sheet.xlrd_sheet.nrows if file.filename.endswith('.xls') else sheet.max_row
+        for row_num in range(1, min(10, max_row + 1)):
+            if file.filename.endswith('.xls'):
+                row_values = sheet.xlrd_sheet.row_values(row_num - 1) if row_num <= sheet.xlrd_sheet.nrows else []
+            else:
+                row_values = [cell.value for cell in sheet[row_num]]
             # Look for "Podjetje:" in first column
             if row_values and row_values[0] and 'podjetje:' in str(row_values[0]).lower():
                 # Company name is usually in the next column
@@ -1108,8 +1109,11 @@ async def upload_customer_history(
         # Find the header row (look for row containing multiple key headers)
         header_row_num = 1
         headers = None
-        for row_num in range(1, min(20, sheet.max_row + 1)):  # Check first 20 rows
-            row_values = [cell.value for cell in sheet[row_num]]
+        for row_num in range(1, min(20, max_row + 1)):  # Check first 20 rows
+            if file.filename.endswith('.xls'):
+                row_values = sheet.xlrd_sheet.row_values(row_num - 1) if row_num <= sheet.xlrd_sheet.nrows else []
+            else:
+                row_values = [cell.value for cell in sheet[row_num]]
             # Count how many key columns are present
             key_columns_found = 0
             if any(cell and 'poz' in str(cell).lower() and len(str(cell).strip()) < 10 for cell in row_values):
