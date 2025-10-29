@@ -266,6 +266,7 @@ const InvoiceDetail = () => {
   const [apiDebugData, setApiDebugData] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [customerDefaultUnitPrice, setCustomerDefaultUnitPrice] = useState(0);
   const [processingButtons, setProcessingButtons] = useState({
     save: false,
     confirmDraft: false,
