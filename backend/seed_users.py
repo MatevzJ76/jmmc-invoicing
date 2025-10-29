@@ -35,18 +35,27 @@ async def seed_users():
     
     # Update or create admin user
     admin_user = {
+        "id": "admin-001",
         "email": "admin@local",
+        "username": "Admin User",
         "passwordHash": admin_hash,
         "role": "ADMIN",
+        "status": "active",
         "mustReset": False,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     
     if existing_admin:
-        # Update existing admin with new password
+        # Update existing admin with new password and status
         await db.users.update_one(
             {"email": "admin@local"},
-            {"$set": {"passwordHash": admin_hash, "mustReset": False}}
+            {"$set": {
+                "id": "admin-001",
+                "username": "Admin User",
+                "passwordHash": admin_hash, 
+                "mustReset": False,
+                "status": "active"
+            }}
         )
         print(f"\n🔐 ADMIN USER UPDATED")
     else:
