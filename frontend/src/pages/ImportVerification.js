@@ -261,27 +261,59 @@ const ImportVerification = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Import
           </Button>
-          
-          <Button
-            size="lg"
-            onClick={handleProceed}
-            disabled={loading}
-            className="bg-green-600 hover:bg-green-700 rounded-full"
-          >
-            {loading ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
-                Creating Invoices...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Proceed & Create Invoices
-              </>
-            )}
-          </Button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Confirm Import</h3>
+              <p className="text-slate-600">
+                Have you reviewed and compared the import file data with the verification table displayed below?
+              </p>
+            </div>
+            
+            <div className="bg-blue-50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-800">
+                <strong>Important:</strong> Please verify that all data is correct before proceeding. 
+                This action will create {verificationData?.rows.length} time entries and generate invoices.
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleCancelConfirmation}
+                className="flex-1 rounded-full"
+              >
+                Cancel & Review
+              </Button>
+              <Button
+                onClick={handleConfirmProceed}
+                disabled={loading}
+                className="flex-1 bg-green-600 hover:bg-green-700 rounded-full"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Yes, Proceed
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
