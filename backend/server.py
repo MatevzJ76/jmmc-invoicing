@@ -787,6 +787,102 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
         logger.error(f"AI verification error: {str(e)}")
         return {"results": {}, "message": f"AI verification error: {str(e)}"}
 
+@api_router.post("/imports/verify-preview")
+async def verify_import_preview(rows: List[dict], current_user: User = Depends(get_current_user)):
+    """Run AI verification on import preview rows before creating batch"""
+    import json
+    
+    # Get user's AI settings
+    user_settings = await db.aiSettings.find_one({"userId": current_user.email})
+    
+    if not user_settings:
+        user_settings = AISettings().model_dump()
+    
+    # Determine API key and model
+    if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
+        api_key = user_settings["customApiKey"]
+        model = user_settings.get("customModel", "gpt-5")
+    else:
+        if not EMERGENT_LLM_KEY:
+            return {"results": {}, "message": "AI not configured"}
+        api_key = EMERGENT_LLM_KEY
+        model = "gpt-5"
+    
+    # Limit verification to prevent long processing
+    MAX_ENTRIES = 100
+    entries_to_check = rows[:MAX_ENTRIES] if len(rows) > MAX_ENTRIES else rows
+    
+    logger.info(f"Verifying {len(entries_to_check)} import rows (total: {len(rows)})")
+    
+    verification_prompt = user_settings.get("verificationPrompt", 
+        "Analyze this work description for suspicious patterns. Respond with JSON: {\"flagged\": true/false, \"reason\": \"explanation\", \"suggestions\": {\"description\": \"corrected text or null\", \"hours\": \"suggested hours or null\"}}")
+    
+    try:
+        # Process in batches
+        batch_size = 10
+        results = {}
+        
+        for i in range(0, len(entries_to_check), batch_size):
+            batch = entries_to_check[i:i + batch_size]
+            
+            # Create batch prompt
+            batch_text = f"Analyze the following work entries and return a JSON array. For each entry provide: entry_index, flagged (true/false), reason, and suggestions object with optional 'description' (grammar-corrected text) and 'hours' (if hours seem unreasonable for the task). Format: [{{\"entry_index\": 0, \"flagged\": true/false, \"reason\": \"explanation\", \"suggestions\": {{\"description\": \"corrected text or null\", \"hours\": suggested_hours_or_null}}}}]\n\n"
+            batch_text += "Verification criteria:\n"
+            batch_text += verification_prompt + "\n\n"
+            batch_text += "Entries to analyze:\n"
+            
+            for idx, row in enumerate(batch):
+                global_idx = i + idx
+                description = row.get('comments', '') or '(No description)'
+                hours = row.get('hours', 0)
+                employee = row.get('employee', '')
+                customer = row.get('customer', '')
+                
+                batch_text += f"\nEntry {global_idx}:\n"
+                batch_text += f"  Employee: {employee}\n"
+                batch_text += f"  Customer: {customer}\n"
+                batch_text += f"  Description: {description}\n"
+                batch_text += f"  Hours: {hours}\n"
+            
+            # Call AI
+            chat = LlmChat(llm_api_key=api_key, model=model)
+            ai_response = chat.run([UserMessage(content=batch_text)])
+            response_text = ai_response.content.strip()
+            
+            logger.info(f"Batch {i//batch_size + 1} AI response: {response_text[:200]}")
+            
+            # Parse JSON response
+            try:
+                # Extract JSON from markdown code blocks if present
+                if '```json' in response_text:
+                    response_text = response_text.split('```json')[1].split('```')[0].strip()
+                elif '```' in response_text:
+                    response_text = response_text.split('```')[1].split('```')[0].strip()
+                
+                batch_results = json.loads(response_text)
+                
+                # Store results by entry index
+                for result in batch_results:
+                    entry_idx = result.get('entry_index', 0)
+                    if result.get('flagged'):
+                        results[str(entry_idx)] = {
+                            "reason": result.get('reason', 'Flagged by AI'),
+                            "suggestions": result.get('suggestions', {})
+                        }
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse AI response as JSON: {response_text[:200]}")
+                continue
+        
+        return {
+            "results": results,
+            "total_checked": len(entries_to_check),
+            "total_flagged": len(results)
+        }
+        
+    except Exception as e:
+        logger.error(f"Import preview AI verification error: {str(e)}")
+        return {"results": {}, "message": f"AI verification error: {str(e)}"}
+
 @api_router.put("/batches/{batch_id}")
 async def update_batch(batch_id: str, update_data: dict, current_user: User = Depends(get_current_user)):
     """Update batch details"""
