@@ -1273,7 +1273,7 @@ const BatchDetail = () => {
                       onClick={() => handleSort('amount')}
                     >
                       <div className="flex items-center justify-end gap-2">
-                        Amount
+                        Total
                         {sortField === 'amount' && (
                           sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
                         )}
