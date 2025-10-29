@@ -849,11 +849,16 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
             
             chat = LlmChat(
                 api_key=api_key,
-                session_id=f"import-verify-{current_user.email}",
-                system_message="You are an AI assistant that analyzes work time entries for anomalies and provides corrections."
+                session_id=f"import-verify-{current_user.email}-{i}",
+                system_message="You are an AI assistant that analyzes work time entries for anomalies and provides corrections. Always respond with valid JSON array format."
             )
-            ai_response = chat.run([UserMessage(content=batch_text)])
-            response_text = ai_response.content.strip()
+            
+            # Set model if using custom provider
+            if model and model != "gpt-5":
+                chat = chat.with_model(model)
+            
+            ai_response = chat.send_message(batch_text)
+            response_text = ai_response.strip()
             
             logger.info(f"Batch {i//batch_size + 1} AI response (first 500 chars): {response_text[:500]}")
             
