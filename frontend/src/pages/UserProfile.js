@@ -163,10 +163,20 @@ const UserProfile = () => {
         <div className="grid gap-6">
           {/* Profile Information */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-6">
-            <h3 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
+            <h3 className="text-xl font-semibold text-slate-800 mb-6 flex items-center gap-2">
               <UserIcon className="w-5 h-5" />
               Profile Information
             </h3>
+            
+            {/* Avatar Display */}
+            <div className="flex items-center gap-4 mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+              <Avatar name={profile?.username || profile?.email} size="xl" />
+              <div>
+                <p className="font-semibold text-slate-800">{profile?.username || 'User'}</p>
+                <p className="text-sm text-slate-600">{profile?.email}</p>
+              </div>
+            </div>
+            
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
