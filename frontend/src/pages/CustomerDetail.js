@@ -288,47 +288,6 @@ const CustomerDetail = () => {
           </div>
         </div>
 
-        {/* Unit Price Setting */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Settings</h2>
-          <div className="space-y-4">
-            <div className="flex items-end gap-4">
-              <div className="flex-1">
-                <Label htmlFor="unitPrice">Default Unit Price (€)</Label>
-                <Input
-                  id="unitPrice"
-                  type="number"
-                  step="0.01"
-                  value={unitPrice}
-                  onChange={(e) => setUnitPrice(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <Button onClick={handleUpdateUnitPrice} className="rounded-full">
-                Update Price
-              </Button>
-            </div>
-            <div className="flex items-end gap-4">
-              <div className="flex-1">
-                <Label htmlFor="company">Company</Label>
-                <select
-                  id="company"
-                  value={selectedCompanyId}
-                  onChange={(e) => handleUpdateCompany(e.target.value)}
-                  className="w-full mt-1 h-10 px-3 rounded-md border border-input bg-background text-sm font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <option value="">No Company</option>
-                  {companies.map((company) => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Upload Historical Data */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
           <h2 className="text-lg font-bold text-slate-800 mb-4">Upload Historical Data</h2>
