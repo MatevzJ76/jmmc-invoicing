@@ -219,22 +219,51 @@ const Import = () => {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
       
+      // Get header row to find column indices
+      const headerRow = jsonData[0] || [];
+      console.log('Header row:', headerRow);
+      
+      // Find column indices (handle optional # column)
+      const findColumnIndex = (possibleNames) => {
+        for (let i = 0; i < headerRow.length; i++) {
+          const header = String(headerRow[i] || '').trim();
+          if (possibleNames.some(name => header === name)) {
+            return i;
+          }
+        }
+        return -1;
+      };
+      
+      const colIndices = {
+        project: findColumnIndex(['Projekt']),
+        customer: findColumnIndex(['Stranka']),
+        date: findColumnIndex(['Datum']),
+        tariff: findColumnIndex(['Tarifa']),
+        employee: findColumnIndex(['Delavec']),
+        comments: findColumnIndex(['Opombe']),
+        hours: findColumnIndex(['Porabljene ure']),
+        value: findColumnIndex(['Vrednost']),
+        invoiceNumber: findColumnIndex(['Št. računa', 'Št.računa'])
+      };
+      
+      console.log('Column indices:', colIndices);
+      
       // Extract rows (skip header row)
       const rows = [];
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
         if (row && row.length > 0) {
-          // Map to expected columns
+          // Map using correct column indices
           rows.push({
-            project: row[0] || '',
-            customer: row[1] || '',
-            date: row[2] || '',
-            tariff: row[3] || '',
-            employee: row[4] || '',
-            comments: row[5] || '',
-            hours: row[6] || 0,
-            value: row[7] || 0,
-            invoiceNumber: row[8] || ''
+            project: colIndices.project >= 0 ? (row[colIndices.project] || '') : '',
+            customer: colIndices.customer >= 0 ? (row[colIndices.customer] || '') : '',
+            date: colIndices.date >= 0 ? (row[colIndices.date] || '') : '',
+            tariff: colIndices.tariff >= 0 ? (row[colIndices.tariff] || '') : '',
+            employee: colIndices.employee >= 0 ? (row[colIndices.employee] || '') : '',
+            comments: colIndices.comments >= 0 ? (row[colIndices.comments] || '') : '',
+            hours: colIndices.hours >= 0 ? (row[colIndices.hours] || 0) : 0,
+            value: colIndices.value >= 0 ? (row[colIndices.value] || 0) : 0,
+            invoiceNumber: colIndices.invoiceNumber >= 0 ? (row[colIndices.invoiceNumber] || '') : ''
           });
         }
       }
