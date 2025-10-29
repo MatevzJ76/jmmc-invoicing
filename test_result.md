@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Disable all editable fields (except status dropdown) after Issue Invoice button is clicked. Enable editing only when invoice status is draft, imported, or edited."
+user_problem_statement: "Add customer statistics to invoice detail Summary section and make customer name clickable to open customer detail page"
 
 backend:
   - task: "GET /api/customers endpoint"
