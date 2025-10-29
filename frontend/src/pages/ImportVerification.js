@@ -611,6 +611,106 @@ const ImportVerification = () => {
         </div>
       </div>
 
+      {/* AI Evaluation Modal */}
+      {showAiModal && selectedRowIndex !== null && aiResults[selectedRowIndex] && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-6 h-6" />
+                  <h3 className="text-xl font-bold">AI Evaluation</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowAiModal(false);
+                    setSelectedRowIndex(null);
+                  }}
+                  className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-200px)]">
+              {/* Row Information */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-800 mb-3">Entry Details</h4>
+                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-2 text-sm">
+                  <div><span className="font-semibold">Employee:</span> {verificationData.rows[selectedRowIndex].employee}</div>
+                  <div><span className="font-semibold">Customer:</span> {verificationData.rows[selectedRowIndex].customer}</div>
+                  <div><span className="font-semibold">Description:</span> {verificationData.rows[selectedRowIndex].comments}</div>
+                  <div><span className="font-semibold">Hours:</span> {verificationData.rows[selectedRowIndex].hours}</div>
+                </div>
+              </div>
+
+              {/* AI Findings */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-800 mb-3">AI Findings</h4>
+                <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                  <p className="text-sm text-amber-900">
+                    {aiResults[selectedRowIndex].reason}
+                  </p>
+                </div>
+              </div>
+
+              {/* Suggestions */}
+              {aiResults[selectedRowIndex].suggestions && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-slate-800 mb-3">AI Suggestions</h4>
+                  <div className="space-y-3">
+                    {aiResults[selectedRowIndex].suggestions.description && (
+                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <p className="text-xs font-semibold text-blue-800 mb-2">Corrected Description:</p>
+                        <p className="text-sm text-blue-900">{aiResults[selectedRowIndex].suggestions.description}</p>
+                      </div>
+                    )}
+                    
+                    {aiResults[selectedRowIndex].suggestions.hours !== null && aiResults[selectedRowIndex].suggestions.hours !== undefined && (
+                      <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                        <p className="text-xs font-semibold text-green-800 mb-2">Suggested Hours:</p>
+                        <p className="text-sm text-green-900">
+                          {aiResults[selectedRowIndex].suggestions.hours} hours 
+                          <span className="text-xs text-green-700 ml-2">
+                            (current: {verificationData.rows[selectedRowIndex].hours})
+                          </span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="p-6 border-t border-slate-200 bg-slate-50">
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAiModal(false);
+                    setSelectedRowIndex(null);
+                  }}
+                  className="flex-1 rounded-full"
+                >
+                  Dismiss
+                </Button>
+                {(aiResults[selectedRowIndex].suggestions?.description || aiResults[selectedRowIndex].suggestions?.hours !== null) && (
+                  <Button
+                    onClick={handleApplySuggestions}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 rounded-full"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Apply Changes
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
