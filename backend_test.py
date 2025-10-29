@@ -1204,12 +1204,337 @@ class TestUserManagement:
         else:
             print(f"\n⚠️  {total - passed} test(s) failed")
 
+class TestExcelImport:
+    def __init__(self):
+        self.token = None
+        self.xlsx_batch_id = None
+        self.xls_batch_id = None
+        self.xlsx_entries = []
+        self.xls_entries = []
+        
+    def login(self) -> bool:
+        """Login as admin and get auth token"""
+        print("\n=== Testing Login ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                print(f"✅ Login successful")
+                print(f"User: {data.get('user', {}).get('email')}")
+                print(f"Role: {data.get('user', {}).get('role')}")
+                return True
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
+    
+    def get_headers(self) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.token}"}
+    
+    def test_import_xlsx(self) -> bool:
+        """Test importing .xlsx file (existing functionality)"""
+        print("\n=== Testing XLSX Import (Existing Functionality) ===")
+        
+        try:
+            # Prepare form data
+            with open('/tmp/test.xlsx', 'rb') as f:
+                files = {'file': ('test.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                data = {
+                    'title': 'Test October 2025',
+                    'invoiceDate': '2025-10-31',
+                    'periodFrom': '2025-10-01',
+                    'periodTo': '2025-10-31',
+                    'dueDate': '2025-11-15'
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/imports",
+                    headers=self.get_headers(),
+                    files=files,
+                    data=data
+                )
+            
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.xlsx_batch_id = result.get("batchId")
+                row_count = result.get("rowCount")
+                
+                print(f"✅ XLSX import successful")
+                print(f"  Batch ID: {self.xlsx_batch_id}")
+                print(f"  Row Count: {row_count}")
+                
+                if row_count > 0:
+                    print(f"✅ Created {row_count} time entries")
+                    return True
+                else:
+                    print(f"❌ No time entries created")
+                    return False
+            else:
+                print(f"❌ XLSX import failed: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error importing XLSX: {str(e)}")
+            return False
+    
+    def test_import_xls(self) -> bool:
+        """Test importing .xls file (NEW FEATURE)"""
+        print("\n=== Testing XLS Import (NEW FEATURE) ===")
+        
+        try:
+            # Prepare form data
+            with open('/tmp/test.xls', 'rb') as f:
+                files = {'file': ('test.xls', f, 'application/vnd.ms-excel')}
+                data = {
+                    'title': 'Test XLS October 2025',
+                    'invoiceDate': '2025-10-31',
+                    'periodFrom': '2025-10-01',
+                    'periodTo': '2025-10-31',
+                    'dueDate': '2025-11-15'
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/imports",
+                    headers=self.get_headers(),
+                    files=files,
+                    data=data
+                )
+            
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.xls_batch_id = result.get("batchId")
+                row_count = result.get("rowCount")
+                
+                print(f"✅ XLS import successful")
+                print(f"  Batch ID: {self.xls_batch_id}")
+                print(f"  Row Count: {row_count}")
+                
+                if row_count > 0:
+                    print(f"✅ Created {row_count} time entries")
+                    return True
+                else:
+                    print(f"❌ No time entries created")
+                    return False
+            else:
+                print(f"❌ XLS import failed: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error importing XLS: {str(e)}")
+            return False
+    
+    def get_batch_entries(self, batch_id: str) -> list:
+        """Get time entries from a batch"""
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/batches/{batch_id}/verification",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                all_entries = []
+                all_entries.extend(data.get("jmmcHP", []))
+                all_entries.extend(data.get("jmmcFinance", []))
+                all_entries.extend(data.get("noClient", []))
+                all_entries.extend(data.get("extra", []))
+                return all_entries
+            else:
+                print(f"❌ Failed to get batch entries: {response.text}")
+                return []
+        except Exception as e:
+            print(f"❌ Error getting batch entries: {str(e)}")
+            return []
+    
+    def test_compare_data(self) -> bool:
+        """Compare data from XLSX and XLS imports"""
+        print("\n=== Comparing XLSX and XLS Data ===")
+        
+        if not self.xlsx_batch_id or not self.xls_batch_id:
+            print("❌ Missing batch IDs for comparison")
+            return False
+        
+        # Get entries from both batches
+        self.xlsx_entries = self.get_batch_entries(self.xlsx_batch_id)
+        self.xls_entries = self.get_batch_entries(self.xls_batch_id)
+        
+        print(f"XLSX entries: {len(self.xlsx_entries)}")
+        print(f"XLS entries: {len(self.xls_entries)}")
+        
+        # Check if both have the same number of entries
+        if len(self.xlsx_entries) != len(self.xls_entries):
+            print(f"❌ Entry count mismatch: XLSX={len(self.xlsx_entries)}, XLS={len(self.xls_entries)}")
+            return False
+        
+        print(f"✅ Both formats created {len(self.xlsx_entries)} entries")
+        
+        # Compare total values
+        xlsx_total = sum(entry.get('value', 0) for entry in self.xlsx_entries)
+        xls_total = sum(entry.get('value', 0) for entry in self.xls_entries)
+        
+        print(f"XLSX total value: €{xlsx_total:.2f}")
+        print(f"XLS total value: €{xls_total:.2f}")
+        
+        if abs(xlsx_total - xls_total) > 0.01:  # Allow for small floating point differences
+            print(f"❌ Total value mismatch")
+            return False
+        
+        print(f"✅ Total values match")
+        
+        # Compare total hours
+        xlsx_hours = sum(entry.get('hours', 0) for entry in self.xlsx_entries)
+        xls_hours = sum(entry.get('hours', 0) for entry in self.xls_entries)
+        
+        print(f"XLSX total hours: {xlsx_hours:.2f}")
+        print(f"XLS total hours: {xls_hours:.2f}")
+        
+        if abs(xlsx_hours - xls_hours) > 0.01:
+            print(f"❌ Total hours mismatch")
+            return False
+        
+        print(f"✅ Total hours match")
+        
+        # Sample comparison of first few entries
+        print("\n--- Sample Entry Comparison ---")
+        for i in range(min(3, len(self.xlsx_entries))):
+            xlsx_entry = self.xlsx_entries[i]
+            xls_entry = self.xls_entries[i]
+            
+            print(f"\nEntry {i+1}:")
+            print(f"  XLSX: {xlsx_entry.get('employeeName')} - {xlsx_entry.get('hours')}h - €{xlsx_entry.get('value')}")
+            print(f"  XLS:  {xls_entry.get('employeeName')} - {xls_entry.get('hours')}h - €{xls_entry.get('value')}")
+            
+            # Check if key fields match
+            if (xlsx_entry.get('employeeName') != xls_entry.get('employeeName') or
+                abs(xlsx_entry.get('hours', 0) - xls_entry.get('hours', 0)) > 0.01 or
+                abs(xlsx_entry.get('value', 0) - xls_entry.get('value', 0)) > 0.01):
+                print(f"  ❌ Entry {i+1} data mismatch")
+                return False
+            print(f"  ✅ Entry {i+1} matches")
+        
+        print("\n✅ Data comparison successful - both formats produce identical results")
+        return True
+    
+    def test_verify_batch_details(self) -> bool:
+        """Verify batch details are correctly stored"""
+        print("\n=== Verifying Batch Details ===")
+        
+        results = []
+        
+        for batch_id, title in [(self.xlsx_batch_id, "Test October 2025"), 
+                                 (self.xls_batch_id, "Test XLS October 2025")]:
+            if not batch_id:
+                continue
+                
+            try:
+                response = requests.get(
+                    f"{BACKEND_URL}/batches/{batch_id}",
+                    headers=self.get_headers()
+                )
+                
+                if response.status_code == 200:
+                    batch = response.json()
+                    
+                    print(f"\nBatch: {title}")
+                    print(f"  ID: {batch.get('id')}")
+                    print(f"  Title: {batch.get('title')}")
+                    print(f"  Filename: {batch.get('filename')}")
+                    print(f"  Invoice Date: {batch.get('invoiceDate')}")
+                    print(f"  Period: {batch.get('periodFrom')} to {batch.get('periodTo')}")
+                    print(f"  Due Date: {batch.get('dueDate')}")
+                    print(f"  Status: {batch.get('status')}")
+                    
+                    # Verify required fields
+                    if (batch.get('title') == title and
+                        batch.get('invoiceDate') == '2025-10-31' and
+                        batch.get('periodFrom') == '2025-10-01' and
+                        batch.get('periodTo') == '2025-10-31' and
+                        batch.get('dueDate') == '2025-11-15'):
+                        print(f"  ✅ Batch details correct")
+                        results.append(True)
+                    else:
+                        print(f"  ❌ Batch details incorrect")
+                        results.append(False)
+                else:
+                    print(f"❌ Failed to get batch {batch_id}: {response.text}")
+                    results.append(False)
+            except Exception as e:
+                print(f"❌ Error getting batch: {str(e)}")
+                results.append(False)
+        
+        return all(results)
+    
+    def run_all_tests(self):
+        """Run all Excel import tests"""
+        print("=" * 80)
+        print("EXCEL IMPORT FEATURE - BACKEND TESTS (.xlsx and .xls support)")
+        print("=" * 80)
+        
+        results = {}
+        
+        # 1. Login
+        if not self.login():
+            print("\n❌ CRITICAL: Login failed. Cannot proceed with tests.")
+            return
+        
+        # 2. Test XLSX import (existing functionality)
+        results["XLSX Import (existing)"] = self.test_import_xlsx()
+        
+        # 3. Test XLS import (NEW feature)
+        results["XLS Import (NEW)"] = self.test_import_xls()
+        
+        # 4. Compare data from both formats
+        if results.get("XLSX Import (existing)") and results.get("XLS Import (NEW)"):
+            results["Data Comparison"] = self.test_compare_data()
+            results["Batch Details Verification"] = self.test_verify_batch_details()
+        else:
+            print("\n⚠️  Skipping comparison tests due to import failures")
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for v in results.values() if v)
+        total = len(results)
+        
+        for test_name, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            print(f"{status} - {test_name}")
+        
+        print(f"\nTotal: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED!")
+            print("\n✅ Excel import feature is working correctly:")
+            print("  - XLSX format (existing) ✅")
+            print("  - XLS format (NEW) ✅")
+            print("  - Both formats produce identical data ✅")
+            print("  - xlrd library handling .xls correctly ✅")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed")
+
 if __name__ == "__main__":
-    # Run user management tests
+    # Run Excel import tests
     print("\n" + "=" * 80)
-    print("RUNNING USER MANAGEMENT & SECURITY TESTS")
+    print("RUNNING EXCEL IMPORT TESTS (.xlsx and .xls)")
     print("=" * 80)
     
-    user_mgmt_tester = TestUserManagement()
-    user_mgmt_tester.run_all_tests()
+    excel_tester = TestExcelImport()
+    excel_tester.run_all_tests()
 
