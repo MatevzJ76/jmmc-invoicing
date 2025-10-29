@@ -292,8 +292,8 @@ const UserManagement = () => {
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">User</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Email</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Username</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Role</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Created</th>
@@ -304,12 +304,17 @@ const UserManagement = () => {
                 {users.map((u) => (
                   <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-slate-400" />
-                        <span className="text-sm text-slate-700">{u.email}</span>
+                      <div className="flex items-center gap-3">
+                        <Avatar name={u.username || u.email} size="md" />
+                        <span className="text-sm font-medium text-slate-700">{u.username || '-'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-700">{u.username || '-'}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm text-slate-600">{u.email}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         u.role === 'ADMIN' 
