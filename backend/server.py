@@ -1589,9 +1589,20 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
         
         # Create invoice lines
         lines = []
+        customer_unit_price = customer.get("unitPrice", 0)  # Get customer's default unit price
+        
         for entry in customer_entries:
             line_id = str(uuid.uuid4())
             project = await db.projects.find_one({"id": entry["projectId"]})
+            
+            # Determine unit price: use customer's default if available and hours > 0, otherwise calculate
+            if customer_unit_price > 0 and entry["hours"] > 0:
+                unit_price = customer_unit_price
+                amount = entry["hours"] * customer_unit_price
+            else:
+                # Fallback to calculated price from imported data
+                unit_price = entry["value"] / entry["hours"] if entry["hours"] > 0 else 0
+                amount = entry["value"]
             
             line_doc = {
                 "id": line_id,
@@ -1599,8 +1610,8 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
                 "timeEntryId": entry["id"],  # Add timeEntryId for move functionality
                 "description": f"{project['name']} - {entry['employeeName']} - {entry['notes'] or ''}",
                 "quantity": entry["hours"],
-                "unitPrice": entry["value"] / entry["hours"] if entry["hours"] > 0 else 0,
-                "amount": entry["value"],
+                "unitPrice": unit_price,
+                "amount": amount,
                 "taxCode": None
             }
             lines.append(line_doc)
