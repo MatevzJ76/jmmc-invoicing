@@ -1,0 +1,239 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { ArrowLeft, CheckCircle, Clock, Euro } from 'lucide-react';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+const ImportVerification = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [verificationData, setVerificationData] = useState(null);
+
+  useEffect(() => {
+    // Get data from navigation state or sessionStorage
+    const data = location.state?.verificationData || JSON.parse(sessionStorage.getItem('importVerificationData') || 'null');
+    
+    if (!data) {
+      toast.error('No import data found');
+      navigate('/import');
+      return;
+    }
+    
+    setVerificationData(data);
+    
+    // Save to sessionStorage in case of page refresh
+    if (location.state?.verificationData) {
+      sessionStorage.setItem('importVerificationData', JSON.stringify(data));
+    }
+  }, [location, navigate]);
+
+  const handleProceed = async () => {
+    if (!verificationData) return;
+    
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      
+      // Re-create the file from the stored data
+      const blob = new Blob([verificationData.fileData], { type: verificationData.fileType });
+      const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
+      
+      formData.append('file', file);
+      formData.append('title', verificationData.metadata.title);
+      formData.append('invoiceDate', verificationData.metadata.invoiceDate);
+      formData.append('periodFrom', verificationData.metadata.periodFrom);
+      formData.append('periodTo', verificationData.metadata.periodTo);
+      formData.append('dueDate', verificationData.metadata.dueDate);
+
+      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      sessionStorage.removeItem('importVerificationData');
+      toast.success(`Imported ${response.data.entriesCount} entries successfully!`);
+      navigate('/batches');
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || 'Import failed';
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    sessionStorage.removeItem('importVerificationData');
+    navigate('/import');
+  };
+
+  if (!verificationData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-slate-600">Loading...</div>
+      </div>
+    );
+  }
+
+  const totalHours = verificationData.rows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0);
+  const totalValue = verificationData.rows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            JMMC Invoicing
+          </h1>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-slate-800 mb-2">Import Verification</h2>
+          <p className="text-slate-600">Review imported data before creating invoices</p>
+        </div>
+
+        {/* Summary Tiles */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-blue-100 rounded-xl">
+                <Clock className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Porabljene ure</p>
+                <p className="text-2xl font-bold text-slate-800">{totalHours.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-green-100 rounded-xl">
+                <Euro className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Vrednost</p>
+                <p className="text-2xl font-bold text-slate-800">€{totalValue.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Import Metadata */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">Import Details</h3>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="text-slate-600">File:</p>
+              <p className="font-semibold text-slate-800">{verificationData.fileName}</p>
+            </div>
+            <div>
+              <p className="text-slate-600">Title:</p>
+              <p className="font-semibold text-slate-800">{verificationData.metadata.title}</p>
+            </div>
+            <div>
+              <p className="text-slate-600">Total Rows:</p>
+              <p className="font-semibold text-slate-800">{verificationData.rows.length}</p>
+            </div>
+            <div>
+              <p className="text-slate-600">Period:</p>
+              <p className="font-semibold text-slate-800">
+                {verificationData.metadata.periodFrom} - {verificationData.metadata.periodTo}
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-600">Invoice Date:</p>
+              <p className="font-semibold text-slate-800">{verificationData.metadata.invoiceDate}</p>
+            </div>
+            <div>
+              <p className="text-slate-600">Due Date:</p>
+              <p className="font-semibold text-slate-800">{verificationData.metadata.dueDate}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">#</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Projekt</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Stranka</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Datum</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Tarifa</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Delavec</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Opombe</th>
+                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Porabljene ure</th>
+                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Vrednost</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Št.računa</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {verificationData.rows.map((row, index) => (
+                  <tr key={index} className="hover:bg-slate-50">
+                    <td className="px-3 py-2 text-slate-600">{index + 1}</td>
+                    <td className="px-3 py-2 text-slate-700">{row.project}</td>
+                    <td className="px-3 py-2 text-slate-700 font-medium">{row.customer}</td>
+                    <td className="px-3 py-2 text-slate-600">{row.date}</td>
+                    <td className="px-3 py-2 text-slate-600">{row.tariff}</td>
+                    <td className="px-3 py-2 text-slate-700">{row.employee}</td>
+                    <td className="px-3 py-2 text-slate-600 max-w-md truncate" title={row.comments}>
+                      {row.comments}
+                    </td>
+                    <td className="px-3 py-2 text-right text-slate-700 font-medium">{row.hours}</td>
+                    <td className="px-3 py-2 text-right text-slate-700">€{parseFloat(row.value || 0).toFixed(2)}</td>
+                    <td className="px-3 py-2 text-slate-600">{row.invoiceNumber || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleBack}
+            className="rounded-full"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Import
+          </Button>
+          
+          <Button
+            size="lg"
+            onClick={handleProceed}
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-700 rounded-full"
+          >
+            {loading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
+                Creating Invoices...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Proceed & Create Invoices
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ImportVerification;
