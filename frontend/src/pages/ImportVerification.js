@@ -32,6 +32,20 @@ const ImportVerification = () => {
     }
   }, [location, navigate]);
 
+  const handleProceedClick = () => {
+    // Show confirmation dialog
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmProceed = () => {
+    setShowConfirmation(false);
+    handleProceed();
+  };
+
+  const handleCancelConfirmation = () => {
+    setShowConfirmation(false);
+  };
+
   const handleProceed = async () => {
     if (!verificationData) return;
     
