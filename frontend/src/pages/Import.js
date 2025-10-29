@@ -422,7 +422,7 @@ const Import = () => {
             disabled={loading || !file}
             data-testid="import-submit-button"
           >
-            {loading ? 'Importing...' : 'Import and Create Invoices'}
+            {loading ? 'Processing...' : 'Verify Invoices'}
           </Button>
         </form>
       </div>
