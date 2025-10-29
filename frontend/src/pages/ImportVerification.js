@@ -446,6 +446,20 @@ const ImportVerification = () => {
                   </tr>
                 )}
               </tbody>
+              <tfoot className="bg-slate-100 border-t-2 border-slate-300">
+                <tr>
+                  <td colSpan="7" className="px-3 py-3 text-right text-sm font-bold text-slate-800">
+                    Total {displayRows.length > 0 && displayRows.length !== verificationData.rows.length && `(${displayRows.length} rows)`}:
+                  </td>
+                  <td className="px-3 py-3 text-right text-sm font-bold text-blue-700">
+                    {displayRows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(2)}
+                  </td>
+                  <td className="px-3 py-3 text-right text-sm font-bold text-green-700">
+                    €{displayRows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0).toFixed(2)}
+                  </td>
+                  <td className="px-3 py-3"></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
