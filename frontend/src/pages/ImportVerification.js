@@ -218,6 +218,32 @@ const ImportVerification = () => {
           </div>
         </div>
 
+        {/* Hours by Employee Breakdown */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">Hours by Employee</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {(() => {
+              // Calculate hours per employee
+              const hoursByEmployee = {};
+              verificationData.rows.forEach(row => {
+                const employee = row.employee || 'Unknown';
+                const hours = parseFloat(row.hours) || 0;
+                hoursByEmployee[employee] = (hoursByEmployee[employee] || 0) + hours;
+              });
+              
+              // Sort by hours (descending)
+              const sorted = Object.entries(hoursByEmployee).sort((a, b) => b[1] - a[1]);
+              
+              return sorted.map(([employee, hours]) => (
+                <div key={employee} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                  <p className="text-xs text-slate-600 mb-1">{employee}</p>
+                  <p className="text-xl font-bold text-blue-600">{hours.toFixed(2)} h</p>
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+
         {/* Data Table */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-6">
           <div className="overflow-x-auto">
