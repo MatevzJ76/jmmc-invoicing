@@ -364,13 +364,14 @@ const InvoiceDetail = () => {
       setInvoice(response.data.invoice);
       setLines(response.data.lines);
       
-      // Load customer details to get their company
+      // Load customer details to get their company and default unit price
       if (response.data.invoice.customerId) {
         const customerResponse = await axios.get(
           `${BACKEND_URL}/api/customers/${response.data.invoice.customerId}`,
           { headers: { Authorization: `Bearer ${token}` }}
         );
         setSelectedCompanyId(customerResponse.data.companyId || '');
+        setCustomerDefaultUnitPrice(customerResponse.data.unitPrice || 0);
       }
     } catch (error) {
       toast.error('Failed to load invoice');
