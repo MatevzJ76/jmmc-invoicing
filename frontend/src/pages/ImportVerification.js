@@ -111,34 +111,90 @@ const ImportVerification = () => {
   const handleAIVerification = async () => {
     setAiVerifying(true);
     setAiResults({});
-    toast.info('AI verification started. This may take a minute...');
+    
+    const totalRows = verificationData.rows.length;
+    const batchSize = 10;
+    const totalBatches = Math.ceil(totalRows / batchSize);
+    const startTime = Date.now();
+    
+    toast.info(`AI verification started. Processing ${totalRows} rows...`);
+    
+    setVerificationProgress({
+      current: 0,
+      total: totalRows,
+      percentage: 0,
+      elapsed: 0,
+      estimated: 0
+    });
     
     try {
       const token = localStorage.getItem('access_token');
-      const response = await axios.post(
-        `${BACKEND_URL}/api/imports/verify-preview`,
-        verificationData.rows,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 120000 // 2 minute timeout
+      const allResults = {};
+      
+      // Process in chunks to show progress
+      for (let i = 0; i < totalRows; i += batchSize) {
+        const chunk = verificationData.rows.slice(i, i + batchSize);
+        const currentBatch = Math.floor(i / batchSize) + 1;
+        
+        // Update progress
+        const elapsed = (Date.now() - startTime) / 1000; // seconds
+        const avgTimePerBatch = elapsed / currentBatch;
+        const remainingBatches = totalBatches - currentBatch;
+        const estimated = avgTimePerBatch * remainingBatches;
+        
+        setVerificationProgress({
+          current: i + chunk.length,
+          total: totalRows,
+          percentage: ((i + chunk.length) / totalRows) * 100,
+          elapsed: Math.floor(elapsed),
+          estimated: Math.floor(estimated)
+        });
+        
+        // Call backend with this chunk
+        try {
+          const response = await axios.post(
+            `${BACKEND_URL}/api/imports/verify-preview`,
+            chunk,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              timeout: 60000
+            }
+          );
+          
+          // Merge results (adjust indices to global)
+          const chunkResults = response.data.results || {};
+          Object.keys(chunkResults).forEach(localIdx => {
+            const globalIdx = i + parseInt(localIdx);
+            allResults[globalIdx] = chunkResults[localIdx];
+          });
+          
+        } catch (error) {
+          console.error(`Batch ${currentBatch} failed:`, error);
+          toast.error(`Batch ${currentBatch}/${totalBatches} failed, continuing...`);
         }
-      );
+      }
       
-      setAiResults(response.data.results || {});
+      setAiResults(allResults);
       
-      const flaggedCount = Object.keys(response.data.results || {}).length;
-      const totalChecked = response.data.total_checked || 0;
+      const flaggedCount = Object.keys(allResults).length;
       
       if (flaggedCount > 0) {
-        toast.warning(`AI found ${flaggedCount} entries that need review out of ${totalChecked} checked`);
+        toast.warning(`AI found ${flaggedCount} entries that need review out of ${totalRows} checked`);
       } else {
-        toast.success(`All ${totalChecked} entries look good!`);
+        toast.success(`All ${totalRows} entries look good!`);
       }
     } catch (error) {
       console.error('AI verification error:', error);
       toast.error('AI verification failed. Please try again.');
     } finally {
       setAiVerifying(false);
+      setVerificationProgress({
+        current: 0,
+        total: 0,
+        percentage: 0,
+        elapsed: 0,
+        estimated: 0
+      });
     }
   };
   
