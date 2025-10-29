@@ -40,7 +40,8 @@ const ImportVerification = () => {
       const formData = new FormData();
       
       // Re-create the file from the stored data
-      const blob = new Blob([verificationData.fileData], { type: verificationData.fileType });
+      const uint8Array = new Uint8Array(verificationData.fileData);
+      const blob = new Blob([uint8Array], { type: verificationData.fileType });
       const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
       
       formData.append('file', file);
@@ -50,6 +51,7 @@ const ImportVerification = () => {
       formData.append('periodTo', verificationData.metadata.periodTo);
       formData.append('dueDate', verificationData.metadata.dueDate);
 
+      // Import data
       const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -57,8 +59,18 @@ const ImportVerification = () => {
         }
       });
 
+      toast.success(`Imported ${response.data.rowCount} rows`);
+      
+      // Compose invoices
+      const composeResponse = await axios.post(
+        `${BACKEND_URL}/api/invoices/compose?batchId=${response.data.batchId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+
+      toast.success(`Created ${composeResponse.data.invoiceIds.length} invoices`);
+      
       sessionStorage.removeItem('importVerificationData');
-      toast.success(`Imported ${response.data.entriesCount} entries successfully!`);
       navigate('/batches');
     } catch (error) {
       const errorMsg = error.response?.data?.detail || 'Import failed';
