@@ -292,12 +292,12 @@ frontend:
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Consecutive button disabling based on workflow priority"
+    - "User management and security features"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -321,3 +321,5 @@ agent_communication:
       message: "Implemented consecutive button disabling feature on invoice detail page. Added processingButtons state to track workflow button states. Button workflow priority: Save → Confirm Draft → Issue Invoice → Post to eRačuni. When a button is clicked, it disables itself and all previous buttons in the sequence. For example: clicking 'Issue Invoice' disables Save, Confirm Draft, and Issue Invoice buttons, leaving only 'Post to eRačuni' enabled. On error, disabled buttons are re-enabled. View API and Delete buttons are not affected by this logic. Tested with Playwright - verified that clicking 'Confirm Draft' correctly disables both Save and Confirm Draft buttons while leaving Issue Invoice and Post to eRačuni enabled. Feature is working as expected and production-ready."
     - agent: "testing"
       message: "✅ DRAG-AND-DROP FEATURE TESTING COMPLETE! Tested invoice ID: ebc34b1b-f934-4591-8e8e-56bced62872e with 3 line items. ALL TESTS PASSED: (1) ✅ UI Elements: All drag handles (GripVertical), ChevronUp, and ChevronDown buttons present and visible. (2) ⚠️ Drag-and-drop mouse interaction: CANNOT BE TESTED due to system limitations (Playwright cannot simulate @dnd-kit's complex drag events), but UI is properly implemented. (3) ✅ Up/Down Arrow Buttons: FULLY WORKING - moves items correctly with toast notifications, proper disabled states on first/last items. (4) ✅ Persistence: Order correctly saved and preserved after page reload. (5) ✅ Posted Invoice: All controls (drag handles, arrows, save button) correctly disabled when status is 'posted'. (6) ✅ Multiple Operations: 3 consecutive reorder operations work perfectly. (7) ✅ No console errors. CONCLUSION: Feature is PRODUCTION-READY. The drag-and-drop implementation is correct (UI elements present, handlers configured), and the up/down arrow buttons provide full reordering functionality. NO ACTION REQUIRED."
+    - agent: "testing"
+      message: "✅ USER MANAGEMENT & SECURITY TESTING COMPLETE! All 12 backend tests PASSED. Test results: (1) ✅ Admin login (admin@local) - working with status=active, role=ADMIN. (2) ✅ User login (user@local) - working with status=active, role=USER. (3) ✅ GET /api/user/profile - returns email, username, role, status, createdAt. (4) ✅ GET /api/admin/users (admin) - lists all users correctly. (5) ✅ GET /api/admin/users (user) - correctly returns 403 Forbidden. (6) ✅ POST /api/admin/users (valid) - creates user successfully. (7) ✅ POST /api/admin/users (weak passwords) - all 5 password validation rules enforced correctly (length, uppercase, lowercase, number, special char). (8) ✅ PUT /api/admin/users/{id}/archive - archives user successfully. (9) ✅ Archived user login - correctly blocked with 'Account is archived' message. (10) ✅ PUT /api/admin/users/{id}/role - changes role successfully. (11) ✅ Self-archive prevention - correctly blocked with 'Cannot archive your own account'. (12) ✅ Self-role-change prevention - correctly blocked with 'Cannot change your own role'. ALL SECURITY FEATURES WORKING CORRECTLY. No issues found."
