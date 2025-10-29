@@ -70,7 +70,9 @@ const CustomerDetail = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCustomer(response.data);
-      setUnitPrice(response.data.unitPrice || 0);
+      const price = response.data.unitPrice || 0;
+      setUnitPrice(price);
+      setUnitPriceDisplay(parseFloat(price).toFixed(2).replace('.', ','));
       setSelectedCompanyId(response.data.companyId || '');
     } catch (error) {
       toast.error('Failed to load customer');
