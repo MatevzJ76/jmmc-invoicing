@@ -33,6 +33,8 @@ const CustomerDetail = () => {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [unitPrice, setUnitPrice] = useState(0);
+  const [unitPriceDisplay, setUnitPriceDisplay] = useState('');
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
   const [showAddForm, setShowAddForm] = useState(false);
