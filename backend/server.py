@@ -854,8 +854,10 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
             )
             
             # Set model if using custom provider
-            if model and model != "gpt-5":
-                chat = chat.with_model(model)
+            if user_settings.get("aiProvider") == "custom":
+                chat = chat.with_model("openai", model)
+            else:
+                chat = chat.with_model("openai", "gpt-5")
             
             ai_response = chat.send_message(batch_text)
             response_text = ai_response.strip()
