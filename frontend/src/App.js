@@ -10,6 +10,8 @@ import ChangePassword from './pages/ChangePassword';
 import Settings from './pages/Settings';
 import Customers from './pages/Customers';
 import CustomerDetail from './pages/CustomerDetail';
+import UserProfile from './pages/UserProfile';
+import UserManagement from './pages/UserManagement';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/users" element={<UserManagement />} />
         </Routes>
       </BrowserRouter>
     </div>
