@@ -241,6 +241,7 @@ const CustomerDetail = () => {
                     const value = e.target.value.replace(',', '.');
                     setUnitPrice(value);
                   }}
+                  onFocus={(e) => e.target.select()}
                   onBlur={(e) => {
                     const num = parseFloat(e.target.value.replace(',', '.'));
                     if (!isNaN(num)) {
