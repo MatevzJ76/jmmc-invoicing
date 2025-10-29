@@ -67,6 +67,15 @@ class ChangePasswordRequest(BaseModel):
     currentPassword: str
     newPassword: str
 
+class CreateUserRequest(BaseModel):
+    email: EmailStr
+    username: str
+    password: str
+    role: str  # ADMIN or USER
+
+class UpdateUserRoleRequest(BaseModel):
+    role: str  # ADMIN or USER
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
