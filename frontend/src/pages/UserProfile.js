@@ -127,12 +127,9 @@ const UserProfile = () => {
             JMMC Invoicing
           </h1>
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate('/profile')}
-              className="text-sm text-slate-600 hover:text-slate-800 hover:underline cursor-pointer transition-colors"
-            >
+            <Button variant="outline" size="sm" onClick={() => navigate('/profile')} className="rounded-full">
               {user?.email}
-            </button>
+            </Button>
             {user?.role === 'ADMIN' && (
               <Button variant="outline" size="sm" onClick={() => navigate('/users')} className="rounded-full">
                 Users
