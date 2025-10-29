@@ -229,16 +229,28 @@ const CustomerDetail = () => {
         <div className="grid md:grid-cols-6 gap-4">
           {/* Default Unit Price Tile */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-            <p className="text-sm text-slate-600 mb-2">Default Unit Price</p>
+            <p className="text-sm text-slate-600 mb-2">Default Unit Price (€)</p>
             <div className="flex items-center gap-2">
-              <Input
-                id="unitPrice"
-                type="number"
-                step="0.01"
-                value={unitPrice}
-                onChange={(e) => setUnitPrice(e.target.value)}
-                className="h-10 text-lg font-bold"
-              />
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
+                <Input
+                  id="unitPrice"
+                  type="text"
+                  value={unitPrice.toString().replace('.', ',')}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(',', '.');
+                    setUnitPrice(value);
+                  }}
+                  onBlur={(e) => {
+                    const num = parseFloat(e.target.value.replace(',', '.'));
+                    if (!isNaN(num)) {
+                      setUnitPrice(num.toFixed(2));
+                    }
+                  }}
+                  placeholder="0,00"
+                  className="h-10 text-lg font-bold pl-8"
+                />
+              </div>
               <Button onClick={handleUpdateUnitPrice} size="sm" className="rounded-full shrink-0" title="Update Price">
                 <TrendingUp className="w-4 h-4" />
               </Button>
