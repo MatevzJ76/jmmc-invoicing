@@ -860,7 +860,10 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
                 elif '```' in response_text:
                     response_text = response_text.split('```')[1].split('```')[0].strip()
                 
+                logger.info(f"Parsing JSON response: {response_text[:300]}")
                 batch_results = json.loads(response_text)
+                
+                logger.info(f"Successfully parsed {len(batch_results)} results from batch")
                 
                 # Store results by entry index
                 for result in batch_results:
@@ -870,9 +873,13 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
                             "reason": result.get('reason', 'Flagged by AI'),
                             "suggestions": result.get('suggestions', {})
                         }
+                        logger.info(f"Entry {entry_idx} flagged: {result.get('reason', 'No reason')}")
             except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse AI response as JSON: {response_text[:200]}")
+                logger.error(f"Failed to parse AI response as JSON: {e}")
+                logger.error(f"Raw response: {response_text[:500]}")
                 continue
+        
+        logger.info(f"Total flagged entries: {len(results)} out of {len(entries_to_check)}")
         
         return {
             "results": results,
