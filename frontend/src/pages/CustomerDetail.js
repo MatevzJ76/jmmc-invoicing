@@ -226,19 +226,62 @@ const CustomerDetail = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         {/* Statistics Cards */}
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid md:grid-cols-6 gap-4">
+          {/* Default Unit Price Tile */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <p className="text-sm text-slate-600 mb-2">Default Unit Price</p>
+            <div className="flex items-center gap-2">
+              <Input
+                id="unitPrice"
+                type="number"
+                step="0.01"
+                value={unitPrice}
+                onChange={(e) => setUnitPrice(e.target.value)}
+                className="h-10 text-lg font-bold"
+              />
+              <Button onClick={handleUpdateUnitPrice} size="sm" className="rounded-full shrink-0" title="Update Price">
+                <TrendingUp className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Company Tile */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <p className="text-sm text-slate-600 mb-2">Company</p>
+            <select
+              id="company"
+              value={selectedCompanyId}
+              onChange={(e) => handleUpdateCompany(e.target.value)}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">No Company</option>
+              {companies.map((company) => (
+                <option key={company.id} value={company.id}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          {/* Total Invoices Tile */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Total Invoices</p>
             <p className="text-2xl font-bold text-slate-800">{customer.invoiceCount || 0}</p>
           </div>
+          
+          {/* Total Invoiced Tile */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Total Invoiced</p>
             <p className="text-2xl font-bold text-green-600">€{formatEuro(customer.totalInvoiced || 0)}</p>
           </div>
+          
+          {/* Avg Invoice Tile */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Avg Invoice</p>
             <p className="text-2xl font-bold text-blue-600">€{formatEuro(customer.averageInvoice || 0)}</p>
           </div>
+          
+          {/* Historical Entries Tile */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Historical Entries</p>
             <p className="text-2xl font-bold text-purple-600">{customer.historicalInvoices?.length || 0}</p>
