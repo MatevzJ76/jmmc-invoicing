@@ -78,172 +78,178 @@ const SortableLineItem = ({
     <div 
       ref={setNodeRef} 
       style={style} 
-      className="bg-slate-50 rounded-lg p-4 border border-slate-200" 
+      className="bg-slate-50 rounded-lg p-3 border border-slate-200" 
       data-testid={`line-item-${index}`}
     >
-      <div className="grid gap-4">
-        <div className="flex items-start gap-2">
-          {/* Drag Handle */}
-          <button
-            {...attributes}
-            {...listeners}
+      <div className="flex items-center gap-3">
+        {/* Drag Handle - Smaller */}
+        <button
+          {...attributes}
+          {...listeners}
+          disabled={!isEditingAllowed}
+          className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Drag to reorder"
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+        
+        {/* Description - Reduced width */}
+        <div className="flex-1 max-w-md">
+          <Textarea
+            value={line.description}
+            onChange={(e) => updateLine(index, 'description', e.target.value)}
+            placeholder="Service description"
+            rows={1}
             disabled={!isEditingAllowed}
-            className="mt-6 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Drag to reorder"
+            className="text-sm resize-none"
+            data-testid={`description-input-${index}`}
+          />
+        </div>
+        
+        {/* AI Button - Smaller */}
+        {aiEnabled && isEditingAllowed && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleAISuggestion(index, 'description')}
+            className="px-2"
+            title="Apply AI grammar correction"
           >
-            <GripVertical className="w-5 h-5" />
-          </button>
+            <Sparkles className="w-3 h-3" />
+          </Button>
+        )}
+        
+        {/* Quantity - Compact */}
+        <div className="w-20">
+          <Input
+            type="number"
+            step="0.01"
+            value={parseFloat(line.quantity).toFixed(2)}
+            onChange={(e) => updateLine(index, 'quantity', parseFloat(e.target.value) || 0)}
+            onFocus={(e) => e.target.select()}
+            disabled={!isEditingAllowed}
+            className="text-sm h-8"
+            placeholder="Qty"
+            title="Quantity"
+            data-testid={`quantity-input-${index}`}
+          />
+        </div>
+        
+        {/* Unit Price - Compact */}
+        <div className="w-24">
+          <Input
+            type="number"
+            step="0.01"
+            value={parseFloat(line.unitPrice).toFixed(2)}
+            onChange={(e) => updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+            onFocus={(e) => e.target.select()}
+            disabled={!isEditingAllowed}
+            className="text-sm h-8"
+            placeholder="Price"
+            title="Unit Price (€)"
+            data-testid={`unit-price-input-${index}`}
+          />
+        </div>
+        
+        {/* Amount - Display only */}
+        <div className="w-24 text-right">
+          <p className="text-sm font-semibold text-slate-800" data-testid={`amount-${index}`}>
+            €{formatEuro(line.amount)}
+          </p>
+        </div>
+        
+        {/* Move Button - Smaller */}
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowMoveDropdown(showMoveDropdown === line.id ? null : line.id)}
+            disabled={movingLine === line.id || !isEditingAllowed}
+            className="px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Move to different customer"
+          >
+            <ArrowRightLeft className="w-3 h-3" />
+          </Button>
           
-          <div className="flex-1">
-            <Label htmlFor={`desc-${index}`}>Description</Label>
-            <Textarea
-              id={`desc-${index}`}
-              value={line.description}
-              onChange={(e) => updateLine(index, 'description', e.target.value)}
-              placeholder="Service description"
-              rows={2}
-              disabled={!isEditingAllowed}
-              data-testid={`description-input-${index}`}
-            />
-          </div>
-          {aiEnabled && isEditingAllowed && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleAISuggestion(index, 'description')}
-              className="mt-6"
-              title="Apply AI grammar correction"
-            >
-              <Sparkles className="w-4 h-4" />
-            </Button>
+          {showMoveDropdown === line.id && (
+            <div className="absolute right-0 top-full mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
+              <div className="p-3 border-b border-slate-200 bg-slate-50">
+                <p className="text-xs font-semibold text-slate-700 mb-2">Move to Customer:</p>
+                <Input
+                  type="text"
+                  placeholder="Search customers..."
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  className="text-sm h-8"
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <div className="max-h-48 overflow-y-auto">
+                {allCustomers
+                  .filter(customer => 
+                    customer.name.toLowerCase().includes(customerSearch.toLowerCase())
+                  )
+                  .map(customer => (
+                    <button
+                      key={customer.id}
+                      onClick={() => {
+                        handleMoveLineItem(line, customer.id);
+                        setCustomerSearch('');
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
+                    >
+                      {customer.name}
+                    </button>
+                  ))}
+                {allCustomers.filter(customer => 
+                  customer.name.toLowerCase().includes(customerSearch.toLowerCase())
+                ).length === 0 && (
+                  <div className="px-3 py-4 text-center text-sm text-slate-500">
+                    No customers found
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
-
-        <div className="grid grid-cols-7 gap-4">
-          <div>
-            <Label htmlFor={`qty-${index}`}>Quantity</Label>
-            <Input
-              id={`qty-${index}`}
-              type="number"
-              step="0.01"
-              value={parseFloat(line.quantity).toFixed(2)}
-              onChange={(e) => updateLine(index, 'quantity', parseFloat(e.target.value) || 0)}
-              onFocus={(e) => e.target.select()}
-              disabled={!isEditingAllowed}
-              data-testid={`quantity-input-${index}`}
-            />
-          </div>
-          <div>
-            <Label htmlFor={`price-${index}`}>Unit Price (€)</Label>
-            <Input
-              id={`price-${index}`}
-              type="number"
-              step="0.01"
-              value={parseFloat(line.unitPrice).toFixed(2)}
-              onChange={(e) => updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-              onFocus={(e) => e.target.select()}
-              disabled={!isEditingAllowed}
-              data-testid={`unit-price-input-${index}`}
-            />
-          </div>
-          <div>
-            <Label>Amount (€)</Label>
-            <p className="mt-2 text-lg font-semibold text-slate-800" data-testid={`amount-${index}`}>
-              {formatEuro(line.amount)}
-            </p>
-          </div>
-          <div className="flex items-end relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowMoveDropdown(showMoveDropdown === line.id ? null : line.id)}
-              disabled={movingLine === line.id || !isEditingAllowed}
-              className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Move to different customer"
-            >
-              <ArrowRightLeft className="w-4 h-4" />
-            </Button>
-            
-            {showMoveDropdown === line.id && (
-              <div className="absolute left-0 top-full mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
-                <div className="p-3 border-b border-slate-200 bg-slate-50">
-                  <p className="text-xs font-semibold text-slate-700 mb-2">Move to Customer:</p>
-                  <Input
-                    type="text"
-                    placeholder="Search customers..."
-                    value={customerSearch}
-                    onChange={(e) => setCustomerSearch(e.target.value)}
-                    className="text-sm h-8"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-                <div className="max-h-48 overflow-y-auto">
-                  {allCustomers
-                    .filter(customer => 
-                      customer.name.toLowerCase().includes(customerSearch.toLowerCase())
-                    )
-                    .map(customer => (
-                      <button
-                        key={customer.id}
-                        onClick={() => {
-                          handleMoveLineItem(line, customer.id);
-                          setCustomerSearch('');
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
-                      >
-                        {customer.name}
-                      </button>
-                    ))}
-                  {allCustomers.filter(customer => 
-                    customer.name.toLowerCase().includes(customerSearch.toLowerCase())
-                  ).length === 0 && (
-                    <div className="px-3 py-4 text-center text-sm text-slate-500">
-                      No customers found
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Up/Down Arrow Buttons */}
-          <div className="flex items-end gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => moveLineUp(index)}
-              disabled={index === 0 || !isEditingAllowed}
-              className="rounded-full disabled:opacity-30 disabled:cursor-not-allowed px-2"
-              title="Move up"
-            >
-              <ChevronUp className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => moveLineDown(index)}
-              disabled={index === lines.length - 1 || !isEditingAllowed}
-              className="rounded-full disabled:opacity-30 disabled:cursor-not-allowed px-2"
-              title="Move down"
-            >
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          <div className="flex items-end">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => removeLine(index)}
-              disabled={!isEditingAllowed}
-              className="w-full rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-              data-testid={`remove-line-${index}`}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
+        
+        {/* Up/Down Arrows - Smaller */}
+        <div className="flex gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => moveLineUp(index)}
+            disabled={index === 0 || !isEditingAllowed}
+            className="px-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Move up"
+          >
+            <ChevronUp className="w-3 h-3" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => moveLineDown(index)}
+            disabled={index === lines.length - 1 || !isEditingAllowed}
+            className="px-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Move down"
+          >
+            <ChevronDown className="w-3 h-3" />
+          </Button>
         </div>
+        
+        {/* Delete Button - Smaller */}
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => removeLine(index)}
+          disabled={!isEditingAllowed}
+          className="px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Delete line"
+          data-testid={`remove-line-${index}`}
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
       </div>
     </div>
   );
