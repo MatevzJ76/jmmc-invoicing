@@ -23,6 +23,12 @@ const ImportVerification = () => {
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [tariffFilter, setTariffFilter] = useState('all');
   const [filteredRows, setFilteredRows] = useState([]);
+  
+  // AI verification states
+  const [aiVerifying, setAiVerifying] = useState(false);
+  const [aiResults, setAiResults] = useState({});
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
