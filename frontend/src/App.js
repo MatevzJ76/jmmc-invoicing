@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Batches from './pages/Batches';
 import BatchDetail from './pages/BatchDetail';
 import Import from './pages/Import';
+import ImportVerification from './pages/ImportVerification';
 import InvoiceDetail from './pages/InvoiceDetail';
 import ChangePassword from './pages/ChangePassword';
 import Settings from './pages/Settings';
