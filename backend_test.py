@@ -710,12 +710,506 @@ class TestEracuniIntegration:
             print("  4. Verify the e-računi API endpoint is correct")
             print("  5. Ensure the invoice has valid data (customer, lines, dates)")
 
+class TestUserManagement:
+    def __init__(self):
+        self.admin_token = None
+        self.user_token = None
+        self.test_user_id = None
+        self.test_user_email = "testuser@example.com"
+        
+    def login(self, email: str, password: str) -> Optional[Dict[str, Any]]:
+        """Login with given credentials"""
+        print(f"\n=== Testing Login: {email} ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": email, "password": password}
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"✅ Login successful")
+                print(f"User: {data.get('user', {}).get('email')}")
+                print(f"Role: {data.get('user', {}).get('role')}")
+                print(f"Status: {data.get('user', {}).get('status')}")
+                print(f"Username: {data.get('user', {}).get('username')}")
+                return data
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return None
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return None
+    
+    def get_headers(self, token: str) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {token}"}
+    
+    def test_admin_login(self) -> bool:
+        """Test admin login"""
+        result = self.login(ADMIN_EMAIL, ADMIN_PASSWORD)
+        if result:
+            self.admin_token = result.get("access_token")
+            user = result.get("user", {})
+            
+            # Verify user fields
+            if user.get("status") != "active":
+                print(f"❌ Expected status 'active', got '{user.get('status')}'")
+                return False
+            
+            if user.get("role") != "ADMIN":
+                print(f"❌ Expected role 'ADMIN', got '{user.get('role')}'")
+                return False
+            
+            return True
+        return False
+    
+    def test_user_login(self) -> bool:
+        """Test regular user login"""
+        result = self.login("user@local", "User2025!")
+        if result:
+            self.user_token = result.get("access_token")
+            user = result.get("user", {})
+            
+            # Verify user fields
+            if user.get("status") != "active":
+                print(f"❌ Expected status 'active', got '{user.get('status')}'")
+                return False
+            
+            if user.get("role") != "USER":
+                print(f"❌ Expected role 'USER', got '{user.get('role')}'")
+                return False
+            
+            return True
+        return False
+    
+    def test_get_user_profile(self) -> bool:
+        """Test GET /api/user/profile"""
+        print("\n=== Testing GET /api/user/profile ===")
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/user/profile",
+                headers=self.get_headers(self.admin_token)
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                profile = response.json()
+                print(f"✅ Profile retrieved successfully")
+                print(f"Profile data: {json.dumps(profile, indent=2)}")
+                
+                # Verify required fields
+                required_fields = ["email", "role", "status"]
+                for field in required_fields:
+                    if field not in profile:
+                        print(f"❌ Missing required field: {field}")
+                        return False
+                
+                print("✅ All required fields present")
+                return True
+            else:
+                print(f"❌ Failed to get profile: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error getting profile: {str(e)}")
+            return False
+    
+    def test_list_users_as_admin(self) -> bool:
+        """Test GET /api/admin/users as admin"""
+        print("\n=== Testing GET /api/admin/users (as admin) ===")
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/admin/users",
+                headers=self.get_headers(self.admin_token)
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                users = response.json()
+                print(f"✅ Retrieved {len(users)} users")
+                
+                # Display users
+                for user in users:
+                    print(f"  - {user.get('email')} ({user.get('role')}) - Status: {user.get('status')}")
+                
+                # Verify admin and user@local exist
+                emails = [u.get("email") for u in users]
+                if ADMIN_EMAIL not in emails:
+                    print(f"❌ Admin user not found in list")
+                    return False
+                if "user@local" not in emails:
+                    print(f"❌ user@local not found in list")
+                    return False
+                
+                return True
+            else:
+                print(f"❌ Failed to list users: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error listing users: {str(e)}")
+            return False
+    
+    def test_list_users_as_user(self) -> bool:
+        """Test GET /api/admin/users as regular user (should fail with 403)"""
+        print("\n=== Testing GET /api/admin/users (as regular user - should fail) ===")
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/admin/users",
+                headers=self.get_headers(self.user_token)
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 403:
+                print(f"✅ Correctly returned 403 Forbidden")
+                return True
+            else:
+                print(f"❌ Expected 403, got {response.status_code}")
+                print(f"Response: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def test_create_user_valid(self) -> bool:
+        """Test POST /api/admin/users with valid data"""
+        print("\n=== Testing POST /api/admin/users (valid data) ===")
+        try:
+            user_data = {
+                "email": self.test_user_email,
+                "username": "Test User",
+                "password": "Test2025!",
+                "role": "USER"
+            }
+            
+            response = requests.post(
+                f"{BACKEND_URL}/admin/users",
+                headers=self.get_headers(self.admin_token),
+                json=user_data
+            )
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.test_user_id = result.get("id")
+                print(f"✅ User created successfully")
+                print(f"User ID: {self.test_user_id}")
+                print(f"Email: {result.get('email')}")
+                print(f"Username: {result.get('username')}")
+                print(f"Role: {result.get('role')}")
+                return True
+            else:
+                print(f"❌ Failed to create user: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error creating user: {str(e)}")
+            return False
+    
+    def test_create_user_weak_password(self) -> bool:
+        """Test POST /api/admin/users with weak password (should fail)"""
+        print("\n=== Testing POST /api/admin/users (weak password - should fail) ===")
+        
+        weak_passwords = [
+            ("short", "Short password (< 8 chars)"),
+            ("nouppercase1!", "No uppercase letter"),
+            ("NOLOWERCASE1!", "No lowercase letter"),
+            ("NoNumbers!", "No numbers"),
+            ("NoSpecial123", "No special characters")
+        ]
+        
+        all_passed = True
+        for password, description in weak_passwords:
+            print(f"\n  Testing: {description}")
+            try:
+                user_data = {
+                    "email": f"weak_{password}@example.com",
+                    "username": "Weak Password User",
+                    "password": password,
+                    "role": "USER"
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/admin/users",
+                    headers=self.get_headers(self.admin_token),
+                    json=user_data
+                )
+                print(f"  Status: {response.status_code}")
+                
+                if response.status_code == 400:
+                    print(f"  ✅ Correctly rejected weak password")
+                    print(f"  Error: {response.json().get('detail')}")
+                else:
+                    print(f"  ❌ Expected 400, got {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                print(f"  ❌ Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_archive_user(self) -> bool:
+        """Test PUT /api/admin/users/{user_id}/archive"""
+        print(f"\n=== Testing PUT /api/admin/users/{self.test_user_id}/archive ===")
+        
+        if not self.test_user_id:
+            print("❌ No test user ID available")
+            return False
+        
+        try:
+            response = requests.put(
+                f"{BACKEND_URL}/admin/users/{self.test_user_id}/archive",
+                headers=self.get_headers(self.admin_token)
+            )
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                print(f"✅ User archived successfully")
+                return True
+            else:
+                print(f"❌ Failed to archive user: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error archiving user: {str(e)}")
+            return False
+    
+    def test_archived_user_login(self) -> bool:
+        """Test login with archived user (should fail)"""
+        print(f"\n=== Testing Login with Archived User (should fail) ===")
+        
+        result = self.login(self.test_user_email, "Test2025!")
+        
+        if result is None:
+            # Check if the error message is correct
+            try:
+                response = requests.post(
+                    f"{BACKEND_URL}/auth/login",
+                    json={"email": self.test_user_email, "password": "Test2025!"}
+                )
+                
+                if response.status_code == 401:
+                    error_detail = response.json().get("detail", "")
+                    if "archived" in error_detail.lower():
+                        print(f"✅ Correctly blocked archived user with message: {error_detail}")
+                        return True
+                    else:
+                        print(f"❌ Wrong error message: {error_detail}")
+                        return False
+                else:
+                    print(f"❌ Expected 401, got {response.status_code}")
+                    return False
+            except Exception as e:
+                print(f"❌ Error: {str(e)}")
+                return False
+        else:
+            print(f"❌ Archived user was able to login!")
+            return False
+    
+    def test_change_user_role(self) -> bool:
+        """Test PUT /api/admin/users/{user_id}/role"""
+        print(f"\n=== Testing PUT /api/admin/users/{self.test_user_id}/role ===")
+        
+        if not self.test_user_id:
+            print("❌ No test user ID available")
+            return False
+        
+        try:
+            response = requests.put(
+                f"{BACKEND_URL}/admin/users/{self.test_user_id}/role",
+                headers=self.get_headers(self.admin_token),
+                json={"role": "ADMIN"}
+            )
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                print(f"✅ User role changed successfully")
+                return True
+            else:
+                print(f"❌ Failed to change role: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error changing role: {str(e)}")
+            return False
+    
+    def test_user_cannot_archive_self(self) -> bool:
+        """Test that user cannot archive themselves"""
+        print(f"\n=== Testing Self-Archive Prevention ===")
+        
+        # Get admin user ID
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/admin/users",
+                headers=self.get_headers(self.admin_token)
+            )
+            
+            if response.status_code == 200:
+                users = response.json()
+                admin_user = next((u for u in users if u.get("email") == ADMIN_EMAIL), None)
+                
+                if not admin_user:
+                    print("❌ Could not find admin user")
+                    return False
+                
+                admin_user_id = admin_user.get("id")
+                print(f"Admin user ID: {admin_user_id}")
+                
+                # Try to archive self
+                response = requests.put(
+                    f"{BACKEND_URL}/admin/users/{admin_user_id}/archive",
+                    headers=self.get_headers(self.admin_token)
+                )
+                print(f"Status: {response.status_code}")
+                print(f"Response: {response.text}")
+                
+                if response.status_code == 400:
+                    error_detail = response.json().get("detail", "")
+                    if "cannot archive your own account" in error_detail.lower():
+                        print(f"✅ Correctly prevented self-archive")
+                        return True
+                    else:
+                        print(f"❌ Wrong error message: {error_detail}")
+                        return False
+                else:
+                    print(f"❌ Expected 400, got {response.status_code}")
+                    return False
+            else:
+                print(f"❌ Failed to get users: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def test_user_cannot_change_own_role(self) -> bool:
+        """Test that user cannot change their own role"""
+        print(f"\n=== Testing Self-Role-Change Prevention ===")
+        
+        # Get admin user ID
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/admin/users",
+                headers=self.get_headers(self.admin_token)
+            )
+            
+            if response.status_code == 200:
+                users = response.json()
+                admin_user = next((u for u in users if u.get("email") == ADMIN_EMAIL), None)
+                
+                if not admin_user:
+                    print("❌ Could not find admin user")
+                    return False
+                
+                admin_user_id = admin_user.get("id")
+                print(f"Admin user ID: {admin_user_id}")
+                
+                # Try to change own role
+                response = requests.put(
+                    f"{BACKEND_URL}/admin/users/{admin_user_id}/role",
+                    headers=self.get_headers(self.admin_token),
+                    json={"role": "USER"}
+                )
+                print(f"Status: {response.status_code}")
+                print(f"Response: {response.text}")
+                
+                if response.status_code == 400:
+                    error_detail = response.json().get("detail", "")
+                    if "cannot change your own role" in error_detail.lower():
+                        print(f"✅ Correctly prevented self-role-change")
+                        return True
+                    else:
+                        print(f"❌ Wrong error message: {error_detail}")
+                        return False
+                else:
+                    print(f"❌ Expected 400, got {response.status_code}")
+                    return False
+            else:
+                print(f"❌ Failed to get users: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def run_all_tests(self):
+        """Run all user management tests"""
+        print("=" * 80)
+        print("USER MANAGEMENT & SECURITY - BACKEND TESTS")
+        print("=" * 80)
+        
+        results = {}
+        
+        # 1. Authentication tests
+        print("\n" + "=" * 80)
+        print("AUTHENTICATION TESTS")
+        print("=" * 80)
+        
+        results["Admin Login"] = self.test_admin_login()
+        if not results["Admin Login"]:
+            print("\n❌ CRITICAL: Admin login failed. Cannot proceed.")
+            return
+        
+        results["User Login"] = self.test_user_login()
+        if not results["User Login"]:
+            print("\n⚠️  WARNING: User login failed. Some tests may be skipped.")
+        
+        # 2. User profile test
+        print("\n" + "=" * 80)
+        print("USER PROFILE TESTS")
+        print("=" * 80)
+        
+        results["GET /api/user/profile"] = self.test_get_user_profile()
+        
+        # 3. Admin user management tests
+        print("\n" + "=" * 80)
+        print("ADMIN USER MANAGEMENT TESTS")
+        print("=" * 80)
+        
+        results["GET /api/admin/users (admin)"] = self.test_list_users_as_admin()
+        
+        if self.user_token:
+            results["GET /api/admin/users (user - should fail)"] = self.test_list_users_as_user()
+        
+        results["POST /api/admin/users (valid)"] = self.test_create_user_valid()
+        results["POST /api/admin/users (weak passwords)"] = self.test_create_user_weak_password()
+        
+        if self.test_user_id:
+            results["PUT /api/admin/users/{id}/archive"] = self.test_archive_user()
+            results["Archived user login (should fail)"] = self.test_archived_user_login()
+            results["PUT /api/admin/users/{id}/role"] = self.test_change_user_role()
+        
+        # 4. Authorization tests
+        print("\n" + "=" * 80)
+        print("AUTHORIZATION TESTS")
+        print("=" * 80)
+        
+        results["Self-archive prevention"] = self.test_user_cannot_archive_self()
+        results["Self-role-change prevention"] = self.test_user_cannot_change_own_role()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for v in results.values() if v)
+        total = len(results)
+        
+        for test_name, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            print(f"{status} - {test_name}")
+        
+        print(f"\nTotal: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED!")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed")
+
 if __name__ == "__main__":
-    # Run e-računi integration test
+    # Run user management tests
     print("\n" + "=" * 80)
-    print("RUNNING E-RAČUNI INTEGRATION TEST")
+    print("RUNNING USER MANAGEMENT & SECURITY TESTS")
     print("=" * 80)
     
-    eracuni_tester = TestEracuniIntegration()
-    eracuni_tester.run_eracuni_test()
+    user_mgmt_tester = TestUserManagement()
+    user_mgmt_tester.run_all_tests()
 
