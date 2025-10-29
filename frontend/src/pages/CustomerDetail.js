@@ -240,18 +240,26 @@ const CustomerDetail = () => {
                 <Input
                   id="unitPrice"
                   type="text"
-                  value={parseFloat(unitPrice || 0).toFixed(2).replace('.', ',')}
+                  value={isEditingPrice ? unitPriceDisplay : parseFloat(unitPrice || 0).toFixed(2).replace('.', ',')}
                   onChange={(e) => {
-                    const value = e.target.value.replace(',', '.');
-                    setUnitPrice(value);
+                    setIsEditingPrice(true);
+                    setUnitPriceDisplay(e.target.value);
                   }}
-                  onFocus={(e) => e.target.select()}
+                  onFocus={(e) => {
+                    setIsEditingPrice(true);
+                    setUnitPriceDisplay(parseFloat(unitPrice || 0).toFixed(2).replace('.', ','));
+                    e.target.select();
+                  }}
                   onBlur={(e) => {
-                    const num = parseFloat(e.target.value.replace(',', '.'));
+                    setIsEditingPrice(false);
+                    const value = e.target.value.replace(',', '.');
+                    const num = parseFloat(value);
                     if (!isNaN(num)) {
                       setUnitPrice(num.toFixed(2));
+                      setUnitPriceDisplay(num.toFixed(2).replace('.', ','));
                     } else {
                       setUnitPrice('0.00');
+                      setUnitPriceDisplay('0,00');
                     }
                   }}
                   placeholder="0,00"
