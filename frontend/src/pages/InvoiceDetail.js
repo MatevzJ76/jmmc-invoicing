@@ -93,8 +93,8 @@ const SortableLineItem = ({
           <GripVertical className="w-4 h-4" />
         </button>
         
-        {/* Description - Reduced width */}
-        <div className="flex-1 max-w-md">
+        {/* Description - Expanded to match Invoice Details width */}
+        <div className="flex-1">
           <Textarea
             value={line.description}
             onChange={(e) => updateLine(index, 'description', e.target.value)}
