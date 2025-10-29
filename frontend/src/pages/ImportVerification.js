@@ -123,6 +123,14 @@ const ImportVerification = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={handleBack}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
           <h2 className="text-3xl font-bold text-slate-800 mb-2">Import Verification</h2>
           <p className="text-slate-600">Review imported data before creating invoices</p>
         </div>
