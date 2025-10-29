@@ -102,7 +102,59 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test newly implemented user management and security features"
+user_problem_statement: "Test enhanced Excel import functionality supporting both .xlsx and .xls files"
+
+backend:
+  - task: "POST /api/imports - XLSX file import (existing functionality)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "XLSX import working correctly. Tested with /tmp/test.xlsx file. Successfully created batch with 1673 time entries. All required form data fields (title, invoiceDate, periodFrom, periodTo, dueDate) processed correctly. Batch details stored properly with status='imported'. Existing functionality preserved and working as expected."
+
+  - task: "POST /api/imports - XLS file import (NEW FEATURE)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "Initial test FAILED. XLS import returned HTTP 400 with error 'Invalid Excel headers'. Issue: XLS file has headers in row 0 (first row) with '#' column, but backend was reading from row 1 (second row). Headers extracted: ['#', 'Projekt', 'Stranka', 'Datum', 'Tarifa', 'Delavec', 'Opombe', 'Porabljene ure', 'Vrednost', 'Št.računa']. Expected: ['Projekt', 'Stranka', 'Datum', 'Tarifa', 'Delavec', 'Opombe', 'Porabljene ure', 'Vrednost', 'Št. računa']."
+        - working: true
+          agent: "testing"
+          comment: "FIXED and VERIFIED. Fixed header extraction for XLS files: changed from sheet[1] to sheet.xlrd_sheet.row(0) to read first row, and properly filter out '#' column by checking cell.value. After fix: XLS import successful with /tmp/test.xls file. Created batch with 1673 time entries (same as XLSX). All form data processed correctly. xlrd library working properly for old Excel format."
+
+  - task: "Data comparison between XLSX and XLS imports"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Data comparison PASSED. Both XLSX and XLS imports produced identical results: (1) Same number of time entries: 341 entries in verification data, (2) Same total hours: 394.99 hours, (3) Same total value: €0.00, (4) Sample entry comparison: First 3 entries match exactly (employee names, hours, values). Both formats parse the same source data correctly and create identical database records. xlrd library for .xls and openpyxl library for .xlsx produce consistent results."
+
+  - task: "Batch metadata verification for both formats"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Batch metadata verification PASSED. Both XLSX and XLS batches stored correctly: (1) XLSX batch: title='Test October 2025', filename='test.xlsx', invoiceDate='2025-10-31', periodFrom='2025-10-01', periodTo='2025-10-31', dueDate='2025-11-15', status='imported'. (2) XLS batch: title='Test XLS October 2025', filename='test.xls', same dates as XLSX, status='imported'. All required fields present and correct for both formats."
 
 backend:
   - task: "POST /api/auth/login - Authentication with active users"
