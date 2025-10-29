@@ -202,6 +202,17 @@ const UserManagement = () => {
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-6 mb-6">
             <h3 className="text-xl font-semibold text-slate-800 mb-4">Create New User</h3>
             <form onSubmit={handleCreateUser} className="space-y-4">
+              {/* Avatar Preview */}
+              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+                <Avatar name={newUserUsername} size="xl" />
+                <div>
+                  <p className="text-sm font-medium text-slate-700">Avatar Preview</p>
+                  <p className="text-xs text-slate-500">
+                    {newUserUsername ? `Initials from "${newUserUsername}"` : 'Enter username to see avatar'}
+                  </p>
+                </div>
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="email" className="text-slate-700">Email</Label>
