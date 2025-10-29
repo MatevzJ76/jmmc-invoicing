@@ -674,6 +674,57 @@ const ImportVerification = () => {
         </div>
       </div>
 
+      {/* AI Verification Progress Modal */}
+      {aiVerifying && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-purple-600 animate-pulse" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">AI Verification in Progress</h3>
+              <p className="text-sm text-slate-600">
+                Analyzing import data for anomalies...
+              </p>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="mb-4">
+              <div className="flex justify-between text-sm text-slate-600 mb-2">
+                <span>{verificationProgress.current} of {verificationProgress.total} rows</span>
+                <span>{verificationProgress.percentage.toFixed(0)}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-purple-500 to-indigo-600 h-full transition-all duration-500 ease-out"
+                  style={{ width: `${verificationProgress.percentage}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            {/* Time Information */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="bg-slate-50 rounded-lg p-3">
+                <p className="text-slate-600 text-xs mb-1">Elapsed</p>
+                <p className="font-semibold text-slate-800">
+                  {Math.floor(verificationProgress.elapsed / 60)}:{(verificationProgress.elapsed % 60).toString().padStart(2, '0')}
+                </p>
+              </div>
+              <div className="bg-slate-50 rounded-lg p-3">
+                <p className="text-slate-600 text-xs mb-1">Remaining</p>
+                <p className="font-semibold text-slate-800">
+                  ~{Math.floor(verificationProgress.estimated / 60)}:{(verificationProgress.estimated % 60).toString().padStart(2, '0')}
+                </p>
+              </div>
+            </div>
+            
+            <p className="text-xs text-slate-500 text-center mt-4">
+              Please wait while AI analyzes your data...
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* AI Evaluation Modal */}
       {showAiModal && selectedRowIndex !== null && aiResults[selectedRowIndex] && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
