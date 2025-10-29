@@ -102,7 +102,92 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Add customer statistics to invoice detail Summary section and make customer name clickable to open customer detail page"
+user_problem_statement: "Test newly implemented user management and security features"
+
+backend:
+  - task: "POST /api/auth/login - Authentication with active users"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Authentication working correctly. Tested login with admin@local (Admin2025!) and user@local (User2025!). Both users successfully authenticated with status=active. Response includes access_token, refresh_token, and user object with email, role, status, and username fields. Admin has role=ADMIN, user has role=USER. All required fields present in response."
+
+  - task: "POST /api/auth/login - Block archived users"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Archived user blocking working correctly. Created test user (testuser@example.com), archived them via PUT /api/admin/users/{id}/archive, then attempted login. Login correctly rejected with HTTP 401 and error message 'Account is archived. Please contact administrator.' Archived users cannot access the system."
+
+  - task: "GET /api/user/profile - User profile endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "User profile endpoint working correctly. GET /api/user/profile returns complete user profile with all required fields: email, username, role, status, and createdAt. Tested with admin token, received correct profile data for admin@local user."
+
+  - task: "GET /api/admin/users - List all users (admin only)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Admin user listing working correctly. GET /api/admin/users returns array of all users with id, email, username, role, status, createdAt, and mustReset fields. Tested with admin token: successfully retrieved 2 users (admin@local and user@local). Authorization working: tested with USER token, correctly returned HTTP 403 Forbidden."
+
+  - task: "POST /api/admin/users - Create new user with password validation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "User creation and password validation working perfectly. Successfully created test user with valid password (Test2025!). Password validation correctly enforces all requirements: (1) Minimum 8 characters - PASS, (2) At least one uppercase letter - PASS, (3) At least one lowercase letter - PASS, (4) At least one number - PASS, (5) At least one special character - PASS. All weak password tests correctly rejected with HTTP 400 and appropriate error messages. Created user has status=active by default."
+
+  - task: "PUT /api/admin/users/{user_id}/archive - Archive user (soft delete)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "User archiving working correctly. PUT /api/admin/users/{user_id}/archive successfully archives user by setting status=archived and adding archivedAt timestamp. Tested with test user (testuser@example.com), received HTTP 200 success. Self-archive prevention working: admin attempting to archive themselves correctly rejected with HTTP 400 and error 'Cannot archive your own account'."
+
+  - task: "PUT /api/admin/users/{user_id}/role - Change user role"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Role change functionality working correctly. PUT /api/admin/users/{user_id}/role successfully updates user role. Tested changing test user from USER to ADMIN, received HTTP 200 success with message 'User role updated to ADMIN'. Self-role-change prevention working: admin attempting to change their own role correctly rejected with HTTP 400 and error 'Cannot change your own role'. Role validation ensures only ADMIN or USER values accepted."
 
 backend:
   - task: "GET /api/customers endpoint"
