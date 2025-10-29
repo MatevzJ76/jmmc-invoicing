@@ -25,6 +25,7 @@ function App() {
           <Route path="/batches" element={<Batches />} />
           <Route path="/batches/:id" element={<BatchDetail />} />
           <Route path="/import" element={<Import />} />
+          <Route path="/import/verify" element={<ImportVerification />} />
           <Route path="/invoices/:id" element={<InvoiceDetail />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/settings" element={<Settings />} />
