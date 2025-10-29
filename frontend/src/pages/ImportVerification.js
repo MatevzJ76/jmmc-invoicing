@@ -128,7 +128,7 @@ const ImportVerification = () => {
         </div>
 
         {/* Summary Tiles */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-3 bg-blue-100 rounded-xl">
@@ -150,6 +150,29 @@ const ImportVerification = () => {
                 <p className="text-sm text-slate-600">Vrednost</p>
                 <p className="text-2xl font-bold text-slate-800">€{totalValue.toFixed(2)}</p>
               </div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 shadow-lg border border-green-600">
+            <div className="flex flex-col items-center justify-center h-full">
+              <Button
+                onClick={handleProceedClick}
+                disabled={loading}
+                className="bg-white text-green-700 hover:bg-green-50 rounded-full font-semibold px-6 py-3 text-base shadow-md"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-green-700/30 border-t-green-700 rounded-full animate-spin mr-2"></span>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Proceed to Import
+                  </>
+                )}
+              </Button>
+              <p className="text-white text-xs mt-2 opacity-90">Review data below first</p>
             </div>
           </div>
         </div>
