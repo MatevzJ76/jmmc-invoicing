@@ -846,7 +846,12 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
             
             # Call AI
             logger.info(f"Calling AI with model: {model}, batch size: {len(batch)}")
-            chat = LlmChat(llm_api_key=api_key, model=model)
+            
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=f"import-verify-{current_user.email}",
+                system_message="You are an AI assistant that analyzes work time entries for anomalies and provides corrections."
+            )
             ai_response = chat.run([UserMessage(content=batch_text)])
             response_text = ai_response.content.strip()
             
