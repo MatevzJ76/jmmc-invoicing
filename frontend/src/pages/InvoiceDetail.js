@@ -154,7 +154,7 @@ const SortableLineItem = ({
         {/* Amount - Display only */}
         <div className="w-24 text-right">
           <p className="text-sm font-semibold text-slate-800" data-testid={`amount-${index}`}>
-            €{formatEuro(line.amount)}
+            {formatEuro(line.amount)}
           </p>
         </div>
         
