@@ -179,6 +179,11 @@ async def login(request: LoginRequest):
         login_attempts[request.email].append(datetime.now(timezone.utc))  # Only count failed attempts
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    # Check if user is archived
+    if user_doc.get("status", "active") == "archived":
+        login_attempts[request.email].append(datetime.now(timezone.utc))
+        raise HTTPException(status_code=401, detail="Account is archived. Please contact administrator.")
+    
     try:
         ph.verify(user_doc["passwordHash"], request.password)
     except VerifyMismatchError:
@@ -192,7 +197,13 @@ async def login(request: LoginRequest):
     access_token = create_token({"sub": request.email}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     refresh_token = create_token({"sub": request.email}, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
     
-    user = User(email=user_doc["email"], role=user_doc["role"], mustReset=user_doc.get("mustReset", False))
+    user = User(
+        email=user_doc["email"], 
+        role=user_doc["role"], 
+        mustReset=user_doc.get("mustReset", False),
+        status=user_doc.get("status", "active"),
+        username=user_doc.get("username")
+    )
     return TokenResponse(access_token=access_token, refresh_token=refresh_token, user=user)
 
 @api_router.post("/auth/refresh", response_model=TokenResponse)
