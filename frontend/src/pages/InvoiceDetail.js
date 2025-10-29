@@ -683,15 +683,21 @@ const InvoiceDetail = () => {
   };
 
   const addLine = () => {
-    setLines([...lines, {
+    const newLine = {
       id: `new-${Date.now()}`,
       invoiceId: id,
       description: '',
       quantity: 1,
-      unitPrice: 0,
-      amount: 0,
+      unitPrice: customerDefaultUnitPrice || 0,
+      amount: customerDefaultUnitPrice || 0,
       taxCode: null
-    }]);
+    };
+    setLines([...lines, newLine]);
+    
+    // Show a toast notification if default price was applied
+    if (customerDefaultUnitPrice > 0) {
+      toast.info(`Default unit price ${formatEuro(customerDefaultUnitPrice)} applied from customer settings`);
+    }
   };
 
   const removeLine = (index) => {
