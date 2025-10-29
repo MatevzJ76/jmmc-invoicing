@@ -83,6 +83,17 @@ const BatchDetail = () => {
         console.error('Failed to load saved AI results:', e);
       }
     }
+    
+    // Reload invoices when page regains focus (e.g., navigating back from invoice detail)
+    const handleFocus = () => {
+      loadBatchAndInvoices();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [id]);
 
   useEffect(() => {
