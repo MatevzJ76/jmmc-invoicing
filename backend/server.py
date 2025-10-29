@@ -859,7 +859,7 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
             else:
                 chat = chat.with_model("openai", "gpt-5")
             
-            ai_response = chat.send_message(UserMessage(text=batch_text))
+            ai_response = await chat.send_message(UserMessage(text=batch_text))
             response_text = ai_response.strip()
             
             logger.info(f"Batch {i//batch_size + 1} AI response (first 500 chars): {response_text[:500]}")
