@@ -444,19 +444,22 @@ async def import_xlsx(
 ):
     try:
         contents = await file.read()
-        wb = openpyxl.load_workbook(BytesIO(contents))
-        sheet = wb.active
+        sheet, wb = load_excel_file(contents, file.filename)
         
         # Validate headers - strip None values and check
         expected_headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št. računa"]
         alternative_headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št.računa"]
-        raw_headers = [cell.value for cell in sheet[1]]
         
-        # Remove leading # if present and filter out None values
-        headers = [h for h in raw_headers if h is not None and h != '#']
+        # Get headers - handle both xlrd and openpyxl formats
+        if file.filename.endswith('.xls'):
+            raw_headers = sheet[1]  # xlrd returns list of cell objects
+            headers = [cell.value if hasattr(cell, 'value') else cell for cell in raw_headers if cell is not None and cell != '#']
+        else:
+            raw_headers = [cell.value for cell in sheet[1]]
+            headers = [h for h in raw_headers if h is not None and h != '#']
         
         if headers != expected_headers and headers != alternative_headers:
-            raise HTTPException(status_code=400, detail=f"Invalid XLSX headers. Expected: {expected_headers}, Got: {headers}")
+            raise HTTPException(status_code=400, detail=f"Invalid Excel headers. Expected: {expected_headers}, Got: {headers}")
         
         # Create batch
         batch_id = str(uuid.uuid4())
