@@ -29,6 +29,13 @@ const ImportVerification = () => {
   const [aiResults, setAiResults] = useState({});
   const [showAiModal, setShowAiModal] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+  const [verificationProgress, setVerificationProgress] = useState({
+    current: 0,
+    total: 0,
+    percentage: 0,
+    elapsed: 0,
+    estimated: 0
+  });
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
