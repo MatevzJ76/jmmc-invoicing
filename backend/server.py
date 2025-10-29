@@ -452,8 +452,8 @@ async def import_xlsx(
         
         # Get headers - handle both xlrd and openpyxl formats
         if file.filename.endswith('.xls'):
-            raw_headers = sheet[1]  # xlrd returns list of cell objects
-            headers = [cell.value if hasattr(cell, 'value') else cell for cell in raw_headers if cell is not None and cell != '#']
+            raw_headers = sheet.xlrd_sheet.row(0)  # xlrd: get first row (row 0)
+            headers = [cell.value for cell in raw_headers if cell.value is not None and cell.value != '#']
         else:
             raw_headers = [cell.value for cell in sheet[1]]
             headers = [h for h in raw_headers if h is not None and h != '#']
