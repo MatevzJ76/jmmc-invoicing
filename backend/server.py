@@ -402,6 +402,36 @@ async def update_user_role(user_id: str, request: UpdateUserRoleRequest, current
     return {"message": f"User role updated to {request.role}"}
 
 # ============ IMPORT ENDPOINTS ============
+def load_excel_file(contents: bytes, filename: str):
+    """Load Excel file (supports both .xls and .xlsx formats)"""
+    if filename.endswith('.xls'):
+        # Old Excel format (.xls) - use xlrd
+        workbook = xlrd.open_workbook(file_contents=contents)
+        sheet = workbook.sheet_by_index(0)
+        
+        # Convert xlrd sheet to a format similar to openpyxl for compatibility
+        class XLSSheet:
+            def __init__(self, xlrd_sheet):
+                self.xlrd_sheet = xlrd_sheet
+                
+            def iter_rows(self, min_row=1, values_only=False):
+                for row_idx in range(min_row - 1, self.xlrd_sheet.nrows):
+                    if values_only:
+                        yield self.xlrd_sheet.row_values(row_idx)
+                    else:
+                        yield [self.xlrd_sheet.cell(row_idx, col_idx) for col_idx in range(self.xlrd_sheet.ncols)]
+            
+            def __getitem__(self, row_num):
+                row_idx = row_num - 1
+                return [self.xlrd_sheet.cell(row_idx, col_idx) for col_idx in range(self.xlrd_sheet.ncols)]
+        
+        return XLSSheet(sheet), workbook
+    else:
+        # New Excel format (.xlsx) - use openpyxl
+        workbook = openpyxl.load_workbook(BytesIO(contents))
+        sheet = workbook.active
+        return sheet, workbook
+
 @api_router.post("/imports")
 async def import_xlsx(
     file: UploadFile = File(...),
