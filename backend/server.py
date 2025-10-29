@@ -15,6 +15,7 @@ from argon2.exceptions import VerifyMismatchError
 import jwt
 from collections import defaultdict
 import openpyxl
+import xlrd
 from io import BytesIO
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
