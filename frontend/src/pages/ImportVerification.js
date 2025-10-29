@@ -41,6 +41,45 @@ const ImportVerification = () => {
       sessionStorage.setItem('importVerificationData', JSON.stringify(data));
     }
   }, [location, navigate]);
+  
+  // Filter rows based on filters
+  useEffect(() => {
+    if (!verificationData) return;
+    
+    let filtered = verificationData.rows;
+    
+    // Search filter (searches in customer, employee, and comments)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(row => 
+        (row.customer || '').toLowerCase().includes(term) ||
+        (row.employee || '').toLowerCase().includes(term) ||
+        (row.comments || '').toLowerCase().includes(term)
+      );
+    }
+    
+    // Project filter
+    if (projectFilter !== 'all') {
+      filtered = filtered.filter(row => row.project === projectFilter);
+    }
+    
+    // Customer filter
+    if (customerFilter !== 'all') {
+      filtered = filtered.filter(row => row.customer === customerFilter);
+    }
+    
+    // Employee filter
+    if (employeeFilter !== 'all') {
+      filtered = filtered.filter(row => row.employee === employeeFilter);
+    }
+    
+    // Tariff filter
+    if (tariffFilter !== 'all') {
+      filtered = filtered.filter(row => row.tariff === tariffFilter);
+    }
+    
+    setFilteredRows(filtered);
+  }, [verificationData, searchTerm, projectFilter, customerFilter, employeeFilter, tariffFilter]);
 
   const handleProceedClick = () => {
     // Show confirmation dialog
