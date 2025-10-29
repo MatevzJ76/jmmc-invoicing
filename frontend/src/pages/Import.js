@@ -275,13 +275,14 @@ const Import = () => {
             <div className="text-center">
               <Upload className="w-16 h-16 text-slate-400 mx-auto mb-4" />
               <p className="text-lg font-semibold text-slate-700 mb-2">
-                Drag and drop your XLSX file here
+                Drag and drop your Excel file here
               </p>
+              <p className="text-xs text-slate-400 mb-2">Supports .xlsx and .xls formats</p>
               <p className="text-sm text-slate-500 mb-4">or</p>
               <label className="inline-block">
                 <input
                   type="file"
-                  accept=".xlsx"
+                  accept=".xlsx,.xls"
                   onChange={handleFileChange}
                   className="hidden"
                   data-testid="file-input"
