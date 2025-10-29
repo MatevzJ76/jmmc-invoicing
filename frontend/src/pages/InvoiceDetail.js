@@ -451,6 +451,9 @@ const InvoiceDetail = () => {
       );
       toast.success('Invoice saved');
       loadInvoice();
+      
+      // Notify BatchDetail to reload invoices
+      window.dispatchEvent(new Event('invoiceUpdated'));
     } catch (error) {
       toast.error('Failed to save invoice');
       setProcessingButtons(prev => ({ ...prev, save: false }));
