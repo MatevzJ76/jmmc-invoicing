@@ -100,6 +100,85 @@ const ImportVerification = () => {
   const handleCancelConfirmation = () => {
     setShowConfirmation(false);
   };
+  
+  const handleAIVerification = async () => {
+    setAiVerifying(true);
+    setAiResults({});
+    toast.info('AI verification started. This may take a minute...');
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(
+        `${BACKEND_URL}/api/imports/verify-preview`,
+        verificationData.rows,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 120000 // 2 minute timeout
+        }
+      );
+      
+      setAiResults(response.data.results || {});
+      
+      const flaggedCount = Object.keys(response.data.results || {}).length;
+      const totalChecked = response.data.total_checked || 0;
+      
+      if (flaggedCount > 0) {
+        toast.warning(`AI found ${flaggedCount} entries that need review out of ${totalChecked} checked`);
+      } else {
+        toast.success(`All ${totalChecked} entries look good!`);
+      }
+    } catch (error) {
+      console.error('AI verification error:', error);
+      toast.error('AI verification failed. Please try again.');
+    } finally {
+      setAiVerifying(false);
+    }
+  };
+  
+  const handleRowClick = (index) => {
+    if (aiResults[index]) {
+      setSelectedRowIndex(index);
+      setShowAiModal(true);
+    }
+  };
+  
+  const handleApplySuggestions = () => {
+    if (selectedRowIndex === null || !aiResults[selectedRowIndex]) return;
+    
+    const suggestions = aiResults[selectedRowIndex].suggestions || {};
+    const updatedRows = [...verificationData.rows];
+    
+    // Apply description correction if available
+    if (suggestions.description) {
+      updatedRows[selectedRowIndex].comments = suggestions.description;
+    }
+    
+    // Apply hours correction if available
+    if (suggestions.hours !== null && suggestions.hours !== undefined) {
+      updatedRows[selectedRowIndex].hours = suggestions.hours;
+    }
+    
+    // Update verification data
+    setVerificationData({
+      ...verificationData,
+      rows: updatedRows
+    });
+    
+    // Update sessionStorage
+    sessionStorage.setItem('importVerificationData', JSON.stringify({
+      ...verificationData,
+      rows: updatedRows
+    }));
+    
+    // Remove this entry from AI results (it's been fixed)
+    const newResults = { ...aiResults };
+    delete newResults[selectedRowIndex];
+    setAiResults(newResults);
+    
+    toast.success('Changes applied successfully');
+    setShowAiModal(false);
+    setSelectedRowIndex(null);
+  };
 
   const handleProceed = async () => {
     if (!verificationData) return;
