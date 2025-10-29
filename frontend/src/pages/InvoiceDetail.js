@@ -692,7 +692,8 @@ const InvoiceDetail = () => {
       amount: customerDefaultUnitPrice || 0,
       taxCode: null
     };
-    setLines([...lines, newLine]);
+    // Add new line at the beginning (first row) instead of at the end
+    setLines([newLine, ...lines]);
     
     // Show a toast notification if default price was applied
     if (customerDefaultUnitPrice > 0) {
