@@ -56,6 +56,8 @@ class User(BaseModel):
     email: str
     role: str  # ADMIN or USER
     mustReset: bool = False
+    status: str = "active"  # active or archived
+    username: Optional[str] = None
 
 class LoginRequest(BaseModel):
     email: str
