@@ -612,10 +612,15 @@ async def get_batch_time_entries(batch_id: str, current_user: User = Depends(get
     # Get all time entries for this batch
     entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
     
-    # Add customer names to entries
+    # Add customer names and project names to entries
     for entry in entries:
+        # Get customer name
         customer = await db.customers.find_one({"id": entry["customerId"]})
         entry["customerName"] = customer["name"] if customer else ""
+        
+        # Get project name
+        project = await db.projects.find_one({"id": entry["projectId"]})
+        entry["projectName"] = project["name"] if project else ""
     
     return entries
 
