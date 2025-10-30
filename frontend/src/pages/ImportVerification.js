@@ -37,6 +37,8 @@ const ImportVerification = () => {
     estimated: 0
   });
   const [cancelVerification, setCancelVerification] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
