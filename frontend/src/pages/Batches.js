@@ -353,20 +353,20 @@ const Batches = () => {
                       }`}
                       data-testid={`batch-row-${batch.id}`}
                     >
-                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => handleBatchClick(batch)}>
                         <div className="font-semibold text-slate-800">{batch.title || 'Untitled'}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
+                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => handleBatchClick(batch)}>
                         {batch.periodFrom} - {batch.periodTo}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>{batch.invoiceDate}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>{batch.dueDate}</td>
-                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
+                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => handleBatchClick(batch)}>{batch.invoiceDate}</td>
+                      <td className="px-6 py-4 text-sm text-slate-600 cursor-pointer" onClick={() => handleBatchClick(batch)}>{batch.dueDate}</td>
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => handleBatchClick(batch)}>
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                           {batch.invoiceCount || 0}
                         </span>
                       </td>
-                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => handleBatchClick(batch)}>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                           batch.status === 'archived' ? 'bg-gray-100 text-gray-700' :
                           batch.status === 'posted' ? 'bg-green-100 text-green-700' :
