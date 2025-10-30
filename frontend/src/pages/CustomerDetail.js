@@ -401,14 +401,39 @@ const CustomerDetail = () => {
             {/* Address Service Unit Price */}
             <div>
               <Label className="text-slate-700 mb-2 block">Address Service Unit Price (€)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={customer?.addressServiceUnitPrice || ''}
-                onChange={(e) => handleFieldUpdate('addressServiceUnitPrice', parseFloat(e.target.value) || 0)}
-                onFocus={(e) => e.target.select()}
-                placeholder="Auto-populated from history"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
+                <Input
+                  type="text"
+                  value={isEditingAddressPrice ? addressServicePriceDisplay : parseFloat(addressServicePrice || 0).toFixed(2).replace('.', ',')}
+                  onChange={(e) => {
+                    setIsEditingAddressPrice(true);
+                    setAddressServicePriceDisplay(e.target.value);
+                  }}
+                  onFocus={(e) => {
+                    setIsEditingAddressPrice(true);
+                    setAddressServicePriceDisplay(parseFloat(addressServicePrice || 0).toFixed(2).replace('.', ','));
+                    e.target.select();
+                  }}
+                  onBlur={(e) => {
+                    setIsEditingAddressPrice(false);
+                    const value = e.target.value.replace(',', '.');
+                    const num = parseFloat(value);
+                    if (!isNaN(num)) {
+                      setAddressServicePrice(num.toFixed(2));
+                      setAddressServicePriceDisplay(num.toFixed(2).replace('.', ','));
+                      handleFieldUpdate('addressServiceUnitPrice', parseFloat(num.toFixed(2)));
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.target.blur();
+                    }
+                  }}
+                  className="pl-8 font-bold"
+                  placeholder="00,00"
+                />
+              </div>
               <p className="text-xs text-slate-500 mt-1">
                 From latest "Najem sedeža" entry (Article 000002)
               </p>
