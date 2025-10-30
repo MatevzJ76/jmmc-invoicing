@@ -343,6 +343,7 @@ const Batches = () => {
                     <SortableHeader column="invoiceDate" label="Invoice Date" />
                     <SortableHeader column="dueDate" label="Due Date" />
                     <SortableHeader column="invoiceCount" label="Invoices" />
+                    <SortableHeader column="totalAmount" label="Total" />
                     <SortableHeader column="status" label="Status" />
                     <SortableHeader column="createdAt" label="Created" />
                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">Actions</th>
