@@ -82,6 +82,54 @@ const Customers = () => {
     }
   };
 
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortCustomers = (customersToSort) => {
+    return [...customersToSort].sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortColumn) {
+        case 'name':
+          aValue = (a.name || '').toLowerCase();
+          bValue = (b.name || '').toLowerCase();
+          break;
+        case 'company':
+          aValue = (a.companyName || '').toLowerCase();
+          bValue = (b.companyName || '').toLowerCase();
+          break;
+        case 'unitPrice':
+          aValue = a.unitPrice || 0;
+          bValue = b.unitPrice || 0;
+          break;
+        case 'invoices':
+          aValue = a.invoiceCount || 0;
+          bValue = b.invoiceCount || 0;
+          break;
+        case 'totalInvoiced':
+          aValue = a.totalInvoiced || 0;
+          bValue = b.totalInvoiced || 0;
+          break;
+        case 'avgInvoice':
+          aValue = a.averageInvoice || 0;
+          bValue = b.averageInvoice || 0;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
   const filterCustomers = () => {
     let filtered = [...customers];
 
@@ -94,6 +142,9 @@ const Customers = () => {
     if (selectedCompany) {
       filtered = filtered.filter(customer => customer.companyId === selectedCompany);
     }
+
+    // Apply sorting
+    filtered = sortCustomers(filtered);
 
     setFilteredCustomers(filtered);
   };
