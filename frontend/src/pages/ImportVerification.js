@@ -282,7 +282,7 @@ const ImportVerification = () => {
 
   const handleSaveProgress = async () => {
     if (!verificationData) return;
-    if (!hasChanges) {
+    if (!hasChanges && verificationData.resuming) {
       toast.info('No changes to save');
       return;
     }
@@ -293,15 +293,26 @@ const ImportVerification = () => {
       
       // If resuming an existing batch, update the time entries
       if (verificationData.resuming && verificationData.batchId) {
-        // TODO: Add endpoint to update time entries with corrected data
-        // For now, just show success message
-        toast.success('Changes saved to batch!');
+        // Prepare updates: send all rows with their index
+        const updates = verificationData.rows.map((row, index) => ({
+          index,
+          comments: row.comments,
+          hours: row.hours
+        }));
+        
+        await axios.put(
+          `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries`,
+          updates,
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        
+        toast.success('Changes saved! You can continue reviewing.');
         setHasChanges(false); // Reset changes flag
         setSaving(false);
         return;
       }
       
-      // Create new batch with in-progress status
+      // Create new batch with in-progress status (first save)
       const uint8Array = new Uint8Array(verificationData.fileData);
       const blob = new Blob([uint8Array], { type: verificationData.fileType });
       const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
@@ -315,7 +326,7 @@ const ImportVerification = () => {
       formData.append('dueDate', verificationData.metadata.dueDate);
       formData.append('saveAsProgress', 'true');
 
-      await axios.post(`${BACKEND_URL}/api/imports`, formData, {
+      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -325,11 +336,11 @@ const ImportVerification = () => {
       toast.success('Progress saved! You can continue reviewing.');
       setHasChanges(false); // Reset changes flag after save
       
-      // Update verification data to mark as resuming
+      // Update verification data to mark as resuming with the new batch ID
       const updatedData = {
         ...verificationData,
         resuming: true,
-        batchId: verificationData.batchId || 'new'
+        batchId: response.data.batchId
       };
       setVerificationData(updatedData);
       sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
