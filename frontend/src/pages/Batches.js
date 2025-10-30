@@ -47,6 +47,10 @@ const Batches = () => {
 
   const sortBatches = (batchesToSort) => {
     return [...batchesToSort].sort((a, b) => {
+      // Always put "in progress" batches at the top
+      if (a.status === 'in progress' && b.status !== 'in progress') return -1;
+      if (a.status !== 'in progress' && b.status === 'in progress') return 1;
+      
       let aValue, bValue;
 
       switch (sortColumn) {
