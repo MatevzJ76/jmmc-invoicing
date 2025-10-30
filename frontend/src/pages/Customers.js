@@ -320,12 +320,72 @@ const Customers = () => {
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Company</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Customer Name</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Invoices</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Total Invoiced</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Avg Invoice</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Unit Price (€)</th>
+                    <th 
+                      className="px-6 py-4 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('company')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Company
+                        {sortColumn === 'company' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-4 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Customer Name
+                        {sortColumn === 'name' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-4 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('invoices')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Invoices
+                        {sortColumn === 'invoices' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-4 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('totalInvoiced')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Total Invoiced
+                        {sortColumn === 'totalInvoiced' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-4 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('avgInvoice')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Avg Invoice
+                        {sortColumn === 'avgInvoice' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-4 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('unitPrice')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Unit Price (€)
+                        {sortColumn === 'unitPrice' && (
+                          sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
