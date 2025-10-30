@@ -891,7 +891,20 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
                     response_text = response_text.split('```')[1].split('```')[0].strip()
                 
                 logger.info(f"Parsing JSON response: {response_text[:300]}")
-                batch_results = json.loads(response_text)
+                
+                # Try to parse as JSON
+                parsed = json.loads(response_text)
+                
+                # Handle both array and single object responses
+                if isinstance(parsed, dict):
+                    # Single object response - convert to array
+                    batch_results = [parsed]
+                    logger.info(f"Converted single object to array")
+                elif isinstance(parsed, list):
+                    batch_results = parsed
+                else:
+                    logger.error(f"Unexpected JSON type: {type(parsed)}")
+                    continue
                 
                 logger.info(f"Successfully parsed {len(batch_results)} results from batch")
                 
