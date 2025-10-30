@@ -843,11 +843,26 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
             batch = entries_to_check[i:i + batch_size]
             
             # Create batch prompt with ALL verification criteria
-            batch_text = f"Analyze the following work entries and return ONLY a valid JSON array (not an object). For each entry, check ALL criteria below and flag if ANY criterion is violated. IMPORTANT: Your response must be a JSON array starting with [ and ending with ]. Format: [{{\"entry_index\": 0, \"flagged\": true/false, \"reason\": \"which criteria failed and why\", \"suggestions\": {{\"description\": \"grammar-corrected text or null\", \"hours\": number_or_null}}}}]\n\n"
-            batch_text += "ALL VERIFICATION CRITERIA (Flag entry if it violates ANY of these):\n\n"
-            batch_text += combined_criteria + "\n\n"
-            batch_text += "IMPORTANT: Return a JSON ARRAY with one object per entry. Even if only checking 1 entry, return [{...}] not {...}\n\n"
-            batch_text += "Entries to analyze:\n"
+            batch_text = f"""You are analyzing work time entries. For EACH entry, check ALL criteria below and FLAG the entry if it violates ANY criterion.
+
+IMPORTANT INSTRUCTIONS:
+- If grammar/capitalization needs correction → FLAG as true, provide corrected text in suggestions.description
+- If description is vague/suspicious → FLAG as true, explain in reason
+- If hours seem wrong → FLAG as true, suggest hours in suggestions.hours
+- If GDPR violations → FLAG as true
+- Return ONLY a valid JSON array: [{{\"entry_index\": 0, \"flagged\": true/false, \"reason\": \"what failed\", \"suggestions\": {{\"description\": \"corrected text or null\", \"hours\": number_or_null}}}}]
+
+ALL VERIFICATION CRITERIA (FLAG if ANY violated):
+
+{combined_criteria}
+
+CRITICAL: 
+- Grammar issues (wrong capitalization, spelling) → SET flagged=true AND provide corrected text
+- Vague descriptions → SET flagged=true
+- Return JSON ARRAY [{...}] not object {{...}}
+
+Entries to analyze:
+"""
             
             for idx, row in enumerate(batch):
                 global_idx = i + idx
