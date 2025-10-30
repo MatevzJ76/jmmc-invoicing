@@ -372,6 +372,9 @@ const Batches = () => {
                           {batch.invoiceCount || 0}
                         </span>
                       </td>
+                      <td className="px-6 py-4 text-sm font-semibold text-green-700">
+                        €{formatEuro(batch.totalAmount || 0)}
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                           batch.status === 'archived' ? 'bg-gray-100 text-gray-700' :
