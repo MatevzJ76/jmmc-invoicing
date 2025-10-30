@@ -813,8 +813,26 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
     
     logger.info(f"Verifying {len(entries_to_check)} import rows")
     
-    verification_prompt = user_settings.get("verificationPrompt", 
-        "Analyze this work description for suspicious patterns. Respond with JSON: {\"flagged\": true/false, \"reason\": \"explanation\", \"suggestions\": {\"description\": \"corrected text or null\", \"hours\": \"suggested hours or null\"}}")
+    # Get all prompts from settings
+    grammar_prompt = user_settings.get("grammarPrompt", "")
+    fraud_prompt = user_settings.get("fraudPrompt", "")
+    gdpr_prompt = user_settings.get("gdprPrompt", "")
+    verification_prompt = user_settings.get("verificationPrompt", "")
+    
+    # Combine all prompts into verification criteria
+    all_criteria = []
+    if grammar_prompt:
+        all_criteria.append(f"GRAMMAR CHECK: {grammar_prompt}")
+    if fraud_prompt:
+        all_criteria.append(f"FRAUD DETECTION: {fraud_prompt}")
+    if gdpr_prompt:
+        all_criteria.append(f"GDPR COMPLIANCE: {gdpr_prompt}")
+    if verification_prompt:
+        all_criteria.append(f"GENERAL VERIFICATION: {verification_prompt}")
+    
+    combined_criteria = "\n\n".join(all_criteria)
+    
+    logger.info(f"Using {len(all_criteria)} verification prompts")
     
     try:
         # Process in batches
@@ -824,10 +842,10 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
         for i in range(0, len(entries_to_check), batch_size):
             batch = entries_to_check[i:i + batch_size]
             
-            # Create batch prompt
-            batch_text = f"Analyze the following work entries and return a JSON array. For each entry provide: entry_index, flagged (true/false), reason, and suggestions object with optional 'description' (grammar-corrected text) and 'hours' (if hours seem unreasonable for the task). Format: [{{\"entry_index\": 0, \"flagged\": true/false, \"reason\": \"explanation\", \"suggestions\": {{\"description\": \"corrected text or null\", \"hours\": suggested_hours_or_null}}}}]\n\n"
-            batch_text += "Verification criteria:\n"
-            batch_text += verification_prompt + "\n\n"
+            # Create batch prompt with ALL verification criteria
+            batch_text = f"Analyze the following work entries and return a JSON array. For each entry, check ALL criteria below and flag if ANY criterion is violated. Provide: entry_index, flagged (true/false), reason (what criteria failed), and suggestions object with optional 'description' (grammar-corrected text) and 'hours' (if hours seem unreasonable). Format: [{{\"entry_index\": 0, \"flagged\": true/false, \"reason\": \"which criteria failed and why\", \"suggestions\": {{\"description\": \"corrected text or null\", \"hours\": number_or_null}}}}]\n\n"
+            batch_text += "ALL VERIFICATION CRITERIA (check each entry against ALL of these):\n\n"
+            batch_text += combined_criteria + "\n\n"
             batch_text += "Entries to analyze:\n"
             
             for idx, row in enumerate(batch):
