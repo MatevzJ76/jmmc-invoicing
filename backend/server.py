@@ -1378,7 +1378,7 @@ async def upload_customer_history(
                     col_map['article_code'] = idx
                 elif 'naziv artikla' in header_lower:
                     col_map['description'] = idx
-                elif 'opis artikla' in header_lower and 'description' not in col_map:
+                elif 'opis artikla' in header_lower:
                     col_map['alt_description'] = idx
                 elif 'znesek eur' in header_lower:
                     col_map['amount'] = idx
