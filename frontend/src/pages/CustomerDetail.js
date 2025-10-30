@@ -315,6 +315,78 @@ const CustomerDetail = () => {
           </div>
         </div>
 
+        {/* Invoicing Settings */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Invoicing Settings</h2>
+          
+          <div className="grid grid-cols-2 gap-6">
+            {/* Invoicing Type */}
+            <div>
+              <Label className="text-slate-700 mb-2 block">Invoicing Type</Label>
+              <Select 
+                value={customer?.invoicingType || 'by-hours'}
+                onValueChange={(value) => handleFieldUpdate('invoicingType', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fixed-forfait">Fixed Forfait</SelectItem>
+                  <SelectItem value="by-hours">By Hours Spent</SelectItem>
+                  <SelectItem value="hybrid">Hybrid (Fixed + Extra)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Invoicing Period */}
+            <div>
+              <Label className="text-slate-700 mb-2 block">Invoicing Period</Label>
+              <Select 
+                value={customer?.invoicingPeriod || 'monthly'}
+                onValueChange={(value) => handleFieldUpdate('invoicingPeriod', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">3 Months (Quarterly)</SelectItem>
+                  <SelectItem value="semi-annual">6 Months (Semi-Annual)</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Address Service */}
+            <div>
+              <Label className="text-slate-700 mb-2 block">Offers Address Service</Label>
+              <Select 
+                value={customer?.offersAddress ? 'yes' : 'no'}
+                onValueChange={(value) => handleFieldUpdate('offersAddress', value === 'yes')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select option" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Tariff */}
+            <div>
+              <Label className="text-slate-700 mb-2 block">Tariff</Label>
+              <Input
+                type="text"
+                value={customer?.tariff || ''}
+                onChange={(e) => handleFieldUpdate('tariff', e.target.value)}
+                placeholder="e.g., 001 - V pavšalu"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Upload Historical Data */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
           <h2 className="text-lg font-bold text-slate-800 mb-4">Upload Historical Data</h2>
