@@ -843,25 +843,33 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
             batch = entries_to_check[i:i + batch_size]
             
             # Create batch prompt with ALL verification criteria
-            batch_text = f"""You are analyzing work time entries. For EACH entry, check ALL criteria below and FLAG the entry if it violates ANY criterion.
+            batch_text = f"""Analyze work entries. Check ALL criteria. Flag if ANY violated.
 
-IMPORTANT INSTRUCTIONS:
-- If grammar/capitalization needs correction → FLAG as true, provide corrected text in suggestions.description
-- If description is vague/suspicious → FLAG as true, explain in reason
-- If hours seem wrong → FLAG as true, suggest hours in suggestions.hours
-- If GDPR violations → FLAG as true
-- Return ONLY a valid JSON array: [{{\"entry_index\": 0, \"flagged\": true/false, \"reason\": \"what failed\", \"suggestions\": {{\"description\": \"corrected text or null\", \"hours\": number_or_null}}}}]
+RESPONSE FORMAT (MANDATORY - follow exactly):
+[
+  {{
+    "entry_index": 0,
+    "flagged": true,
+    "reason": "Grammar: missing capitalization",
+    "suggestions": {{
+      "description": "Priprava najemnin za obdobje",
+      "hours": null
+    }}
+  }}
+]
 
-ALL VERIFICATION CRITERIA (FLAG if ANY violated):
+VERIFICATION CRITERIA (Flag if violated):
 
 {combined_criteria}
 
-CRITICAL: 
-- Grammar issues (wrong capitalization, spelling) → SET flagged=true AND provide corrected text
-- Vague descriptions → SET flagged=true
-- Return JSON ARRAY [{...}] not object {{...}}
+RULES:
+1. Grammar/capitalization wrong → flagged=true, reason="Grammar issue", suggestions.description=corrected_text
+2. Vague description → flagged=true, reason="Vague description"  
+3. Wrong customer in text → flagged=true, reason="Wrong customer"
+4. ALWAYS use exact field names: entry_index, flagged, reason, suggestions
+5. ALWAYS return array [...] even for 1 entry
 
-Entries to analyze:
+Entries:
 """
             
             for idx, row in enumerate(batch):
