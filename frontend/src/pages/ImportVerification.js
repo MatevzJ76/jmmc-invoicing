@@ -750,9 +750,21 @@ const ImportVerification = () => {
               </div>
             </div>
             
-            <p className="text-xs text-slate-500 text-center mt-4">
+            <p className="text-xs text-slate-500 text-center mt-4 mb-4">
               Please wait while AI analyzes your data...
             </p>
+            
+            {/* Cancel Button */}
+            <div className="text-center">
+              <Button
+                variant="outline"
+                onClick={handleCancelVerification}
+                disabled={cancelVerification}
+                className="rounded-full border-slate-300 hover:bg-slate-100"
+              >
+                {cancelVerification ? 'Cancelling...' : 'Cancel Verification'}
+              </Button>
+            </div>
           </div>
         </div>
       )}
