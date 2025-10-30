@@ -621,12 +621,16 @@ const CustomerDetail = () => {
                                                 }
                                               }
                                               
-                                              // Display each segment on new line
-                                              return segments.map((segment, idx) => (
-                                                <div key={idx} className="mb-1">
-                                                  {segment.trim()}
-                                                </div>
-                                              ));
+                                              // Display each segment on new line with proper spacing
+                                              return segments.map((segment, idx) => {
+                                                // Add space around pipe characters for readability
+                                                const formattedSegment = segment.replace(/\s*\|\s*/g, ' | ');
+                                                return (
+                                                  <div key={idx} className="mb-1">
+                                                    {formattedSegment.trim()}
+                                                  </div>
+                                                );
+                                              });
                                             })()}
                                           </div>
                                         </td>
