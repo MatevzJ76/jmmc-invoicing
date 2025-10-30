@@ -578,13 +578,18 @@ async def import_xlsx(
 # ============ INVOICE ENDPOINTS ============
 @api_router.get("/batches")
 async def list_batches(current_user: User = Depends(get_current_user)):
-    """Get all import batches with invoice counts"""
+    """Get all import batches with invoice counts and totals"""
     batches = await db.importBatches.find({}, {"_id": 0}).to_list(1000)
     
-    # Add invoice count for each batch
+    # Add invoice count and total amount for each batch
     for batch in batches:
         invoice_count = await db.invoices.count_documents({"batchId": batch.get("id")})
         batch["invoiceCount"] = invoice_count
+        
+        # Calculate total amount from all invoices in this batch
+        invoices = await db.invoices.find({"batchId": batch.get("id")}, {"total": 1}).to_list(1000)
+        total_amount = sum(inv.get("total", 0) for inv in invoices)
+        batch["totalAmount"] = total_amount
     
     return batches
 
