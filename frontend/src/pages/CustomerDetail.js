@@ -400,6 +400,23 @@ const CustomerDetail = () => {
                 placeholder="e.g., 001 - V pavšalu"
               />
             </div>
+            
+            {/* Invoicing Start Date */}
+            <div>
+              <Label className="text-slate-700 mb-2 block">Invoicing Start Period (MM/YYYY)</Label>
+              <Input
+                type="month"
+                value={customer?.invoicingStartDate || ''}
+                onChange={(e) => handleFieldUpdate('invoicingStartDate', e.target.value)}
+                placeholder="MM/YYYY"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                {customer?.invoicingPeriod === 'monthly' && 'First invoice for this month'}
+                {customer?.invoicingPeriod === 'quarterly' && 'First invoice after 3 months (includes start + 2 months)'}
+                {customer?.invoicingPeriod === 'semi-annual' && 'First invoice after 6 months'}
+                {customer?.invoicingPeriod === 'yearly' && 'First invoice after 1 year'}
+              </p>
+            </div>
           </div>
         </div>
 
