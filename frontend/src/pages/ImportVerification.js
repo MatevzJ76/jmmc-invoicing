@@ -56,7 +56,54 @@ const ImportVerification = () => {
     if (location.state?.verificationData) {
       sessionStorage.setItem('importVerificationData', JSON.stringify(data));
     }
+    
+    // Auto-save as "in progress" if this is a fresh import (not resuming)
+    if (!data.resuming && data.fileData && data.fileData.length > 0) {
+      autoSaveAsInProgress(data);
+    }
   }, [location, navigate]);
+  
+  const autoSaveAsInProgress = async (data) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      // Create batch with "in progress" status
+      const uint8Array = new Uint8Array(data.fileData);
+      const blob = new Blob([uint8Array], { type: data.fileType });
+      const file = new File([blob], data.fileName, { type: data.fileType });
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', data.metadata.title);
+      formData.append('invoiceDate', data.metadata.invoiceDate);
+      formData.append('periodFrom', data.metadata.periodFrom);
+      formData.append('periodTo', data.metadata.periodTo);
+      formData.append('dueDate', data.metadata.dueDate);
+      formData.append('saveAsProgress', 'true');
+
+      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Update verification data to mark as resuming
+      const updatedData = {
+        ...data,
+        resuming: true,
+        batchId: response.data.batchId
+      };
+      
+      setVerificationData(updatedData);
+      sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
+      
+      toast.success('Import saved as "in progress"', { duration: 3000 });
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      // Don't block user if auto-save fails
+    }
+  };
   
   // Filter rows based on filters
   useEffect(() => {
