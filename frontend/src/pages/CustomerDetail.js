@@ -595,8 +595,36 @@ const CustomerDetail = () => {
                                         <td className="px-2 py-2 text-slate-600 align-top">{row.articleCode || '-'}</td>
                                         <td className="px-2 py-2 text-slate-700 align-top">{row.description || '-'}</td>
                                         <td className="px-2 py-2 text-slate-600 align-top">
-                                          <div className="whitespace-pre-wrap break-words max-w-md">
-                                            {row.detailedDescription || '-'}
+                                          <div className="whitespace-pre-wrap break-words max-w-md space-y-2">
+                                            {(() => {
+                                              const text = row.detailedDescription || '-';
+                                              if (text === '-') return text;
+                                              
+                                              // Split by date pattern (DD.MM.YYYY)
+                                              const datePattern = /(\d{2}\.\d{2}\.\d{4})/g;
+                                              const parts = text.split(datePattern);
+                                              
+                                              // Reconstruct with dates as separators
+                                              const segments = [];
+                                              for (let i = 0; i < parts.length; i++) {
+                                                if (parts[i] && parts[i].match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+                                                  // This is a date, combine with next part
+                                                  if (i + 1 < parts.length) {
+                                                    segments.push(parts[i] + (parts[i + 1] || ''));
+                                                    i++; // Skip next part as we already used it
+                                                  }
+                                                } else if (parts[i] && parts[i].trim()) {
+                                                  segments.push(parts[i]);
+                                                }
+                                              }
+                                              
+                                              // Display each segment on new line
+                                              return segments.map((segment, idx) => (
+                                                <div key={idx} className="mb-1">
+                                                  {segment.trim()}
+                                                </div>
+                                              ));
+                                            })()}
                                           </div>
                                         </td>
                                         <td className="px-2 py-2 text-slate-700 text-right align-top">
