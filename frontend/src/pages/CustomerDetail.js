@@ -77,6 +77,11 @@ const CustomerDetail = () => {
       const price = response.data.unitPrice || 0;
       setUnitPrice(price);
       setUnitPriceDisplay(parseFloat(price).toFixed(2).replace('.', ','));
+      
+      const addressPrice = response.data.addressServiceUnitPrice || 0;
+      setAddressServicePrice(addressPrice);
+      setAddressServicePriceDisplay(parseFloat(addressPrice).toFixed(2).replace('.', ','));
+      
       setSelectedCompanyId(response.data.companyId || '');
     } catch (error) {
       toast.error('Failed to load customer');
