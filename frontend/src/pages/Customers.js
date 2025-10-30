@@ -43,6 +43,8 @@ const Customers = () => {
     unitPrice: 0
   });
   const [creating, setCreating] = useState(false);
+  const [sortColumn, setSortColumn] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
 
   useEffect(() => {
     loadCompanies();
