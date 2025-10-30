@@ -278,6 +278,41 @@ const Customers = () => {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Statistics Tiles */}
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <p className="text-sm text-slate-600 mb-1">Total Customers</p>
+            <p className="text-3xl font-bold text-blue-600">
+              {filteredCustomers.length}
+            </p>
+          </div>
+          
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <p className="text-sm text-slate-600 mb-1">Total Invoices</p>
+            <p className="text-3xl font-bold text-purple-600">
+              {filteredCustomers.reduce((sum, c) => sum + (c.invoiceCount || 0), 0)}
+            </p>
+          </div>
+          
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <p className="text-sm text-slate-600 mb-1">Total Invoiced</p>
+            <p className="text-3xl font-bold text-green-600">
+              €{formatEuro(filteredCustomers.reduce((sum, c) => sum + (c.totalInvoiced || 0), 0))}
+            </p>
+          </div>
+          
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
+            <p className="text-sm text-slate-600 mb-1">Avg Invoice Value</p>
+            <p className="text-3xl font-bold text-orange-600">
+              €{formatEuro(
+                filteredCustomers.length > 0
+                  ? filteredCustomers.reduce((sum, c) => sum + (c.averageInvoice || 0), 0) / filteredCustomers.length
+                  : 0
+              )}
+            </p>
+          </div>
+        </div>
+
         {/* Filters */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
           <div className="flex gap-4">
