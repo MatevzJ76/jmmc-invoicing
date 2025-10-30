@@ -440,6 +440,7 @@ async def import_xlsx(
     periodFrom: str = Form(...),
     periodTo: str = Form(...),
     dueDate: str = Form(...),
+    saveAsProgress: str = Form(None),
     current_user: User = Depends(get_current_user)
 ):
     try:
