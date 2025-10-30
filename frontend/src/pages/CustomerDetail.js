@@ -527,7 +527,10 @@ const CustomerDetail = () => {
                       <>
                         <tr
                           key={invoice.id || index}
-                          className={`transition-colors ${hasIndividualRows ? 'cursor-pointer hover:bg-blue-50' : 'hover:bg-slate-50'}`}
+                          className={`transition-colors ${
+                            isExpanded ? 'bg-blue-100 hover:bg-blue-150 border-l-4 border-blue-500' : 
+                            hasIndividualRows ? 'cursor-pointer hover:bg-blue-50' : 'hover:bg-slate-50'
+                          }`}
                           onClick={() => hasIndividualRows && toggleRow(index)}
                         >
                           <td className="px-4 py-3 text-sm text-slate-800">
