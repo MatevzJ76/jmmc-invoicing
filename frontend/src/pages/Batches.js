@@ -78,6 +78,10 @@ const Batches = () => {
           aValue = a.invoiceCount || 0;
           bValue = b.invoiceCount || 0;
           break;
+        case 'totalAmount':
+          aValue = a.totalAmount || 0;
+          bValue = b.totalAmount || 0;
+          break;
         case 'status':
           aValue = a.status.toLowerCase();
           bValue = b.status.toLowerCase();
