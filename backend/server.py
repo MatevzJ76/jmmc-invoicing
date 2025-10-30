@@ -462,7 +462,9 @@ async def import_xlsx(
         if headers != expected_headers and headers != alternative_headers:
             raise HTTPException(status_code=400, detail=f"Invalid Excel headers. Expected: {expected_headers}, Got: {headers}")
         
-        # Create batch
+        # Create batch with appropriate status
+        batch_status = "in progress" if saveAsProgress == "true" else "imported"
+        
         batch_id = str(uuid.uuid4())
         batch_doc = {
             "id": batch_id,
@@ -472,7 +474,7 @@ async def import_xlsx(
             "periodTo": periodTo,
             "invoiceDate": invoiceDate,
             "dueDate": dueDate,
-            "status": "imported",
+            "status": batch_status,
             "createdBy": current_user.email,
             "createdAt": datetime.now(timezone.utc).isoformat()
         }
