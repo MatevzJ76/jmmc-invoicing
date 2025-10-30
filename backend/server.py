@@ -1407,6 +1407,11 @@ async def upload_customer_history(
             description = row[col_map.get('description')] if 'description' in col_map else ""
             alt_description = row[col_map.get('alt_description')] if 'alt_description' in col_map else ""
             # Keep both separate - do NOT merge
+            
+            # Debug logging for first few rows
+            if len(monthly_data) == 0 and customer_name:
+                logger.info(f"Sample row - Description: '{description}', Alt Description: '{alt_description}'")
+            
             amount_val = row[col_map.get('amount')] if 'amount' in col_map else None
             company_name = row[col_map.get('company')] if 'company' in col_map else None
             
