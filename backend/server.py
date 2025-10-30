@@ -619,6 +619,39 @@ async def get_batch_time_entries(batch_id: str, current_user: User = Depends(get
     
     return entries
 
+@api_router.put("/batches/{batch_id}/time-entries")
+async def update_batch_time_entries(batch_id: str, updates: List[dict], current_user: User = Depends(get_current_user)):
+    """Update time entries with corrected data from verification page"""
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Get all current time entries for mapping
+    all_entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
+    
+    updated_count = 0
+    for update_data in updates:
+        # Find matching entry by index or unique characteristics
+        index = update_data.get('index', 0)
+        if index < len(all_entries):
+            entry = all_entries[index]
+            
+            # Update fields if provided
+            update_fields = {}
+            if 'comments' in update_data:
+                update_fields['notes'] = update_data['comments']
+            if 'hours' in update_data:
+                update_fields['hours'] = float(update_data['hours'])
+            
+            if update_fields:
+                await db.timeEntries.update_one(
+                    {"id": entry["id"]},
+                    {"$set": update_fields}
+                )
+                updated_count += 1
+    
+    return {"message": f"Updated {updated_count} time entries", "updated_count": updated_count}
+
 @api_router.get("/batches/{batch_id}/verification")
 async def get_batch_verification(batch_id: str, current_user: User = Depends(get_current_user)):
     """Get verification data for specific clients and no-client entries"""
