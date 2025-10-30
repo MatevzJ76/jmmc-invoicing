@@ -168,7 +168,7 @@ const Batches = () => {
         
         // Convert time entries to verification format
         const rows = timeEntries.map(entry => ({
-          project: entry.project || '',
+          project: entry.projectName || entry.tariff || '',  // Use projectName from backend
           customer: entry.customerName || '',
           date: entry.date || '',
           tariff: entry.tariff || '',
