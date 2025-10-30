@@ -172,7 +172,7 @@ const Batches = () => {
           customer: entry.customerName || '',
           date: entry.date || '',
           tariff: entry.tariff || '',
-          employee: entry.employee || '',
+          employee: entry.employeeName || '',  // Fixed: was entry.employee
           comments: entry.notes || '',
           hours: entry.hours || 0,
           value: entry.value || 0,
