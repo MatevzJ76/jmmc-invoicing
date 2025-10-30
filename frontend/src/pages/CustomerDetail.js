@@ -591,22 +591,22 @@ const CustomerDetail = () => {
                                   <tbody>
                                     {invoice.individualRows.map((row, rowIdx) => (
                                       <tr key={rowIdx} className="border-b border-slate-200 hover:bg-white transition-colors">
-                                        <td className="px-2 py-2 text-slate-600 whitespace-nowrap">{formatDate(row.date)}</td>
-                                        <td className="px-2 py-2 text-slate-600">{row.articleCode || '-'}</td>
-                                        <td className="px-2 py-2 text-slate-700">{row.description || '-'}</td>
-                                        <td className="px-2 py-2 text-slate-600 max-w-xs">
-                                          <div className="truncate" title={row.detailedDescription}>
+                                        <td className="px-2 py-2 text-slate-600 whitespace-nowrap align-top">{formatDate(row.date)}</td>
+                                        <td className="px-2 py-2 text-slate-600 align-top">{row.articleCode || '-'}</td>
+                                        <td className="px-2 py-2 text-slate-700 align-top">{row.description || '-'}</td>
+                                        <td className="px-2 py-2 text-slate-600 align-top">
+                                          <div className="whitespace-pre-wrap break-words max-w-md">
                                             {row.detailedDescription || '-'}
                                           </div>
                                         </td>
-                                        <td className="px-2 py-2 text-slate-700 text-right">
+                                        <td className="px-2 py-2 text-slate-700 text-right align-top">
                                           {row.quantity != null ? formatEuro(row.quantity).replace('€', '') : '-'}
                                         </td>
-                                        <td className="px-2 py-2 text-slate-600">{row.unit || '-'}</td>
-                                        <td className="px-2 py-2 text-slate-700 text-right">
+                                        <td className="px-2 py-2 text-slate-600 align-top">{row.unit || '-'}</td>
+                                        <td className="px-2 py-2 text-slate-700 text-right align-top">
                                           {row.unitPrice != null ? `€${formatEuro(row.unitPrice)}` : '-'}
                                         </td>
-                                        <td className="px-2 py-2 text-slate-800 font-medium text-right whitespace-nowrap">
+                                        <td className="px-2 py-2 text-slate-800 font-medium text-right whitespace-nowrap align-top">
                                           €{formatEuro(row.amount || 0)}
                                         </td>
                                       </tr>
