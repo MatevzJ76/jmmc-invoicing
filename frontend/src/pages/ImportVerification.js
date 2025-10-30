@@ -275,6 +275,44 @@ const ImportVerification = () => {
     setSelectedRowIndex(null);
   };
 
+  const handleSaveProgress = async () => {
+    if (!verificationData) return;
+    
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const uint8Array = new Uint8Array(verificationData.fileData);
+      const blob = new Blob([uint8Array], { type: verificationData.fileType });
+      const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', verificationData.metadata.title);
+      formData.append('invoiceDate', verificationData.metadata.invoiceDate);
+      formData.append('periodFrom', verificationData.metadata.periodFrom);
+      formData.append('periodTo', verificationData.metadata.periodTo);
+      formData.append('dueDate', verificationData.metadata.dueDate);
+      formData.append('saveAsProgress', 'true'); // Mark as in-progress
+
+      // Import data with in-progress status
+      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      toast.success('Progress saved successfully!');
+      sessionStorage.removeItem('importVerificationData');
+      navigate('/batches');
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || 'Failed to save progress';
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleProceed = async () => {
     if (!verificationData) return;
     
