@@ -112,13 +112,20 @@ const ImportVerification = () => {
   const handleAIVerification = async () => {
     setAiVerifying(true);
     setAiResults({});
+    setCancelVerification(false);
     
-    const totalRows = verificationData.rows.length;
+    // Use displayRows (filtered rows) instead of all rows
+    const rowsToVerify = displayRows;
+    const totalRows = rowsToVerify.length;
     const batchSize = 10;
     const totalBatches = Math.ceil(totalRows / batchSize);
     const startTime = Date.now();
     
-    toast.info(`AI verification started. Processing ${totalRows} rows...`);
+    const filterInfo = displayRows.length !== verificationData.rows.length 
+      ? ` (${displayRows.length} filtered rows)`
+      : '';
+    
+    toast.info(`AI verification started. Processing ${totalRows} rows${filterInfo}...`);
     
     setVerificationProgress({
       current: 0,
@@ -134,7 +141,13 @@ const ImportVerification = () => {
       
       // Process in chunks to show progress
       for (let i = 0; i < totalRows; i += batchSize) {
-        const chunk = verificationData.rows.slice(i, i + batchSize);
+        // Check if user cancelled
+        if (cancelVerification) {
+          toast.info(`Verification cancelled. Showing ${Object.keys(allResults).length} issues found in ${i} rows.`);
+          break;
+        }
+        
+        const chunk = rowsToVerify.slice(i, i + batchSize);
         const currentBatch = Math.floor(i / batchSize) + 1;
         
         // Update progress
@@ -162,11 +175,24 @@ const ImportVerification = () => {
             }
           );
           
-          // Merge results (adjust indices to global)
+          // Merge results (adjust indices to match original row indices)
           const chunkResults = response.data.results || {};
           Object.keys(chunkResults).forEach(localIdx => {
-            const globalIdx = i + parseInt(localIdx);
-            allResults[globalIdx] = chunkResults[localIdx];
+            // Find the original index in verificationData.rows
+            const chunkRowIndex = parseInt(localIdx);
+            const rowData = chunk[chunkRowIndex];
+            
+            // Find this row in original verificationData.rows
+            const originalIndex = verificationData.rows.findIndex(r => 
+              r.customer === rowData.customer && 
+              r.employee === rowData.employee && 
+              r.comments === rowData.comments &&
+              r.date === rowData.date
+            );
+            
+            if (originalIndex >= 0) {
+              allResults[originalIndex] = chunkResults[localIdx];
+            }
           });
           
         } catch (error) {
@@ -180,7 +206,7 @@ const ImportVerification = () => {
       const flaggedCount = Object.keys(allResults).length;
       
       if (flaggedCount > 0) {
-        toast.warning(`AI found ${flaggedCount} entries that need review out of ${totalRows} checked`);
+        toast.warning(`AI found ${flaggedCount} entries that need review`);
       } else {
         toast.success(`All ${totalRows} entries look good!`);
       }
@@ -189,6 +215,7 @@ const ImportVerification = () => {
       toast.error('AI verification failed. Please try again.');
     } finally {
       setAiVerifying(false);
+      setCancelVerification(false);
       setVerificationProgress({
         current: 0,
         total: 0,
@@ -197,6 +224,10 @@ const ImportVerification = () => {
         estimated: 0
       });
     }
+  };
+  
+  const handleCancelVerification = () => {
+    setCancelVerification(true);
   };
   
   const handleRowClick = (index) => {
