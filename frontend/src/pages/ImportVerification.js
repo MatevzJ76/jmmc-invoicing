@@ -329,6 +329,26 @@ const ImportVerification = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('access_token');
+      
+      // If resuming an existing "in progress" batch, compose invoices for it
+      if (verificationData.resuming && verificationData.batchId) {
+        toast.info('Composing invoices for existing batch...');
+        
+        // Compose invoices for the existing batch
+        const composeResponse = await axios.post(
+          `${BACKEND_URL}/api/invoices/compose?batchId=${verificationData.batchId}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+
+        toast.success(`Created ${composeResponse.data.invoiceIds.length} invoices`);
+        
+        sessionStorage.removeItem('importVerificationData');
+        navigate('/batches');
+        return;
+      }
+      
+      // Normal flow: create new batch and compose invoices
       const formData = new FormData();
       
       // Re-create the file from the stored data
