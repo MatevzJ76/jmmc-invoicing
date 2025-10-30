@@ -413,7 +413,14 @@ const ImportVerification = () => {
 
   const handleBack = () => {
     sessionStorage.removeItem('importVerificationData');
-    navigate('/import');
+    
+    // If resuming from batches, go back to batches
+    if (verificationData?.resuming) {
+      navigate('/batches');
+    } else {
+      // Otherwise go to import page
+      navigate('/import');
+    }
   };
 
   if (!verificationData) {
