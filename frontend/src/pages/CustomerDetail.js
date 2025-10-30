@@ -375,7 +375,7 @@ const CustomerDetail = () => {
             
             {/* Address Service */}
             <div>
-              <Label className="text-slate-700 mb-2 block">Offers Address Service</Label>
+              <Label className="text-slate-700 mb-2 block">Address Service</Label>
               <Select 
                 value={customer?.offersAddress ? 'yes' : 'no'}
                 onValueChange={(value) => handleFieldUpdate('offersAddress', value === 'yes')}
@@ -390,15 +390,20 @@ const CustomerDetail = () => {
               </Select>
             </div>
             
-            {/* Tariff */}
+            {/* Address Service Unit Price */}
             <div>
-              <Label className="text-slate-700 mb-2 block">Tariff</Label>
+              <Label className="text-slate-700 mb-2 block">Address Service Unit Price (€)</Label>
               <Input
-                type="text"
-                value={customer?.tariff || ''}
-                onChange={(e) => handleFieldUpdate('tariff', e.target.value)}
-                placeholder="e.g., 001 - V pavšalu"
+                type="number"
+                step="0.01"
+                value={customer?.addressServiceUnitPrice || ''}
+                onChange={(e) => handleFieldUpdate('addressServiceUnitPrice', parseFloat(e.target.value) || 0)}
+                onFocus={(e) => e.target.select()}
+                placeholder="Auto-populated from history"
               />
+              <p className="text-xs text-slate-500 mt-1">
+                From latest "Najem sedeža" entry (Article 000002)
+              </p>
             </div>
             
             {/* Invoicing Start Date */}
