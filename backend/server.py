@@ -602,6 +602,23 @@ async def get_batch_invoices(batch_id: str, current_user: User = Depends(get_cur
     invoices = await db.invoices.find({"batchId": batch_id}, {"_id": 0}).to_list(1000)
     return invoices
 
+@api_router.get("/batches/{batch_id}/time-entries")
+async def get_batch_time_entries(batch_id: str, current_user: User = Depends(get_current_user)):
+    """Get all time entries for a batch (for resuming in-progress batches)"""
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Get all time entries for this batch
+    entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
+    
+    # Add customer names to entries
+    for entry in entries:
+        customer = await db.customers.find_one({"id": entry["customerId"]})
+        entry["customerName"] = customer["name"] if customer else ""
+    
+    return entries
+
 @api_router.get("/batches/{batch_id}/verification")
 async def get_batch_verification(batch_id: str, current_user: User = Depends(get_current_user)):
     """Get verification data for specific clients and no-client entries"""
