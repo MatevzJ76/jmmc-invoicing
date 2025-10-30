@@ -607,7 +607,7 @@ const ImportVerification = () => {
 
         {/* Import Metadata */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3 mb-4">
             <h3 className="text-lg font-semibold text-slate-800">Import Details</h3>
             {verificationData.fileData && verificationData.fileData.length > 0 && (
               <Button
@@ -616,7 +616,7 @@ const ImportVerification = () => {
                 onClick={handleDownloadOriginalFile}
                 className="rounded-full"
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="w-3 h-3 mr-1" />
                 Download Original File
               </Button>
             )}
