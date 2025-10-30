@@ -281,6 +281,16 @@ const ImportVerification = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('access_token');
+      
+      // If resuming an existing batch, just navigate back
+      if (verificationData.resuming && verificationData.batchId) {
+        toast.success('Progress maintained. Batch still in progress.');
+        sessionStorage.removeItem('importVerificationData');
+        navigate('/batches');
+        return;
+      }
+      
+      // Create new batch
       const uint8Array = new Uint8Array(verificationData.fileData);
       const blob = new Blob([uint8Array], { type: verificationData.fileType });
       const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
