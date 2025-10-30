@@ -1500,6 +1500,7 @@ async def upload_customer_history(
             # Store individual row with all details
             individual_row = {
                 'date': date_str,
+                'articleCode': str(article_code).strip() if article_code else "",
                 'description': str(description).strip() if description else "",
                 'detailedDescription': str(alt_description).strip() if alt_description else "",
                 'amount': amount
