@@ -494,14 +494,8 @@ const ImportVerification = () => {
 
   const handleBack = () => {
     sessionStorage.removeItem('importVerificationData');
-    
-    // If resuming from batches, go back to batches
-    if (verificationData?.resuming) {
-      navigate('/batches');
-    } else {
-      // Otherwise go to import page
-      navigate('/import');
-    }
+    // Always go to batches (since we auto-save on load)
+    navigate('/batches');
   };
 
   if (!verificationData) {
