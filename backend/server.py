@@ -1392,6 +1392,7 @@ async def upload_customer_history(
                     col_map['unit_price'] = idx
         
         logger.info(f"Column mapping: {col_map}")
+        logger.info(f"Found alt_description (Opis artikla) at index: {col_map.get('alt_description', 'NOT FOUND')}")
         
         # Extract data by month
         monthly_data = {}  # {customer_name: {month_key: {date, total_amount, descriptions[], company_name}}}
