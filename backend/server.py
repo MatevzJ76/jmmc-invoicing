@@ -1630,6 +1630,25 @@ async def upload_customer_history(
                         if unit_price_to_set is not None:
                             break
                     
+                    # Extract address service unit price from last "Najem sedeža" entry (Article 000002)
+                    address_service_price = None
+                    for entry in reversed(all_new_entries):  # Start from most recent
+                        individual_rows = entry.get("individualRows", [])
+                        for row in reversed(individual_rows):  # Most recent rows first
+                            article_code = row.get("articleCode", "").strip()
+                            description = row.get("description", "").lower()
+                            # Check for article code 000002 OR description containing "najem sedeža"
+                            if (article_code == "000002" or 
+                                "najem sedeža" in description or 
+                                "najem sedeza" in description or
+                                "sede legale" in description):
+                                if row.get("unitPrice") is not None:
+                                    address_service_price = row["unitPrice"]
+                                    logger.info(f"Found Address Service (Najem sedeža) unit price: €{address_service_price}")
+                                    break
+                        if address_service_price is not None:
+                            break
+                    
                     # Keep only manual entries
                     existing_history = target_customer.get("historicalInvoices", [])
                     manual_entries = [entry for entry in existing_history if entry.get("source") == "manual"]
@@ -1642,6 +1661,9 @@ async def upload_customer_history(
                     if unit_price_to_set is not None:
                         update_data["unitPrice"] = unit_price_to_set
                         logger.info(f"Updating customer unit price to: €{unit_price_to_set}")
+                    if address_service_price is not None:
+                        update_data["addressServiceUnitPrice"] = address_service_price
+                        logger.info(f"Updating address service unit price to: €{address_service_price}")
                     
                     # Update in database
                     await db.customers.update_one(
