@@ -764,26 +764,6 @@ const ImportVerification = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Import
           </Button>
-          
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleSaveProgress}
-            disabled={loading}
-            className="rounded-full border-blue-300 text-blue-700 hover:bg-blue-50"
-          >
-            {loading ? (
-              <>
-                <span className="w-4 h-4 border-2 border-blue-700/30 border-t-blue-700 rounded-full animate-spin mr-2"></span>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Save Progress
-              </>
-            )}
-          </Button>
         </div>
       </div>
 
