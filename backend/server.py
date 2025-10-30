@@ -1403,6 +1403,7 @@ async def upload_customer_history(
             # Extract values
             customer_name = row[col_map.get('customer')] if 'customer' in col_map else None
             date_val = row[col_map.get('date')] if 'date' in col_map else None
+            article_code = row[col_map.get('article_code')] if 'article_code' in col_map else ""
             description = row[col_map.get('description')] if 'description' in col_map else ""
             alt_description = row[col_map.get('alt_description')] if 'alt_description' in col_map else ""
             if not description:
