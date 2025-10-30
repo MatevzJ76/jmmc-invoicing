@@ -152,6 +152,62 @@ const Batches = () => {
       toast.error('Failed to archive batch');
     }
   };
+  
+  const handleBatchClick = async (batch) => {
+    // If status is "in progress", load verification page
+    if (batch.status === 'in progress') {
+      try {
+        const token = localStorage.getItem('access_token');
+        
+        // Fetch time entries for this batch
+        const entriesResponse = await axios.get(`${BACKEND_URL}/api/batches/${batch.id}/time-entries`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        const timeEntries = entriesResponse.data;
+        
+        // Convert time entries to verification format
+        const rows = timeEntries.map(entry => ({
+          project: entry.project || '',
+          customer: entry.customerName || '',
+          date: entry.date || '',
+          tariff: entry.tariff || '',
+          employee: entry.employee || '',
+          comments: entry.notes || '',
+          hours: entry.hours || 0,
+          value: entry.value || 0,
+          invoiceNumber: entry.invoiceNumber || ''
+        }));
+        
+        // Navigate to verification page with batch data
+        navigate('/import/verify', {
+          state: {
+            verificationData: {
+              fileName: batch.filename,
+              fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              fileData: [], // Not needed for resume
+              metadata: {
+                title: batch.title,
+                invoiceDate: batch.invoiceDate,
+                periodFrom: batch.periodFrom,
+                periodTo: batch.periodTo,
+                dueDate: batch.dueDate
+              },
+              rows,
+              resuming: true,
+              batchId: batch.id
+            }
+          }
+        });
+      } catch (error) {
+        toast.error('Failed to load batch data');
+        console.error(error);
+      }
+    } else {
+      // Normal batches open BatchDetail
+      navigate(`/batches/${batch.id}`);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.clear();
