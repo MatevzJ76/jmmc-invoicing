@@ -247,6 +247,7 @@ const Batches = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="in progress">In Progress</SelectItem>
                 <SelectItem value="imported">Imported</SelectItem>
                 <SelectItem value="composed">Composed</SelectItem>
                 <SelectItem value="posted">Posted</SelectItem>
