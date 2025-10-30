@@ -53,7 +53,7 @@ const Customers = () => {
 
   useEffect(() => {
     filterCustomers();
-  }, [customers, searchTerm, selectedCompany]);
+  }, [customers, searchTerm, selectedCompany, sortColumn, sortDirection]);
 
   const loadCompanies = async () => {
     try {
