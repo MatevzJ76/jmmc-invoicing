@@ -519,10 +519,10 @@ const ImportVerification = () => {
             <div className="flex flex-col items-center justify-center h-full">
               <Button
                 onClick={handleSaveProgress}
-                disabled={loading}
-                className="bg-white text-blue-700 hover:bg-blue-50 rounded-full font-semibold px-6 py-3 text-base shadow-md"
+                disabled={!hasChanges || saving}
+                className="bg-white text-blue-700 hover:bg-blue-50 rounded-full font-semibold px-6 py-3 text-base shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? (
+                {saving ? (
                   <>
                     <span className="w-4 h-4 border-2 border-blue-700/30 border-t-blue-700 rounded-full animate-spin mr-2"></span>
                     Saving...
@@ -534,7 +534,9 @@ const ImportVerification = () => {
                   </>
                 )}
               </Button>
-              <p className="text-white text-xs mt-2 opacity-90">Continue later</p>
+              <p className="text-white text-xs mt-2 opacity-90">
+                {hasChanges ? 'Click to save' : 'No changes yet'}
+              </p>
             </div>
           </div>
           
