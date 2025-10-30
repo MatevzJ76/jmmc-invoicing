@@ -292,7 +292,9 @@ const Batches = () => {
                   {filteredBatches.map((batch) => (
                     <tr
                       key={batch.id}
-                      className="hover:bg-slate-50 transition-colors"
+                      className={`hover:bg-slate-50 transition-colors ${
+                        batch.status === 'in progress' ? 'bg-orange-50 border-l-4 border-orange-500' : ''
+                      }`}
                       data-testid={`batch-row-${batch.id}`}
                     >
                       <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/batches/${batch.id}`)}>
