@@ -1262,7 +1262,7 @@ async def update_customer(
         raise HTTPException(status_code=404, detail="Customer not found")
     
     # Only allow updating specific fields
-    allowed_fields = ["unitPrice", "companyId"]
+    allowed_fields = ["unitPrice", "companyId", "invoicingType", "invoicingPeriod", "offersAddress", "tariff"]
     update_fields = {k: v for k, v in update_data.items() if k in allowed_fields}
     
     if update_fields:
