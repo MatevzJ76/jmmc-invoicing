@@ -232,6 +232,29 @@ const ImportVerification = () => {
     setCancelVerification(true);
   };
   
+  const handleDownloadOriginalFile = () => {
+    try {
+      // Recreate file from stored data
+      const uint8Array = new Uint8Array(verificationData.fileData);
+      const blob = new Blob([uint8Array], { type: verificationData.fileType });
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = verificationData.fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success('File downloaded');
+    } catch (error) {
+      toast.error('Failed to download file');
+      console.error(error);
+    }
+  };
+  
   const handleRowClick = (index) => {
     if (aiResults[index]) {
       setSelectedRowIndex(index);
