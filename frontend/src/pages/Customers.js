@@ -410,14 +410,8 @@ const Customers = () => {
                       <td className="px-6 py-4 text-sm text-slate-600">
                         €{formatEuro(customer.averageInvoice || 0)}
                       </td>
-                      <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={customer.unitPrice || 0}
-                          onChange={(e) => handleUnitPriceChange(customer.id, e.target.value)}
-                          className="w-24"
-                        />
+                      <td className="px-6 py-4 text-sm font-semibold text-slate-800">
+                        €{formatEuro(customer.unitPrice || 0)}
                       </td>
                     </tr>
                   ))}
