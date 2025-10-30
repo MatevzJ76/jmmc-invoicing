@@ -112,6 +112,21 @@ const CustomerDetail = () => {
       toast.error('Failed to update company');
     }
   };
+  
+  const handleFieldUpdate = async (field, value) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(
+        `${BACKEND_URL}/api/customers/${id}`,
+        { [field]: value },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success('Settings updated');
+      loadCustomer(); // Reload to show updated data
+    } catch (error) {
+      toast.error('Failed to update settings');
+    }
+  };
 
   const handleUploadHistory = async (e) => {
     const file = e.target.files[0];
