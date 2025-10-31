@@ -3753,17 +3753,6 @@ class TestCustomerUpdate:
         else:
             print(f"\n⚠️  {total - passed} test(s) failed")
 
-if __name__ == "__main__":
-    # Run Employee Costs API tests
-    print("\n" + "=" * 80)
-    print("RUNNING EMPLOYEE COSTS API TESTS")
-    print("=" * 80)
-    
-    tester = TestEmployeeCostsAPI()
-    tester.run_all_tests()
-
-
-
 class TestEmployeeCostsAPI:
     """Test Employee Costs Management API endpoints"""
     
@@ -4329,3 +4318,14 @@ class TestEmployeeCostsAPI:
             print("  3. Check if auto-extraction logic is working")
             print("  4. Verify POST and PUT endpoints accept correct parameters")
             print("  5. Check backend logs for any errors")
+if __name__ == "__main__":
+    # Run Employee Costs API tests
+    print("\n" + "=" * 80)
+    print("RUNNING EMPLOYEE COSTS API TESTS")
+    print("=" * 80)
+    
+    tester = TestEmployeeCostsAPI()
+    tester.run_all_tests()
+
+
+
