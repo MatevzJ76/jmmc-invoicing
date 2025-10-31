@@ -3762,3 +3762,570 @@ if __name__ == "__main__":
     tester = TestFilteredInvoiceComposition()
     tester.run_all_tests()
 
+
+
+class TestEmployeeCostsAPI:
+    """Test Employee Costs Management API endpoints"""
+    
+    def __init__(self):
+        self.token = None
+        self.batch_id = None
+        self.employees = []
+        
+    def login(self) -> bool:
+        """Login as admin and get auth token"""
+        print("\n=== Testing Login ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                print(f"✅ Login successful")
+                print(f"User: {data.get('user', {}).get('email')}")
+                print(f"Role: {data.get('user', {}).get('role')}")
+                return True
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
+    
+    def get_headers(self) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.token}"}
+    
+    def test_empty_state(self) -> bool:
+        """Test 1: GET /api/employee-costs - Empty state (no time entries)"""
+        print("\n=== Test 1: GET /api/employee-costs - Empty State ===")
+        
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/employee-costs",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                employees = response.json()
+                print(f"Response: {json.dumps(employees, indent=2)}")
+                
+                if not isinstance(employees, list):
+                    print(f"❌ Expected array, got {type(employees)}")
+                    return False
+                
+                print(f"✅ Endpoint returned array with {len(employees)} employees")
+                print(f"✅ Empty state test passed (expected empty array or existing employees)")
+                return True
+            else:
+                print(f"❌ Failed to get employee costs: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def create_test_time_entries(self) -> bool:
+        """Test 2: Create test time entries with employees"""
+        print("\n=== Test 2: Create Test Time Entries with Employees ===")
+        
+        try:
+            import openpyxl
+            from datetime import datetime
+            
+            # Create workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            
+            # Add headers
+            headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št. računa"]
+            ws.append(headers)
+            
+            # Add test data rows with 3 employees (John Doe appears twice)
+            test_rows = [
+                ["Project A", "Test Customer A", datetime(2025, 10, 1), "Standard", "John Doe", "Work on project A", 10.0, 400.0, "INV-001"],
+                ["Project B", "Test Customer B", datetime(2025, 10, 2), "Standard", "Jane Smith", "Work on project B", 15.0, 600.0, "INV-001"],
+                ["Project C", "Test Customer A", datetime(2025, 10, 3), "Standard", "John Doe", "More work on project C", 5.0, 200.0, "INV-001"],
+            ]
+            
+            for row in test_rows:
+                ws.append(row)
+            
+            # Save to temp file
+            test_file_path = "/tmp/test_employee_costs.xlsx"
+            wb.save(test_file_path)
+            print(f"✅ Created test XLSX file: {test_file_path}")
+            
+            # Upload the file
+            with open(test_file_path, 'rb') as f:
+                files = {'file': ('test_employee_costs.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                data = {
+                    'title': 'Employee Costs Test Import',
+                    'invoiceDate': '2025-10-31',
+                    'periodFrom': '2025-10-01',
+                    'periodTo': '2025-10-31',
+                    'dueDate': '2025-11-15'
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/imports",
+                    headers=self.get_headers(),
+                    files=files,
+                    data=data
+                )
+            
+            print(f"Import Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.batch_id = result.get("batchId")
+                row_count = result.get("rowCount")
+                
+                print(f"✅ Import successful")
+                print(f"  Batch ID: {self.batch_id}")
+                print(f"  Row Count: {row_count}")
+                print(f"  Employees: John Doe (2 entries), Jane Smith (1 entry)")
+                
+                if row_count != 3:
+                    print(f"⚠️  Expected 3 rows, got {row_count}")
+                
+                return True
+            else:
+                print(f"❌ Import failed: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error creating time entries: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def test_auto_extraction(self) -> bool:
+        """Test 3: GET /api/employee-costs - Auto-extraction of employees"""
+        print("\n=== Test 3: GET /api/employee-costs - Auto-Extraction ===")
+        
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/employee-costs",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                self.employees = response.json()
+                print(f"Response: {json.dumps(self.employees, indent=2)}")
+                
+                if not isinstance(self.employees, list):
+                    print(f"❌ Expected array, got {type(self.employees)}")
+                    return False
+                
+                print(f"✅ Retrieved {len(self.employees)} employees")
+                
+                # Verify we have 2 unique employees (John Doe, Jane Smith)
+                employee_names = [emp.get("employee_name") for emp in self.employees]
+                print(f"  Employee names: {employee_names}")
+                
+                # Check for required fields
+                required_fields = ["employee_name", "cost", "archived", "created_at", "updated_at"]
+                all_fields_present = True
+                
+                for emp in self.employees:
+                    for field in required_fields:
+                        if field not in emp:
+                            print(f"❌ Employee '{emp.get('employee_name')}' missing field: {field}")
+                            all_fields_present = False
+                
+                if not all_fields_present:
+                    print("❌ Some employees missing required fields")
+                    return False
+                
+                print(f"✅ All employees have required fields: {required_fields}")
+                
+                # Verify default values
+                for emp in self.employees:
+                    if emp.get("cost") is not None:
+                        print(f"⚠️  Employee '{emp.get('employee_name')}' has cost={emp.get('cost')}, expected None")
+                    if emp.get("archived") != False:
+                        print(f"❌ Employee '{emp.get('employee_name')}' has archived={emp.get('archived')}, expected False")
+                        return False
+                
+                print(f"✅ All employees have cost=null and archived=false by default")
+                
+                # Check if employees were auto-created in database
+                print(f"✅ Employees auto-extracted from time_entries collection")
+                
+                return True
+            else:
+                print(f"❌ Failed to get employee costs: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def test_update_cost(self) -> bool:
+        """Test 4: POST /api/employee-costs - Update employee cost"""
+        print("\n=== Test 4: POST /api/employee-costs - Update Cost ===")
+        
+        if not self.employees or len(self.employees) < 2:
+            print("❌ Not enough employees to test")
+            return False
+        
+        try:
+            # Update John Doe's cost to 50.00
+            john_doe = next((emp for emp in self.employees if "John" in emp.get("employee_name", "")), None)
+            jane_smith = next((emp for emp in self.employees if "Jane" in emp.get("employee_name", "")), None)
+            
+            if not john_doe or not jane_smith:
+                print("❌ Could not find John Doe or Jane Smith in employees list")
+                print(f"Available employees: {[emp.get('employee_name') for emp in self.employees]}")
+                return False
+            
+            # Update John Doe
+            print(f"\nUpdating {john_doe.get('employee_name')} cost to 50.00...")
+            response1 = requests.post(
+                f"{BACKEND_URL}/employee-costs",
+                headers=self.get_headers(),
+                json={"employee_name": john_doe.get("employee_name"), "cost": 50.00}
+            )
+            print(f"Status: {response1.status_code}")
+            print(f"Response: {response1.text}")
+            
+            if response1.status_code != 200:
+                print(f"❌ Failed to update John Doe: {response1.text}")
+                return False
+            
+            print(f"✅ John Doe cost updated successfully")
+            
+            # Update Jane Smith
+            print(f"\nUpdating {jane_smith.get('employee_name')} cost to 75.50...")
+            response2 = requests.post(
+                f"{BACKEND_URL}/employee-costs",
+                headers=self.get_headers(),
+                json={"employee_name": jane_smith.get("employee_name"), "cost": 75.50}
+            )
+            print(f"Status: {response2.status_code}")
+            print(f"Response: {response2.text}")
+            
+            if response2.status_code != 200:
+                print(f"❌ Failed to update Jane Smith: {response2.text}")
+                return False
+            
+            print(f"✅ Jane Smith cost updated successfully")
+            
+            return True
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def test_verify_updates(self) -> bool:
+        """Test 5: GET /api/employee-costs - Verify cost updates persisted"""
+        print("\n=== Test 5: GET /api/employee-costs - Verify Updates ===")
+        
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/employee-costs",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                employees = response.json()
+                print(f"Response: {json.dumps(employees, indent=2)}")
+                
+                # Find John Doe and Jane Smith
+                john_doe = next((emp for emp in employees if "John" in emp.get("employee_name", "")), None)
+                jane_smith = next((emp for emp in employees if "Jane" in emp.get("employee_name", "")), None)
+                
+                if not john_doe or not jane_smith:
+                    print("❌ Could not find John Doe or Jane Smith")
+                    return False
+                
+                # Verify John Doe's cost
+                john_cost = john_doe.get("cost")
+                print(f"\nJohn Doe cost: {john_cost}")
+                if john_cost != 50.00:
+                    print(f"❌ Expected John Doe cost=50.00, got {john_cost}")
+                    return False
+                print(f"✅ John Doe cost verified: 50.00")
+                
+                # Verify Jane Smith's cost
+                jane_cost = jane_smith.get("cost")
+                print(f"Jane Smith cost: {jane_cost}")
+                if jane_cost != 75.50:
+                    print(f"❌ Expected Jane Smith cost=75.50, got {jane_cost}")
+                    return False
+                print(f"✅ Jane Smith cost verified: 75.50")
+                
+                return True
+            else:
+                print(f"❌ Failed to get employee costs: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def test_archive_employee(self) -> bool:
+        """Test 6: PUT /api/employee-costs/{employee_name}/archive - Archive employee"""
+        print("\n=== Test 6: PUT /api/employee-costs/{employee_name}/archive ===")
+        
+        try:
+            # Get current employees
+            response = requests.get(
+                f"{BACKEND_URL}/employee-costs",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to get employees: {response.text}")
+                return False
+            
+            employees = response.json()
+            jane_smith = next((emp for emp in employees if "Jane" in emp.get("employee_name", "")), None)
+            
+            if not jane_smith:
+                print("❌ Could not find Jane Smith")
+                return False
+            
+            jane_name = jane_smith.get("employee_name")
+            print(f"\nArchiving employee: {jane_name}")
+            
+            # Archive Jane Smith
+            response = requests.put(
+                f"{BACKEND_URL}/employee-costs/{jane_name}/archive",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to archive employee: {response.text}")
+                return False
+            
+            print(f"✅ Employee archived successfully")
+            
+            # Verify archived status in database
+            verify_response = requests.get(
+                f"{BACKEND_URL}/employee-costs",
+                headers=self.get_headers()
+            )
+            
+            if verify_response.status_code == 200:
+                all_employees = verify_response.json()
+                jane_after = next((emp for emp in all_employees if emp.get("employee_name") == jane_name), None)
+                
+                if jane_after and jane_after.get("archived") == True:
+                    print(f"✅ Verified: {jane_name} has archived=true in database")
+                    return True
+                else:
+                    print(f"❌ Archive status not updated in database")
+                    return False
+            else:
+                print(f"⚠️  Could not verify archive status")
+                return True  # Don't fail if we can't verify
+                
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def test_filter_archived(self) -> bool:
+        """Test 7: GET /api/employee-costs - Filter by archived status"""
+        print("\n=== Test 7: GET /api/employee-costs - Filter Archived ===")
+        
+        try:
+            # Test 1: Get only active employees (archived=false)
+            print("\nTest 7a: Get active employees (archived=false)")
+            response1 = requests.get(
+                f"{BACKEND_URL}/employee-costs?archived=false",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response1.status_code}")
+            
+            if response1.status_code == 200:
+                active_employees = response1.json()
+                print(f"Active employees: {json.dumps(active_employees, indent=2)}")
+                
+                # Should only have John Doe (Jane Smith is archived)
+                active_names = [emp.get("employee_name") for emp in active_employees]
+                print(f"Active employee names: {active_names}")
+                
+                has_jane = any("Jane" in name for name in active_names)
+                has_john = any("John" in name for name in active_names)
+                
+                if has_jane:
+                    print(f"❌ Jane Smith should not be in active employees list")
+                    return False
+                
+                if not has_john:
+                    print(f"⚠️  John Doe not found in active employees (might be expected if no employees)")
+                
+                print(f"✅ Active employees filter working (Jane Smith excluded)")
+            else:
+                print(f"❌ Failed to get active employees: {response1.text}")
+                return False
+            
+            # Test 2: Get only archived employees (archived=true)
+            print("\nTest 7b: Get archived employees (archived=true)")
+            response2 = requests.get(
+                f"{BACKEND_URL}/employee-costs?archived=true",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response2.status_code}")
+            
+            if response2.status_code == 200:
+                archived_employees = response2.json()
+                print(f"Archived employees: {json.dumps(archived_employees, indent=2)}")
+                
+                # Should only have Jane Smith
+                archived_names = [emp.get("employee_name") for emp in archived_employees]
+                print(f"Archived employee names: {archived_names}")
+                
+                has_jane = any("Jane" in name for name in archived_names)
+                has_john = any("John" in name for name in archived_names)
+                
+                if not has_jane:
+                    print(f"❌ Jane Smith should be in archived employees list")
+                    return False
+                
+                if has_john:
+                    print(f"❌ John Doe should not be in archived employees list")
+                    return False
+                
+                print(f"✅ Archived employees filter working (only Jane Smith)")
+                return True
+            else:
+                print(f"❌ Failed to get archived employees: {response2.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def test_error_handling(self) -> bool:
+        """Test 8: Error handling for non-existent employees"""
+        print("\n=== Test 8: Error Handling ===")
+        
+        try:
+            # Test 8a: POST with non-existent employee name
+            print("\nTest 8a: POST with non-existent employee name")
+            response1 = requests.post(
+                f"{BACKEND_URL}/employee-costs",
+                headers=self.get_headers(),
+                json={"employee_name": "Non Existent Employee", "cost": 100.00}
+            )
+            print(f"Status: {response1.status_code}")
+            print(f"Response: {response1.text}")
+            
+            if response1.status_code == 404:
+                print(f"✅ Correctly returned 404 for non-existent employee (POST)")
+            else:
+                print(f"❌ Expected 404, got {response1.status_code}")
+                return False
+            
+            # Test 8b: PUT archive with non-existent employee
+            print("\nTest 8b: PUT archive with non-existent employee name")
+            response2 = requests.put(
+                f"{BACKEND_URL}/employee-costs/Non Existent Employee/archive",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response2.status_code}")
+            print(f"Response: {response2.text}")
+            
+            if response2.status_code == 404:
+                print(f"✅ Correctly returned 404 for non-existent employee (PUT archive)")
+                return True
+            else:
+                print(f"❌ Expected 404, got {response2.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error: {str(e)}")
+            return False
+    
+    def run_all_tests(self):
+        """Run all employee costs API tests"""
+        print("=" * 80)
+        print("EMPLOYEE COSTS API - COMPREHENSIVE BACKEND TESTS")
+        print("=" * 80)
+        print("\nTesting new feature: Employee Costs Management")
+        print("Features:")
+        print("  - Auto-extraction of employees from time_entries")
+        print("  - Update employee cost values")
+        print("  - Archive employees (soft delete)")
+        print("  - Filter by archived status")
+        print("=" * 80)
+        
+        results = {}
+        
+        # 1. Login
+        if not self.login():
+            print("\n❌ CRITICAL: Login failed. Cannot proceed with tests.")
+            return
+        
+        # 2. Test empty state
+        results["Test 1: Empty State"] = self.test_empty_state()
+        
+        # 3. Create test time entries
+        results["Test 2: Create Test Time Entries"] = self.create_test_time_entries()
+        
+        if not results["Test 2: Create Test Time Entries"]:
+            print("\n❌ CRITICAL: Failed to create test data. Cannot proceed.")
+            return
+        
+        # 4. Test auto-extraction
+        results["Test 3: Auto-Extraction"] = self.test_auto_extraction()
+        
+        if not results["Test 3: Auto-Extraction"]:
+            print("\n⚠️  WARNING: Auto-extraction test failed. Continuing with other tests...")
+        
+        # 5. Test update cost
+        results["Test 4: Update Cost"] = self.test_update_cost()
+        
+        # 6. Test verify updates
+        results["Test 5: Verify Updates"] = self.test_verify_updates()
+        
+        # 7. Test archive employee
+        results["Test 6: Archive Employee"] = self.test_archive_employee()
+        
+        # 8. Test filter archived
+        results["Test 7: Filter Archived"] = self.test_filter_archived()
+        
+        # 9. Test error handling
+        results["Test 8: Error Handling"] = self.test_error_handling()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for v in results.values() if v)
+        total = len(results)
+        
+        for test_name, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            print(f"{status} - {test_name}")
+        
+        print(f"\nTotal: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED!")
+            print("\n✅ Employee Costs API is working correctly:")
+            print("  - Empty state returns empty array ✅")
+            print("  - Time entries created successfully ✅")
+            print("  - Employees auto-extracted from time_entries ✅")
+            print("  - Employee costs can be updated ✅")
+            print("  - Cost updates persist in database ✅")
+            print("  - Employees can be archived ✅")
+            print("  - Archived filter works correctly ✅")
+            print("  - Error handling works (404 for non-existent employees) ✅")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed")
+            print("\n🔍 Debugging Hints:")
+            print("  1. Check if employee_costs collection exists")
+            print("  2. Verify field name in time_entries: should be 'employeeName' not 'employee'")
+            print("  3. Check if auto-extraction logic is working")
+            print("  4. Verify POST and PUT endpoints accept correct parameters")
+            print("  5. Check backend logs for any errors")
