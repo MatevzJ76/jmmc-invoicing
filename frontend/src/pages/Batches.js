@@ -188,12 +188,21 @@ const Batches = () => {
         
         const timeEntries = entriesResponse.data;
         
-        // Convert time entries to verification format and track AI-corrected rows
+        // Convert time entries to verification format and track AI-corrected rows and original values
         const aiCorrectedRows = [];
+        const originalValues = {};
         const rows = timeEntries.map((entry, index) => {
           // Track which rows have AI corrections applied
           if (entry.aiCorrectionApplied) {
             aiCorrectedRows.push(index);
+            
+            // Store original values if they exist
+            if (entry.originalNotes !== null || entry.originalHours !== null) {
+              originalValues[index] = {
+                comments: entry.originalNotes || '',
+                hours: entry.originalHours || 0
+              };
+            }
           }
           
           return {
@@ -226,7 +235,8 @@ const Batches = () => {
               rows,
               resuming: true,
               batchId: batch.id,
-              aiCorrectedRows  // Pass AI-corrected row indices
+              aiCorrectedRows,  // Pass AI-corrected row indices
+              originalValues  // Pass original values before corrections
             }
           }
         });
