@@ -966,13 +966,8 @@ const ImportVerification = () => {
                 setCustomerFilter(value);
                 setCustomerSearchTerm(''); // Reset search when selection changes
               }}
-              onOpenChange={(open) => {
-                if (open) {
-                  setCustomerSearchTerm(''); // Reset search when dropdown opens
-                }
-              }}
             >
-              <SelectTrigger>
+              <SelectTrigger onClick={() => setCustomerSearchTerm('')}>
                 <SelectValue placeholder="All Customers" />
               </SelectTrigger>
               <SelectContent>
@@ -990,7 +985,7 @@ const ImportVerification = () => {
                   <SelectItem value="all">All Customers</SelectItem>
                   {uniqueCustomers
                     .filter(customer => 
-                      customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                      customerSearchTerm === '' || customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
                     )
                     .map(customer => (
                       <SelectItem key={customer} value={customer}>{customer}</SelectItem>
