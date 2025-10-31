@@ -962,18 +962,24 @@ const ImportVerification = () => {
             
             {/* Customer Filter */}
             <Select 
+              key={customerDropdownKey}
               value={customerFilter} 
               onValueChange={(value) => {
                 setCustomerFilter(value);
                 setCustomerSearchTerm(''); // Reset search when selection changes
+                setCustomerDropdownKey(prev => prev + 1); // Force re-render
               }}
             >
-              <SelectTrigger onClick={() => setCustomerSearchTerm('')}>
+              <SelectTrigger onClick={() => {
+                setCustomerSearchTerm(''); // Clear search on open
+                setCustomerDropdownKey(prev => prev + 1); // Force re-render
+              }}>
                 <SelectValue placeholder="All Customers" />
               </SelectTrigger>
               <SelectContent>
                 <div className="p-2 border-b border-slate-200">
                   <Input
+                    key={`search-${customerDropdownKey}`}
                     placeholder="Search customers..."
                     value={customerSearchTerm}
                     onChange={(e) => setCustomerSearchTerm(e.target.value)}
@@ -992,7 +998,7 @@ const ImportVerification = () => {
                       <SelectItem key={customer} value={customer}>{customer}</SelectItem>
                     ))}
                   {uniqueCustomers.filter(customer => 
-                    customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                    customerSearchTerm === '' || customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
                   ).length === 0 && customerSearchTerm && (
                     <div className="p-2 text-sm text-slate-500 text-center">
                       No customers found
