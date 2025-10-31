@@ -555,89 +555,87 @@ const ImportVerification = () => {
       const rowsToImport = displayRows;
       const isFiltered = displayRows.length !== verificationData.rows.length;
       
+      let importResults = {
+        rowsImported: 0,
+        invoicesCreated: 0,
+        batchId: null,
+        totalHours: 0,
+        totalValue: 0,
+        uniqueCustomers: 0
+      };
+      
       // If resuming an existing "in progress" batch
       if (verificationData.resuming && verificationData.batchId) {
-        // If filters are applied, we need to handle this differently
-        if (isFiltered) {
-          // Get indices of rows to keep
-          const indicesToKeep = new Set();
-          rowsToImport.forEach(row => {
-            const originalIndex = verificationData.rows.findIndex(r => 
-              r.customer === row.customer && 
-              r.employee === row.employee && 
-              r.comments === row.comments &&
-              r.date === row.date
-            );
-            if (originalIndex >= 0) {
-              indicesToKeep.add(originalIndex);
-            }
-          });
-          
-          // Delete rows that are not in the filtered set
-          // This will be handled by composing invoices only for filtered rows
-          toast.info(`Composing invoices for ${rowsToImport.length} filtered rows...`);
-        } else {
-          toast.info('Composing invoices for existing batch...');
-        }
+        toast.info('Composing invoices...');
         
-        // Compose invoices for the existing batch (backend will handle all rows)
+        // Compose invoices for the existing batch
         const composeResponse = await axios.post(
           `${BACKEND_URL}/api/invoices/compose?batchId=${verificationData.batchId}`,
           {},
           { headers: { Authorization: `Bearer ${token}` }}
         );
 
-        toast.success(`Created ${composeResponse.data.invoiceIds.length} invoices`);
+        importResults = {
+          rowsImported: verificationData.rows.length,
+          invoicesCreated: composeResponse.data.invoiceIds.length,
+          batchId: verificationData.batchId,
+          totalHours: displayRows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0),
+          totalValue: displayRows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0),
+          uniqueCustomers: new Set(displayRows.map(r => r.customer)).size
+        };
+      } else {
+        // Normal flow: create new batch
+        const formData = new FormData();
         
-        sessionStorage.removeItem('importVerificationData');
-        navigate('/batches');
-        return;
+        // Re-create the file from the stored data
+        const uint8Array = new Uint8Array(verificationData.fileData);
+        const blob = new Blob([uint8Array], { type: verificationData.fileType });
+        const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
+        
+        formData.append('file', file);
+        formData.append('title', verificationData.metadata.title);
+        formData.append('invoiceDate', verificationData.metadata.invoiceDate);
+        formData.append('periodFrom', verificationData.metadata.periodFrom);
+        formData.append('periodTo', verificationData.metadata.periodTo);
+        formData.append('dueDate', verificationData.metadata.dueDate);
+
+        // Import data
+        const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        // Compose invoices
+        const composeResponse = await axios.post(
+          `${BACKEND_URL}/api/invoices/compose?batchId=${response.data.batchId}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+
+        importResults = {
+          rowsImported: response.data.rowCount,
+          invoicesCreated: composeResponse.data.invoiceIds.length,
+          batchId: response.data.batchId,
+          totalHours: displayRows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0),
+          totalValue: displayRows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0),
+          uniqueCustomers: new Set(displayRows.map(r => r.customer)).size
+        };
       }
       
-      // Normal flow: create new batch with filtered data if needed
-      if (isFiltered) {
-        // User wants to import only filtered rows
-        // We need to create a new batch with only these rows
-        // For now, we'll proceed with all rows and show a message
-        // In production, you'd want to implement backend support for partial imports
-        toast.warning('Note: All rows will be imported. Selective import coming soon.');
-      }
+      // Set import complete and show report
+      setImportComplete(true);
+      setImportReport(importResults);
       
-      const formData = new FormData();
+      // Show success message
+      toast.success(`✅ Import Complete! Created ${importResults.invoicesCreated} invoices from ${importResults.rowsImported} rows`);
       
-      // Re-create the file from the stored data
-      const uint8Array = new Uint8Array(verificationData.fileData);
-      const blob = new Blob([uint8Array], { type: verificationData.fileType });
-      const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
-      
-      formData.append('file', file);
-      formData.append('title', verificationData.metadata.title);
-      formData.append('invoiceDate', verificationData.metadata.invoiceDate);
-      formData.append('periodFrom', verificationData.metadata.periodFrom);
-      formData.append('periodTo', verificationData.metadata.periodTo);
-      formData.append('dueDate', verificationData.metadata.dueDate);
-
-      // Import data
-      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      toast.success(`Imported ${response.data.rowCount} rows`);
-      
-      // Compose invoices
-      const composeResponse = await axios.post(
-        `${BACKEND_URL}/api/invoices/compose?batchId=${response.data.batchId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-
-      toast.success(`Created ${composeResponse.data.invoiceIds.length} invoices`);
-      
+      // Clear sessionStorage
       sessionStorage.removeItem('importVerificationData');
-      navigate('/batches');
+      
+      // DON'T navigate away - stay on this page
+      
     } catch (error) {
       const errorMsg = error.response?.data?.detail || 'Import failed';
       toast.error(errorMsg);
