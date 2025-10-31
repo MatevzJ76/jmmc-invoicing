@@ -1015,11 +1015,14 @@ const ImportVerification = () => {
                         {customerFilter === 'all' && <span className="text-blue-600">✓</span>}
                       </button>
                       
-                      {uniqueCustomers
-                        .filter(customer => 
-                          !customerSearchTerm || customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
-                        )
-                        .map(customer => (
+                      {uniqueCustomers.map(customer => {
+                        // Show if no search term OR customer matches search
+                        const matchesSearch = customerSearchTerm === '' || 
+                                            customer.toLowerCase().includes(customerSearchTerm.toLowerCase());
+                        
+                        if (!matchesSearch) return null;
+                        
+                        return (
                           <button
                             key={customer}
                             onClick={() => {
@@ -1032,11 +1035,12 @@ const ImportVerification = () => {
                             <span>{customer}</span>
                             {customerFilter === customer && <span className="text-blue-600">✓</span>}
                           </button>
-                        ))}
+                        );
+                      })}
                       
-                      {uniqueCustomers.filter(customer => 
+                      {customerSearchTerm && uniqueCustomers.filter(customer => 
                         customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
-                      ).length === 0 && customerSearchTerm && (
+                      ).length === 0 && (
                         <div className="p-3 text-sm text-slate-500 text-center">
                           No customers found
                         </div>
