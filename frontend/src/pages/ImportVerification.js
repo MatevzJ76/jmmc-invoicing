@@ -485,7 +485,8 @@ const ImportVerification = () => {
           index,
           comments: row.comments,
           hours: row.hours,
-          aiCorrectionApplied: aiCorrectedRows.has(index)
+          aiCorrectionApplied: aiCorrectedRows.has(index),
+          manuallyEdited: manuallyEditedRows.has(index)
         }));
         
         await axios.put(
