@@ -49,6 +49,8 @@ const ImportVerification = () => {
   const [editableSuggestions, setEditableSuggestions] = useState({ description: '', hours: null }); // Editable AI suggestions
   const [showEditModal, setShowEditModal] = useState(false); // Modal for editing already-corrected rows
   const [editingRowIndex, setEditingRowIndex] = useState(null); // Track which row is being edited
+  const [importComplete, setImportComplete] = useState(false); // Track if import is complete
+  const [importReport, setImportReport] = useState(null); // Store import results
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
