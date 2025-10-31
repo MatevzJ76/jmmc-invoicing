@@ -1090,6 +1090,7 @@ const ImportVerification = () => {
                   onClick={() => {
                     setShowAiModal(false);
                     setSelectedRowIndex(null);
+                    setEditableSuggestions({ description: '', hours: null });
                   }}
                   className="flex-1 rounded-full"
                 >
