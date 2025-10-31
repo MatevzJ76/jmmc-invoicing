@@ -681,10 +681,20 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
 
 @api_router.get("/batches/{batch_id}/verification")
 async def get_batch_verification(batch_id: str, current_user: User = Depends(get_current_user)):
-    """Get verification data for specific clients and no-client entries"""
+    """Get verification data for specific clients and no-client entries - only for composed batches"""
     batch = await db.importBatches.find_one({"id": batch_id})
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Only return verification data if batch has been composed (invoices created)
+    # For "in progress" batches, return empty arrays
+    if batch.get("status") == "in progress":
+        return {
+            "jmmcHP": [],
+            "jmmcFinance": [],
+            "noClient": [],
+            "extra": []
+        }
     
     # Get all time entries for this batch
     all_entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
