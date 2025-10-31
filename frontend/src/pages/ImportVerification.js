@@ -1058,25 +1058,6 @@ const ImportVerification = () => {
             </div>
           </div>
           
-          {/* Clear Filters Button */}
-          {(searchTerm || projectFilter !== 'all' || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all') && (
-            <div className="mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSearchTerm('');
-                  setProjectFilter('all');
-                  setCustomerFilter('all');
-                  setEmployeeFilter('all');
-                  setTariffFilter('all');
-                }}
-                className="rounded-full"
-              >
-                Clear All Filters
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* Data Table */}
