@@ -3155,7 +3155,7 @@ async def get_employee_costs(archived: Optional[bool] = None, current_user: User
     """Get all employees with their cost data. Auto-extracts unique employee names from time entries."""
     
     # Get unique employee names from time_entries collection
-    employee_names = await db.time_entries.distinct("employee")
+    employee_names = await db.timeEntries.distinct("employeeName")
     
     # For each employee name, check if they exist in employee_costs collection
     employees_data = []
