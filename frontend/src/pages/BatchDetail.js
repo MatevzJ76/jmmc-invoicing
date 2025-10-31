@@ -580,13 +580,20 @@ const BatchDetail = () => {
                     data-testid="batch-title-edit"
                   />
                 ) : (
-                  <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {batch.title || batch.filename}
-                  </h1>
+                  <div>
+                    <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {batch.title || batch.filename}
+                    </h1>
+                    <p className="text-sm text-slate-500">{batch.filename}</p>
+                  </div>
                 )}
-                <p className="text-sm text-slate-500">{batch.filename}</p>
               </div>
             </div>
+          </div>
+          
+          {/* Page Description */}
+          <div className="px-4 pb-3">
+            <p className="text-base font-semibold text-slate-700">Invoices and Verification</p>
           </div>
         </div>
       </nav>
