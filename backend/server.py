@@ -138,6 +138,14 @@ class AISettings(BaseModel):
     eracuniToken: Optional[str] = None
     testPrompt: Optional[str] = None  # For testing AI connection quality
 
+class Article(BaseModel):
+    code: str
+    description: str
+    unitMeasure: str
+    priceWithoutVAT: float
+    vatPercentage: float
+    tariffCode: str = ""  # For future mapping to tariff codes
+
 # ============ AUTH HELPERS ============
 def create_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
