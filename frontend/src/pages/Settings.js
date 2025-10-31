@@ -144,6 +144,229 @@ const AddCustomerForm = () => {
   );
 };
 
+// EmployeeCostsSection Component
+const EmployeeCostsSection = () => {
+  const [employees, setEmployees] = useState([]);
+  const [expanded, setExpanded] = useState(false);
+  const [editedEmployees, setEditedEmployees] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+  const loadEmployees = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/employee-costs?archived=false`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('Employees loaded:', response.data);
+      setEmployees(response.data);
+    } catch (error) {
+      toast.error('Failed to load employees');
+      console.error('Employee load error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFieldChange = (employeeName, value) => {
+    setEditedEmployees({
+      ...editedEmployees,
+      [employeeName]: value
+    });
+  };
+
+  const handleSaveEmployee = async (employee) => {
+    if (editedEmployees[employee.employee_name] === undefined) return;
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(
+        `${BACKEND_URL}/api/employee-costs`,
+        {
+          employee_name: employee.employee_name,
+          cost: editedEmployees[employee.employee_name]
+        },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Employee cost updated');
+      
+      // Update local state
+      setEmployees(employees.map(e => 
+        e.employee_name === employee.employee_name 
+          ? { ...e, cost: editedEmployees[employee.employee_name] }
+          : e
+      ));
+      
+      // Clear edited state
+      const newEdited = { ...editedEmployees };
+      delete newEdited[employee.employee_name];
+      setEditedEmployees(newEdited);
+      
+    } catch (error) {
+      toast.error('Failed to update employee cost');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleArchiveEmployee = async (employee) => {
+    if (!window.confirm(`Are you sure you want to archive ${employee.employee_name}? This will hide them from the list.`)) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(
+        `${BACKEND_URL}/api/employee-costs/${encodeURIComponent(employee.employee_name)}/archive`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Employee archived');
+      
+      // Remove from local state
+      setEmployees(employees.filter(e => e.employee_name !== employee.employee_name));
+      
+    } catch (error) {
+      toast.error('Failed to archive employee');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const formatEuro = (number) => {
+    if (number === null || number === undefined || number === '') return '';
+    const num = parseFloat(number);
+    if (isNaN(num)) return '';
+    const fixed = num.toFixed(2);
+    const [integer, decimal] = fixed.split('.');
+    const withThousands = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${withThousands},${decimal}`;
+  };
+
+  const parseEuro = (value) => {
+    if (!value) return null;
+    // Remove thousand separators (.) and replace decimal comma (,) with dot
+    const normalized = value.toString().replace(/\./g, '').replace(',', '.');
+    const parsed = parseFloat(normalized);
+    return isNaN(parsed) ? null : parsed;
+  };
+
+  const hasChanges = (employeeName) => {
+    return editedEmployees[employeeName] !== undefined;
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+        <p className="text-slate-600">Loading employees...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between cursor-pointer group"
+      >
+        <div className="flex items-center gap-3">
+          <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h2 className="text-xl font-bold text-slate-800">Costs</h2>
+          <span className="text-xs text-slate-500">({employees.length} employees)</span>
+        </div>
+        
+        <svg 
+          className={`w-5 h-5 text-slate-600 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {expanded && (
+        <div className="mt-6">
+          <p className="text-sm text-slate-600 mb-6">
+            Manage employee cost settings. Employees are automatically extracted from XLSX imports.
+          </p>
+
+          <div className="space-y-2">
+            {employees.length === 0 ? (
+              <p className="text-sm text-slate-500 italic">No employees found. Import an XLSX file to populate the list.</p>
+            ) : (
+              employees.map((employee) => {
+                const edited = editedEmployees[employee.employee_name];
+                const currentCost = edited !== undefined ? edited : employee.cost;
+                
+                return (
+                  <div key={employee.employee_name} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                      {/* Employee Name (Read-only) */}
+                      <div>
+                        <Label className="text-xs text-slate-600">Employee Name</Label>
+                        <Input
+                          value={employee.employee_name}
+                          disabled
+                          className="bg-white font-medium"
+                        />
+                      </div>
+
+                      {/* Cost (Editable) */}
+                      <div>
+                        <Label className="text-xs text-slate-600">Cost (€)</Label>
+                        <Input
+                          type="text"
+                          value={currentCost !== null ? formatEuro(currentCost) : ''}
+                          onChange={(e) => handleFieldChange(employee.employee_name, parseEuro(e.target.value))}
+                          placeholder="0,00"
+                          className="text-right"
+                        />
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleSaveEmployee(employee)}
+                          disabled={!hasChanges(employee.employee_name) || saving}
+                          className="rounded-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+                          size="sm"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button
+                          onClick={() => handleArchiveEmployee(employee)}
+                          disabled={saving}
+                          variant="outline"
+                          className="rounded-full"
+                          size="sm"
+                        >
+                          Archive
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ArticleCodesSection Component
 const ArticleCodesSection = () => {
   const [articles, setArticles] = useState([]);
