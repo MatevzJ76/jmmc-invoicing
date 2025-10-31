@@ -342,15 +342,18 @@ frontend:
 backend:
   - task: "Time entry schema - aiCorrectionApplied field"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Added new field 'aiCorrectionApplied' (boolean) to time entry schema in POST /api/imports endpoint. Field is initialized to False for all new imports. Updated PUT /api/batches/{batch_id}/time-entries endpoint to accept and update this field when frontend saves AI corrections. This enables persistent tracking of which rows have been corrected by AI suggestions. Field is returned in GET /api/batches/{batch_id}/time-entries response for restoration when resuming 'in progress' batches."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE BACKEND TESTING COMPLETED - ALL TESTS PASSED (4/4). Test Results: (1) ✅ New Import - AI Field Initialization: Created test import with 3 time entries. Verified all entries have aiCorrectionApplied=False by default. Field is properly initialized in POST /api/imports endpoint (line 567 in server.py). (2) ✅ Update AI Correction Status: Successfully updated entry via PUT /api/batches/{batch_id}/time-entries with aiCorrectionApplied=true. Endpoint accepts the field and updates database correctly (lines 656-657 in server.py). (3) ✅ Retrieve AI Correction Status: GET /api/batches/{batch_id}/time-entries returns aiCorrectionApplied field correctly. First entry has aiCorrectionApplied=true (persisted), other entries remain false. Field is included in response (line 619 in server.py). (4) ✅ Multiple Updates: Successfully updated 3 entries with different aiCorrectionApplied values (true, true, false). All values persisted correctly and retrieved accurately. CONCLUSION: Backend implementation is FULLY FUNCTIONAL and production-ready. All CRUD operations for aiCorrectionApplied field working correctly."
 
 backend:
   - task: "GET /api/customers endpoint"
