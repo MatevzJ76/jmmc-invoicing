@@ -162,10 +162,11 @@ const ArticleCodesSection = () => {
       const response = await axios.get(`${BACKEND_URL}/api/articles`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('Articles loaded:', response.data);
       setArticles(response.data);
     } catch (error) {
       toast.error('Failed to load articles');
-      console.error(error);
+      console.error('Article load error:', error);
     } finally {
       setLoading(false);
     }
