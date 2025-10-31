@@ -564,7 +564,9 @@ async def import_xlsx(
                 "tariff": str(tariff) if tariff else "N/A",
                 "notes": str(notes) if notes else "",
                 "value": value,
-                "aiCorrectionApplied": False  # Track if AI corrections were applied
+                "aiCorrectionApplied": False,  # Track if AI corrections were applied
+                "originalNotes": None,  # Store original notes before AI correction
+                "originalHours": None  # Store original hours before AI correction
             }
             entries.append(entry)
         
