@@ -1196,7 +1196,7 @@ const ImportVerification = () => {
                     // Determine row background color based on edit status
                     let rowBgClass = '';
                     if (isInvoiced) {
-                      rowBgClass = 'bg-green-50/50 hover:bg-green-50 opacity-70';
+                      rowBgClass = 'bg-gradient-to-r from-green-100 to-emerald-100 border-l-4 border-green-500 opacity-85';
                     } else if (isFlagged) {
                       rowBgClass = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500';
                     } else if (isAiCorrected) {
