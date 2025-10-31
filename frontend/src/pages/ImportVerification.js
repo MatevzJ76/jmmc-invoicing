@@ -339,6 +339,16 @@ const ImportVerification = () => {
     
     const updatedRows = [...verificationData.rows];
     
+    // Save original values before making changes (only if not already saved)
+    const newOriginalValues = { ...originalValues };
+    if (!newOriginalValues[selectedRowIndex]) {
+      newOriginalValues[selectedRowIndex] = {
+        comments: updatedRows[selectedRowIndex].comments,
+        hours: updatedRows[selectedRowIndex].hours
+      };
+      setOriginalValues(newOriginalValues);
+    }
+    
     // Apply description correction if available (use edited value)
     if (editableSuggestions.description && editableSuggestions.description.trim()) {
       updatedRows[selectedRowIndex].comments = editableSuggestions.description.trim();
@@ -358,7 +368,8 @@ const ImportVerification = () => {
     const updatedData = {
       ...verificationData,
       rows: updatedRows,
-      aiCorrectedRows: Array.from(newAiCorrectedRows)
+      aiCorrectedRows: Array.from(newAiCorrectedRows),
+      originalValues: newOriginalValues
     };
     setVerificationData(updatedData);
     
