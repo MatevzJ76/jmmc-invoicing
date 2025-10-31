@@ -594,6 +594,99 @@ const Customers = () => {
           </div>
         </div>
       )}
+
+      {/* First Confirmation Modal - Refresh Invoicing Settings */}
+      {showRefreshConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-slate-800 mb-2">
+                  Refresh Invoicing Settings?
+                </h3>
+                <p className="text-sm text-slate-600 mb-4">
+                  This will analyze historical invoice data for <strong>ALL customers</strong> and update their invoicing settings based on Article 000001 entries from their latest period.
+                </p>
+                <p className="text-sm text-orange-700 font-semibold mb-4">
+                  ⚠️ WARNING: This will overwrite existing invoicing settings (Invoicing Type, Fixed Forfait Value, Hourly Rate).
+                </p>
+                <div className="flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowRefreshConfirm(false)}
+                    className="rounded-full"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowRefreshConfirm(false);
+                      setShowRefreshSecondConfirm(true);
+                    }}
+                    className="rounded-full bg-orange-600 hover:bg-orange-700"
+                  >
+                    Continue
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Second Confirmation Modal - Final Warning */}
+      {showRefreshSecondConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl border-4 border-red-500">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-red-800 mb-2">
+                  ⚠️ FINAL CONFIRMATION
+                </h3>
+                <p className="text-sm text-slate-700 mb-3">
+                  Are you absolutely sure you want to proceed?
+                </p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-red-800 font-semibold">
+                    This action will:
+                  </p>
+                  <ul className="text-sm text-red-700 list-disc ml-5 mt-2 space-y-1">
+                    <li>Update ALL customers with historical data</li>
+                    <li>Overwrite existing invoicing settings</li>
+                    <li>Cannot be undone automatically</li>
+                  </ul>
+                </div>
+                <div className="flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowRefreshSecondConfirm(false)}
+                    className="rounded-full"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleRefreshInvoicingSettings}
+                    disabled={refreshing}
+                    className="rounded-full bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    {refreshing ? 'Refreshing...' : 'Yes, Proceed'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
