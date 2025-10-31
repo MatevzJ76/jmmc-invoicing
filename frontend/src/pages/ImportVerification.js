@@ -389,6 +389,51 @@ const ImportVerification = () => {
     setSelectedRowIndex(null);
     setEditableSuggestions({ description: '', hours: null }); // Reset editable suggestions
   };
+  
+  const handleCorrectedRowClick = (index) => {
+    // Open edit modal for already-corrected rows
+    setEditingRowIndex(index);
+    setEditableSuggestions({
+      description: verificationData.rows[index].comments,
+      hours: verificationData.rows[index].hours
+    });
+    setShowEditModal(true);
+  };
+  
+  const handleApplyEdits = () => {
+    if (editingRowIndex === null) return;
+    
+    const updatedRows = [...verificationData.rows];
+    
+    // Apply edited values
+    if (editableSuggestions.description && editableSuggestions.description.trim()) {
+      updatedRows[editingRowIndex].comments = editableSuggestions.description.trim();
+    }
+    
+    if (editableSuggestions.hours !== null && editableSuggestions.hours !== undefined) {
+      updatedRows[editingRowIndex].hours = editableSuggestions.hours;
+    }
+    
+    // Update verification data
+    const updatedData = {
+      ...verificationData,
+      rows: updatedRows,
+      aiCorrectedRows: Array.from(aiCorrectedRows),
+      originalValues: originalValues
+    };
+    setVerificationData(updatedData);
+    
+    // Update sessionStorage
+    sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
+    
+    // Mark that changes have been made
+    setHasChanges(true);
+    
+    toast.success('Changes saved');
+    setShowEditModal(false);
+    setEditingRowIndex(null);
+    setEditableSuggestions({ description: '', hours: null });
+  };
 
   const handleSaveProgress = async () => {
     if (!verificationData) return;
