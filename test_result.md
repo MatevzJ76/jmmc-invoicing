@@ -368,6 +368,18 @@ backend:
           comment: "VERIFICATION ENDPOINT BEHAVIOR TESTING COMPLETE - ALL TESTS PASSED (2/2). Test Results: (1) ✅ 'in progress' batch returns empty arrays: Created test batch with saveAsProgress=true, verified batch status is 'in progress', called GET /api/batches/{batch_id}/verification, confirmed all arrays (jmmcHP, jmmcFinance, noClient, extra) are empty as expected. The endpoint correctly checks batch status BEFORE processing entries (lines 691-697 in server.py). (2) ✅ 'composed' batch returns populated arrays: Called POST /api/invoices/compose to compose invoices for the same batch, verified batch status changed to 'composed', called GET /api/batches/{batch_id}/verification again, confirmed arrays are now populated with 4 categorized entries (1 JMMC HP, 1 JMMC Finance, 1 no client, 1 extra). The endpoint correctly processes and categorizes entries for non-'in progress' batches (lines 699-733 in server.py). CONCLUSION: Verification endpoint behavior is CORRECT and PRODUCTION-READY. Status check happens BEFORE processing entries, 'in progress' batches return empty arrays, 'composed' batches return populated arrays with proper categorization."
 
 backend:
+  - task: "GET /api/articles - List all articles"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Articles API endpoint fully functional. ALL TESTS PASSED (2/2). Test Results: (1) ✅ GET /api/articles returns 45 articles - Verified article count is correct. Each article has all required fields: code, description, unitMeasure, priceWithoutVAT, vatPercentage, tariffCode. No _id field in response (correctly excluded). First 3 articles verified: Article 000001 (Računovodstvo - Contabilita`, €45.00), Article 000002 (Najem sedeža - Sede legale, €50.00), Article 000003 (Uporaba programa - Utilizzo gestionale, €15.00). (2) ✅ Database verification - Confirmed articles collection has 45 documents with correct structure. All articles properly seeded via seed_articles.py script. CONCLUSION: Articles API is PRODUCTION-READY. Endpoint implementation correct (lines 3002-3006 in server.py), authentication working, response format correct with _id excluded."
+
   - task: "GET /api/customers endpoint"
     implemented: true
     working: true
