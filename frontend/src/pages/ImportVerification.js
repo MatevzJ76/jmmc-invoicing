@@ -40,6 +40,7 @@ const ImportVerification = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiCorrectedRows, setAiCorrectedRows] = useState(new Set()); // Track rows with AI corrections applied
+  const [editableSuggestions, setEditableSuggestions] = useState({ description: '', hours: null }); // Editable AI suggestions
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
