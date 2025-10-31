@@ -58,7 +58,8 @@ articles_data = [
 async def seed_articles():
     """Seed article codes into database"""
     client = AsyncIOMotorClient(MONGO_URL)
-    db = client.invoicing
+    db_name = os.environ.get('DB_NAME', 'test_database')
+    db = client[db_name]
     
     # Clear existing articles
     await db.articles.delete_many({})
