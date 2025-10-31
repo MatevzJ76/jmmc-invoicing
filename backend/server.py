@@ -3149,6 +3149,99 @@ async def update_article(article_code: str, article_data: dict, current_user: Us
     
     return {"message": "Article updated successfully"}
 
+# ============ EMPLOYEE COSTS ENDPOINTS ============
+@api_router.get("/employee-costs")
+async def get_employee_costs(archived: Optional[bool] = None, current_user: User = Depends(get_current_user)):
+    """Get all employees with their cost data. Auto-extracts unique employee names from time entries."""
+    
+    # Get unique employee names from time_entries collection
+    employee_names = await db.time_entries.distinct("employee")
+    
+    # For each employee name, check if they exist in employee_costs collection
+    employees_data = []
+    for name in employee_names:
+        if not name:  # Skip empty names
+            continue
+            
+        # Check if employee exists in employee_costs collection
+        existing = await db.employee_costs.find_one({"employee_name": name})
+        
+        if existing:
+            # Employee exists in collection
+            employee_data = {
+                "employee_name": existing.get("employee_name"),
+                "cost": existing.get("cost"),
+                "archived": existing.get("archived", False),
+                "created_at": existing.get("created_at"),
+                "updated_at": existing.get("updated_at")
+            }
+        else:
+            # Auto-create employee entry
+            now = datetime.now(timezone.utc).isoformat()
+            employee_data = {
+                "employee_name": name,
+                "cost": None,
+                "archived": False,
+                "created_at": now,
+                "updated_at": now
+            }
+            await db.employee_costs.insert_one(employee_data.copy())
+        
+        # Filter by archived status if specified
+        if archived is None or employee_data["archived"] == archived:
+            employees_data.append(employee_data)
+    
+    return employees_data
+
+@api_router.post("/employee-costs")
+async def update_employee_cost(employee_data: dict, current_user: User = Depends(get_current_user)):
+    """Update employee cost"""
+    employee_name = employee_data.get("employee_name")
+    cost = employee_data.get("cost")
+    
+    if not employee_name:
+        raise HTTPException(status_code=400, detail="Employee name is required")
+    
+    # Check if employee exists
+    existing = await db.employee_costs.find_one({"employee_name": employee_name})
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Update cost and updated_at timestamp
+    now = datetime.now(timezone.utc).isoformat()
+    result = await db.employee_costs.update_one(
+        {"employee_name": employee_name},
+        {"$set": {"cost": cost, "updated_at": now}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    return {"message": "Employee cost updated successfully"}
+
+@api_router.put("/employee-costs/{employee_name}/archive")
+async def archive_employee(employee_name: str, current_user: User = Depends(get_current_user)):
+    """Archive an employee (soft delete)"""
+    
+    # Check if employee exists
+    existing = await db.employee_costs.find_one({"employee_name": employee_name})
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Archive employee
+    now = datetime.now(timezone.utc).isoformat()
+    result = await db.employee_costs.update_one(
+        {"employee_name": employee_name},
+        {"$set": {"archived": True, "updated_at": now}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    return {"message": "Employee archived successfully"}
+
 # Include router
 app.include_router(api_router)
 
