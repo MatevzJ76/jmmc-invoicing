@@ -52,6 +52,9 @@ const CustomerDetail = () => {
   });
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
+  const [showRefreshSecondConfirm, setShowRefreshSecondConfirm] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadCompanies();
