@@ -966,6 +966,11 @@ const ImportVerification = () => {
                 setCustomerFilter(value);
                 setCustomerSearchTerm(''); // Reset search when selection changes
               }}
+              onOpenChange={(open) => {
+                if (open) {
+                  setCustomerSearchTerm(''); // Reset search when dropdown opens
+                }
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Customers" />
