@@ -117,21 +117,43 @@ const ImportVerification = () => {
   
   const autoSaveAsInProgress = async (data) => {
     try {
-      // DON'T auto-save on import anymore
-      // Data should only be in sessionStorage until user clicks "Proceed to Import"
-      // Just mark as ready for import
+      const token = localStorage.getItem('access_token');
+      
+      // Create batch with "in progress" status and save time entries
+      const uint8Array = new Uint8Array(data.fileData);
+      const blob = new Blob([uint8Array], { type: data.fileType });
+      const file = new File([blob], data.fileName, { type: data.fileType });
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', data.metadata.title);
+      formData.append('invoiceDate', data.metadata.invoiceDate);
+      formData.append('periodFrom', data.metadata.periodFrom);
+      formData.append('periodTo', data.metadata.periodTo);
+      formData.append('dueDate', data.metadata.dueDate);
+      formData.append('saveAsProgress', 'true');
+
+      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Update verification data to mark as resuming
       const updatedData = {
         ...data,
-        resuming: false,
-        batchId: null // No batch created yet
+        resuming: true,
+        batchId: response.data.batchId
       };
       
       setVerificationData(updatedData);
       sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
       
-      // No toast needed - this is just internal state management
+      toast.success('Import saved - you can review and edit data', { duration: 3000 });
     } catch (error) {
-      console.error('State update failed:', error);
+      console.error('Auto-save failed:', error);
+      // Don't block user if auto-save fails
     }
   };
   
