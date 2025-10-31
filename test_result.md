@@ -355,6 +355,18 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE BACKEND TESTING COMPLETED - ALL TESTS PASSED (4/4). Test Results: (1) ✅ New Import - AI Field Initialization: Created test import with 3 time entries. Verified all entries have aiCorrectionApplied=False by default. Field is properly initialized in POST /api/imports endpoint (line 567 in server.py). (2) ✅ Update AI Correction Status: Successfully updated entry via PUT /api/batches/{batch_id}/time-entries with aiCorrectionApplied=true. Endpoint accepts the field and updates database correctly (lines 656-657 in server.py). (3) ✅ Retrieve AI Correction Status: GET /api/batches/{batch_id}/time-entries returns aiCorrectionApplied field correctly. First entry has aiCorrectionApplied=true (persisted), other entries remain false. Field is included in response (line 619 in server.py). (4) ✅ Multiple Updates: Successfully updated 3 entries with different aiCorrectionApplied values (true, true, false). All values persisted correctly and retrieved accurately. CONCLUSION: Backend implementation is FULLY FUNCTIONAL and production-ready. All CRUD operations for aiCorrectionApplied field working correctly."
 
+  - task: "GET /api/batches/{batch_id}/verification - Status-based behavior"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "VERIFICATION ENDPOINT BEHAVIOR TESTING COMPLETE - ALL TESTS PASSED (2/2). Test Results: (1) ✅ 'in progress' batch returns empty arrays: Created test batch with saveAsProgress=true, verified batch status is 'in progress', called GET /api/batches/{batch_id}/verification, confirmed all arrays (jmmcHP, jmmcFinance, noClient, extra) are empty as expected. The endpoint correctly checks batch status BEFORE processing entries (lines 691-697 in server.py). (2) ✅ 'composed' batch returns populated arrays: Called POST /api/invoices/compose to compose invoices for the same batch, verified batch status changed to 'composed', called GET /api/batches/{batch_id}/verification again, confirmed arrays are now populated with 4 categorized entries (1 JMMC HP, 1 JMMC Finance, 1 no client, 1 extra). The endpoint correctly processes and categorizes entries for non-'in progress' batches (lines 699-733 in server.py). CONCLUSION: Verification endpoint behavior is CORRECT and PRODUCTION-READY. Status check happens BEFORE processing entries, 'in progress' batches return empty arrays, 'composed' batches return populated arrays with proper categorization."
+
 backend:
   - task: "GET /api/customers endpoint"
     implemented: true
