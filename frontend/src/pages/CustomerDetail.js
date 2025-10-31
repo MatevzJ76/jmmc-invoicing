@@ -675,10 +675,6 @@ const CustomerDetail = () => {
             </div>
           </div>
         </div>
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Upload Historical Data */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
