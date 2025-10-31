@@ -373,11 +373,12 @@ const ImportVerification = () => {
       
       // If resuming an existing batch, update the time entries
       if (verificationData.resuming && verificationData.batchId) {
-        // Prepare updates: send all rows with their index
+        // Prepare updates: send all rows with their index and AI correction status
         const updates = verificationData.rows.map((row, index) => ({
           index,
           comments: row.comments,
-          hours: row.hours
+          hours: row.hours,
+          aiCorrectionApplied: aiCorrectedRows.has(index)
         }));
         
         await axios.put(
