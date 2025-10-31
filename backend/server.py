@@ -584,6 +584,102 @@ async def import_xlsx(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@api_router.post("/imports/from-verification")
+async def import_from_verification(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Import filtered rows from Import Verification page.
+    Accepts JSON data with batch metadata and filtered rows.
+    """
+    try:
+        # Extract data from request
+        title = request.get('title')
+        invoiceDate = request.get('invoiceDate')
+        periodFrom = request.get('periodFrom')
+        periodTo = request.get('periodTo')
+        dueDate = request.get('dueDate')
+        rows = request.get('rows', [])
+        filename = request.get('filename', 'import.xlsx')
+        
+        if not all([title, invoiceDate, periodFrom, periodTo, dueDate]):
+            raise HTTPException(status_code=400, detail="Missing required fields")
+        
+        # Create batch
+        batch_id = str(uuid.uuid4())
+        batch_doc = {
+            "id": batch_id,
+            "title": title,
+            "filename": filename,
+            "periodFrom": periodFrom,
+            "periodTo": periodTo,
+            "invoiceDate": invoiceDate,
+            "dueDate": dueDate,
+            "status": "imported",
+            "createdBy": current_user.email,
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        }
+        await db.importBatches.insert_one(batch_doc)
+        
+        # Create time entries from provided rows
+        entries = []
+        
+        for row in rows:
+            # Extract row data
+            customer_name = row.get('customer', 'General')
+            project_name = row.get('project', 'General')
+            employee = row.get('employee', 'Unknown')
+            date_str = row.get('date', '')
+            tariff = row.get('tariff', 'N/A')
+            notes = row.get('comments', '')
+            hours = float(row.get('hours', 0))
+            value = float(row.get('value', 0))
+            
+            # Find or create customer
+            customer = await db.customers.find_one({"name": customer_name})
+            if not customer:
+                customer_id = str(uuid.uuid4())
+                await db.customers.insert_one({"id": customer_id, "name": customer_name})
+            else:
+                customer_id = customer["id"]
+            
+            # Find or create project
+            project = await db.projects.find_one({"name": project_name, "customerId": customer_id})
+            if not project:
+                project_id = str(uuid.uuid4())
+                await db.projects.insert_one({"id": project_id, "name": project_name, "customerId": customer_id})
+            else:
+                project_id = project["id"]
+            
+            # Create time entry
+            entry = {
+                "id": str(uuid.uuid4()),
+                "batchId": batch_id,
+                "projectId": project_id,
+                "customerId": customer_id,
+                "employeeName": employee,
+                "date": date_str,
+                "hours": hours,
+                "tariff": tariff,
+                "notes": notes,
+                "value": value,
+                "aiCorrectionApplied": row.get('aiCorrectionApplied', False),
+                "manuallyEdited": row.get('manuallyEdited', False),
+                "originalNotes": row.get('originalNotes'),
+                "originalHours": row.get('originalHours')
+            }
+            entries.append(entry)
+        
+        # Insert all entries
+        if entries:
+            await db.timeEntries.insert_many(entries)
+        
+        return {"batchId": batch_id, "rowCount": len(entries)}
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 # ============ INVOICE ENDPOINTS ============
 @api_router.get("/batches")
 async def list_batches(current_user: User = Depends(get_current_user)):
