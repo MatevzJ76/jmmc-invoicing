@@ -1031,7 +1031,6 @@ const ImportVerification = () => {
                   setEmployeeFilter('all');
                   setTariffFilter('all');
                   setCustomerSearchTerm('');
-                  setCustomerDropdownKey(prev => prev + 1);
                   toast.success('All filters cleared');
                 }}
                 className="rounded-full h-10 w-10"
