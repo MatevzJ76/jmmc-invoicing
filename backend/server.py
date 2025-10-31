@@ -2459,6 +2459,13 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
                 {"$set": {"total": line_total}}
             )
         
+        # Mark all entries in this invoice as "invoiced"
+        entry_ids_to_mark = [entry["id"] for entry in customer_entries]
+        await db.timeEntries.update_many(
+            {"id": {"$in": entry_ids_to_mark}},
+            {"$set": {"invoiced": True}}
+        )
+        
         invoice_ids.append(invoice_id)
     
     # Update batch status
