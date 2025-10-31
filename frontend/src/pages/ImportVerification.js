@@ -684,14 +684,27 @@ const ImportVerification = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={handleBack}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button 
+              variant="ghost" 
+              onClick={handleBack}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Batches
+            </Button>
+            
+            {/* Navigate to Batch Detail (Invoices & Verification) */}
+            {verificationData.batchId && (
+              <Button 
+                variant="outline"
+                onClick={() => navigate(`/batches/${verificationData.batchId}`)}
+                className="rounded-full border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                View Invoices & Verification
+                <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+              </Button>
+            )}
+          </div>
           <h2 className="text-3xl font-bold text-slate-800 mb-2">Import Verification</h2>
           <p className="text-slate-600">Review imported data before creating invoices</p>
         </div>
