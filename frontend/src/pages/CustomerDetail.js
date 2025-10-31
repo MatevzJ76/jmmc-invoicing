@@ -555,99 +555,126 @@ const CustomerDetail = () => {
             </div>
           </div>
           
-          {/* Other Settings */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Invoicing Period */}
-            <div>
-              <Label className="text-slate-700 mb-2 block">Invoicing Period</Label>
-              <Select 
-                value={customer?.invoicingPeriod || 'monthly'}
-                onValueChange={(value) => handleFieldUpdate('invoicingPeriod', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="quarterly">3 Months (Quarterly)</SelectItem>
-                  <SelectItem value="semi-annual">6 Months (Semi-Annual)</SelectItem>
-                  <SelectItem value="yearly">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Invoicing Period Section - Highlighted */}
+          <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-4 mb-6">
+            <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Invoicing Period
+            </h3>
             
-            {/* Address Service */}
-            <div>
-              <Label className="text-slate-700 mb-2 block">Address Service</Label>
-              <Select 
-                value={customer?.offersAddress ? 'yes' : 'no'}
-                onValueChange={(value) => handleFieldUpdate('offersAddress', value === 'yes')}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select option" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Address Service Unit Price */}
-            <div>
-              <Label className="text-slate-700 mb-2 block">Address Service Unit Price (€)</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
-                <Input
-                  type="text"
-                  value={isEditingAddressPrice ? addressServicePriceDisplay : parseFloat(addressServicePrice || 0).toFixed(2).replace('.', ',')}
-                  onChange={(e) => {
-                    setIsEditingAddressPrice(true);
-                    setAddressServicePriceDisplay(e.target.value);
-                  }}
-                  onFocus={(e) => {
-                    setIsEditingAddressPrice(true);
-                    setAddressServicePriceDisplay(parseFloat(addressServicePrice || 0).toFixed(2).replace('.', ','));
-                    e.target.select();
-                  }}
-                  onBlur={(e) => {
-                    setIsEditingAddressPrice(false);
-                    const value = e.target.value.replace(',', '.');
-                    const num = parseFloat(value);
-                    if (!isNaN(num)) {
-                      setAddressServicePrice(num.toFixed(2));
-                      setAddressServicePriceDisplay(num.toFixed(2).replace('.', ','));
-                      handleFieldUpdate('addressServiceUnitPrice', parseFloat(num.toFixed(2)));
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.target.blur();
-                    }
-                  }}
-                  className="pl-8"
-                  placeholder="00,00"
-                />
+            <div className="grid grid-cols-2 gap-6">
+              {/* Invoicing Period */}
+              <div>
+                <Label className="text-slate-700 mb-2 block font-medium">Invoicing Period</Label>
+                <Select 
+                  value={customer?.invoicingPeriod || 'monthly'}
+                  onValueChange={(value) => handleFieldUpdate('invoicingPeriod', value)}
+                >
+                  <SelectTrigger className="border-2 border-blue-300 focus:ring-blue-500 focus:border-blue-500">
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">3 Months (Quarterly)</SelectItem>
+                    <SelectItem value="semi-annual">6 Months (Semi-Annual)</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                From latest "Najem sedeža" entry (Article 000002)
-              </p>
+              
+              {/* Invoicing Start Date */}
+              <div>
+                <Label className="text-slate-700 mb-2 block font-medium">Invoicing Start Period (MM/YYYY)</Label>
+                <Input
+                  type="month"
+                  value={customer?.invoicingStartDate || ''}
+                  onChange={(e) => handleFieldUpdate('invoicingStartDate', e.target.value)}
+                  placeholder="MM/YYYY"
+                  className="border-2 border-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  {customer?.invoicingPeriod === 'monthly' && 'First invoice for this month'}
+                  {customer?.invoicingPeriod === 'quarterly' && 'First invoice after 3 months (includes start + 2 months)'}
+                  {customer?.invoicingPeriod === 'semi-annual' && 'First invoice after 6 months'}
+                  {customer?.invoicingPeriod === 'yearly' && 'First invoice after 1 year'}
+                </p>
+              </div>
             </div>
+          </div>
+          
+          {/* Address Service Section - Highlighted */}
+          <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Address Service
+            </h3>
             
-            {/* Invoicing Start Date */}
-            <div>
-              <Label className="text-slate-700 mb-2 block">Invoicing Start Period (MM/YYYY)</Label>
-              <Input
-                type="month"
-                value={customer?.invoicingStartDate || ''}
-                onChange={(e) => handleFieldUpdate('invoicingStartDate', e.target.value)}
-                placeholder="MM/YYYY"
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                {customer?.invoicingPeriod === 'monthly' && 'First invoice for this month'}
-                {customer?.invoicingPeriod === 'quarterly' && 'First invoice after 3 months (includes start + 2 months)'}
-                {customer?.invoicingPeriod === 'semi-annual' && 'First invoice after 6 months'}
-                {customer?.invoicingPeriod === 'yearly' && 'First invoice after 1 year'}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Address Service */}
+              <div>
+                <Label className="text-slate-700 mb-2 block font-medium">Address Service</Label>
+                <Select 
+                  value={customer?.offersAddress ? 'yes' : 'no'}
+                  onValueChange={(value) => handleFieldUpdate('offersAddress', value === 'yes')}
+                >
+                  <SelectTrigger className="border-2 border-blue-300 focus:ring-blue-500 focus:border-blue-500">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Address Service Unit Price */}
+              <div>
+                <Label className="text-slate-700 mb-2 block font-medium">Address Service Unit Price (€)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
+                  <Input
+                    type="text"
+                    value={isEditingAddressPrice ? addressServicePriceDisplay : parseFloat(addressServicePrice || 0).toFixed(2).replace('.', ',')}
+                    onChange={(e) => {
+                      setIsEditingAddressPrice(true);
+                      setAddressServicePriceDisplay(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setIsEditingAddressPrice(true);
+                      setAddressServicePriceDisplay(parseFloat(addressServicePrice || 0).toFixed(2).replace('.', ','));
+                      e.target.select();
+                    }}
+                    onBlur={(e) => {
+                      setIsEditingAddressPrice(false);
+                      const value = e.target.value.replace(',', '.');
+                      const num = parseFloat(value);
+                      if (!isNaN(num)) {
+                        setAddressServicePrice(num.toFixed(2));
+                        setAddressServicePriceDisplay(num.toFixed(2).replace('.', ','));
+                        handleFieldUpdate('addressServiceUnitPrice', parseFloat(num.toFixed(2)));
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.target.blur();
+                      }
+                    }}
+                    className="pl-8 border-2 border-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500"
+                    placeholder="00,00"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  From latest "Najem sedeža" entry (Article 000002)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
               </p>
             </div>
           </div>
