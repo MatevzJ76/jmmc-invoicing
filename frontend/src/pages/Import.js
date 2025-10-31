@@ -282,6 +282,7 @@ const Import = () => {
             employee: colIndices.employee >= 0 ? (row[colIndices.employee] || '') : '',
             comments: colIndices.comments >= 0 ? (row[colIndices.comments] || '') : '',
             hours: hours,
+            hourlyRate: hourlyRate,  // Add hourly rate to row data
             value: calculatedValue,  // Calculated from hours × customer hourly rate
             invoiceNumber: colIndices.invoiceNumber >= 0 ? (row[colIndices.invoiceNumber] || '') : ''
           });
