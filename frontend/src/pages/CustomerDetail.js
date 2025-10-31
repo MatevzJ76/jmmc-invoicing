@@ -261,66 +261,7 @@ const CustomerDetail = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         {/* Statistics Cards */}
-        <div className="grid md:grid-cols-6 gap-4">
-          {/* Default Unit Price Tile */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-            <p className="text-sm text-slate-600 mb-2">Default Unit Price (€)</p>
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
-                <Input
-                  id="unitPrice"
-                  type="text"
-                  value={isEditingPrice ? unitPriceDisplay : parseFloat(unitPrice || 0).toFixed(2).replace('.', ',')}
-                  onChange={(e) => {
-                    setIsEditingPrice(true);
-                    setUnitPriceDisplay(e.target.value);
-                  }}
-                  onFocus={(e) => {
-                    setIsEditingPrice(true);
-                    setUnitPriceDisplay(parseFloat(unitPrice || 0).toFixed(2).replace('.', ','));
-                    e.target.select();
-                  }}
-                  onBlur={(e) => {
-                    setIsEditingPrice(false);
-                    const value = e.target.value.replace(',', '.');
-                    const num = parseFloat(value);
-                    if (!isNaN(num)) {
-                      setUnitPrice(num.toFixed(2));
-                      setUnitPriceDisplay(num.toFixed(2).replace('.', ','));
-                    } else {
-                      setUnitPrice('0.00');
-                      setUnitPriceDisplay('0,00');
-                    }
-                  }}
-                  placeholder="0,00"
-                  className="h-10 text-lg font-bold pl-8"
-                />
-              </div>
-              <Button onClick={handleUpdateUnitPrice} size="sm" className="rounded-full shrink-0" title="Update Price">
-                <TrendingUp className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-          
-          {/* Company Tile */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-            <p className="text-sm text-slate-600 mb-2">Company</p>
-            <select
-              id="company"
-              value={selectedCompanyId}
-              onChange={(e) => handleUpdateCompany(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">No Company</option>
-              {companies.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          
+        <div className="grid md:grid-cols-4 gap-4">
           {/* Total Invoices Tile */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
             <p className="text-sm text-slate-600 mb-1">Total Invoices</p>
