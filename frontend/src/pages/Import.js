@@ -248,21 +248,41 @@ const Import = () => {
       
       console.log('Column indices:', colIndices);
       
+      // Fetch all customers to get their hourly rates
+      const token = localStorage.getItem('access_token');
+      const customersResponse = await axios.get(`${BACKEND_URL}/api/customers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const customers = customersResponse.data;
+      
+      // Create a map of customer name to hourly rate (unitPrice)
+      const customerRates = {};
+      customers.forEach(cust => {
+        customerRates[cust.name] = cust.unitPrice || 0;
+      });
+      
       // Extract rows (skip header row)
       const rows = [];
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
         if (row && row.length > 0) {
+          const customerName = colIndices.customer >= 0 ? (row[colIndices.customer] || '') : '';
+          const hours = colIndices.hours >= 0 ? (parseFloat(row[colIndices.hours]) || 0) : 0;
+          
+          // Calculate value based on customer's hourly rate
+          const hourlyRate = customerRates[customerName] || 0;
+          const calculatedValue = hours * hourlyRate;
+          
           // Map using correct column indices
           rows.push({
             project: colIndices.project >= 0 ? (row[colIndices.project] || '') : '',
-            customer: colIndices.customer >= 0 ? (row[colIndices.customer] || '') : '',
+            customer: customerName,
             date: colIndices.date >= 0 ? (row[colIndices.date] || '') : '',
             tariff: colIndices.tariff >= 0 ? (row[colIndices.tariff] || '') : '',
             employee: colIndices.employee >= 0 ? (row[colIndices.employee] || '') : '',
             comments: colIndices.comments >= 0 ? (row[colIndices.comments] || '') : '',
-            hours: colIndices.hours >= 0 ? (row[colIndices.hours] || 0) : 0,
-            value: colIndices.value >= 0 ? (row[colIndices.value] || 0) : 0,
+            hours: hours,
+            value: calculatedValue,  // Calculated from hours × customer hourly rate
             invoiceNumber: colIndices.invoiceNumber >= 0 ? (row[colIndices.invoiceNumber] || '') : ''
           });
         }
