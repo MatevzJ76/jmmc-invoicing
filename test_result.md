@@ -460,7 +460,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Auto-population of invoicing settings from Article 000001 analysis"
+    - "Import Verification - AI corrections marking with robot icon"
+    - "Time entry schema - aiCorrectionApplied field"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
