@@ -144,6 +144,243 @@ const AddCustomerForm = () => {
   );
 };
 
+// ArticleCodesSection Component
+const ArticleCodesSection = () => {
+  const [articles, setArticles] = useState([]);
+  const [expandedArticles, setExpandedArticles] = useState(new Set());
+  const [editedArticles, setEditedArticles] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
+  const loadArticles = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/articles`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setArticles(response.data);
+    } catch (error) {
+      toast.error('Failed to load articles');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleArticle = (code) => {
+    const newExpanded = new Set(expandedArticles);
+    if (newExpanded.has(code)) {
+      newExpanded.delete(code);
+    } else {
+      newExpanded.add(code);
+    }
+    setExpandedArticles(newExpanded);
+  };
+
+  const handleFieldChange = (code, field, value) => {
+    setEditedArticles({
+      ...editedArticles,
+      [code]: {
+        ...(editedArticles[code] || {}),
+        [field]: value
+      }
+    });
+  };
+
+  const handleSaveArticle = async (article) => {
+    if (!editedArticles[article.code]) return;
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(
+        `${BACKEND_URL}/api/articles/${article.code}`,
+        editedArticles[article.code],
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Article updated');
+      
+      // Update local state
+      setArticles(articles.map(a => 
+        a.code === article.code 
+          ? { ...a, ...editedArticles[article.code] }
+          : a
+      ));
+      
+      // Clear edited state
+      const newEdited = { ...editedArticles };
+      delete newEdited[article.code];
+      setEditedArticles(newEdited);
+      
+    } catch (error) {
+      toast.error('Failed to update article');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const formatEuro = (number) => {
+    const num = parseFloat(number);
+    if (isNaN(num)) return '0,00';
+    const fixed = num.toFixed(2);
+    const [integer, decimal] = fixed.split('.');
+    const withThousands = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${withThousands},${decimal}`;
+  };
+
+  const hasChanges = (code) => {
+    return editedArticles[code] && Object.keys(editedArticles[code]).length > 0;
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+        <p className="text-slate-600">Loading articles...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+      <div className="flex items-center gap-3 mb-6">
+        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+        </svg>
+        <h2 className="text-xl font-bold text-slate-800">Article Codes</h2>
+        <span className="text-xs text-slate-500">({articles.length} articles)</span>
+      </div>
+      <p className="text-sm text-slate-600 mb-6">
+        Manage e-računi article codes and map them to tariff codes from XLSX imports
+      </p>
+
+      <div className="space-y-2">
+        {articles.map((article) => {
+          const isExpanded = expandedArticles.has(article.code);
+          const edited = editedArticles[article.code] || {};
+          const currentData = { ...article, ...edited };
+          
+          return (
+            <div key={article.code} className="border border-slate-200 rounded-lg overflow-hidden">
+              {/* Article Header - Clickable */}
+              <button
+                onClick={() => toggleArticle(article.code)}
+                className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+              >
+                <div className="flex items-center gap-4 text-left">
+                  <span className="font-mono font-semibold text-purple-600">{article.code}</span>
+                  <span className="text-sm text-slate-700">{currentData.description}</span>
+                </div>
+                <svg 
+                  className={`w-5 h-5 text-slate-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Article Details - Expandable */}
+              {isExpanded && (
+                <div className="p-6 bg-white border-t border-slate-200">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                    {/* Article Code (Read-only) */}
+                    <div>
+                      <Label className="text-xs text-slate-600">Article Code</Label>
+                      <Input
+                        value={article.code}
+                        disabled
+                        className="bg-slate-50 font-mono"
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div className="md:col-span-2">
+                      <Label className="text-xs text-slate-600">Description</Label>
+                      <Input
+                        value={currentData.description}
+                        onChange={(e) => handleFieldChange(article.code, 'description', e.target.value)}
+                        placeholder="Article description"
+                      />
+                    </div>
+
+                    {/* Unit Measure */}
+                    <div>
+                      <Label className="text-xs text-slate-600">Unit Measure (EM)</Label>
+                      <Input
+                        value={currentData.unitMeasure}
+                        onChange={(e) => handleFieldChange(article.code, 'unitMeasure', e.target.value)}
+                        placeholder="kos, ur, etc."
+                      />
+                    </div>
+
+                    {/* Price without VAT */}
+                    <div>
+                      <Label className="text-xs text-slate-600">Price without VAT (€)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={currentData.priceWithoutVAT}
+                        onChange={(e) => handleFieldChange(article.code, 'priceWithoutVAT', parseFloat(e.target.value) || 0)}
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    {/* VAT Percentage */}
+                    <div>
+                      <Label className="text-xs text-slate-600">VAT %</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={currentData.vatPercentage}
+                        onChange={(e) => handleFieldChange(article.code, 'vatPercentage', parseFloat(e.target.value) || 0)}
+                        placeholder="22.0"
+                      />
+                    </div>
+
+                    {/* Tariff Code (Future) */}
+                    <div className="md:col-span-3">
+                      <Label className="text-xs text-slate-600">
+                        Tariff Code Mapping 
+                        <span className="text-xs text-slate-400 ml-2">(Future development)</span>
+                      </Label>
+                      <Input
+                        value={currentData.tariffCode}
+                        onChange={(e) => handleFieldChange(article.code, 'tariffCode', e.target.value)}
+                        placeholder="Map to XLSX tariff code (e.g., '001 - Računovodstvo')"
+                        disabled
+                        className="bg-slate-50"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={() => handleSaveArticle(article)}
+                      disabled={!hasChanges(article.code) || saving}
+                      className="rounded-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
+                      size="sm"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const Settings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
