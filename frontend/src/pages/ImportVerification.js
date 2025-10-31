@@ -778,15 +778,44 @@ const ImportVerification = () => {
             </Select>
             
             {/* Customer Filter */}
-            <Select value={customerFilter} onValueChange={setCustomerFilter}>
+            <Select 
+              value={customerFilter} 
+              onValueChange={(value) => {
+                setCustomerFilter(value);
+                setCustomerSearchTerm(''); // Reset search when selection changes
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All Customers" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Customers</SelectItem>
-                {uniqueCustomers.map(customer => (
-                  <SelectItem key={customer} value={customer}>{customer}</SelectItem>
-                ))}
+                <div className="p-2 border-b border-slate-200">
+                  <Input
+                    placeholder="Search customers..."
+                    value={customerSearchTerm}
+                    onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                    className="h-8 text-sm"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  <SelectItem value="all">All Customers</SelectItem>
+                  {uniqueCustomers
+                    .filter(customer => 
+                      customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                    )
+                    .map(customer => (
+                      <SelectItem key={customer} value={customer}>{customer}</SelectItem>
+                    ))}
+                  {uniqueCustomers.filter(customer => 
+                    customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                  ).length === 0 && customerSearchTerm && (
+                    <div className="p-2 text-sm text-slate-500 text-center">
+                      No customers found
+                    </div>
+                  )}
+                </div>
               </SelectContent>
             </Select>
             
