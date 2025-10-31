@@ -1592,7 +1592,7 @@ const ImportVerification = () => {
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <p className="text-xs text-slate-600 mb-1">Total Value</p>
-                  <p className="text-xl font-bold text-emerald-600">€{importReport.totalValue.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-emerald-600">€{formatEuro(importReport.totalValue)}</p>
                 </div>
               </div>
               
