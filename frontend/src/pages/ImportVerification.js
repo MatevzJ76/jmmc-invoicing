@@ -595,18 +595,30 @@ const ImportVerification = () => {
     
     setSaving(true);
     try {
-      // Simply save to sessionStorage - no database operation needed until "Proceed to Import"
-      const updatedData = {
-        ...verificationData,
-        aiCorrectedRows: Array.from(aiCorrectedRows),
-        manuallyEditedRows: Array.from(manuallyEditedRows),
-        originalValues: originalValues
-      };
+      const token = localStorage.getItem('access_token');
       
-      sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
-      
-      toast.success('Changes saved to session! Click "Proceed to Import" when ready.');
-      setHasChanges(false); // Reset changes flag
+      // If we have a batch, update the time entries
+      if (verificationData.batchId) {
+        // Prepare updates: send all rows with their index and correction status
+        const updates = verificationData.rows.map((row, index) => ({
+          index,
+          comments: row.comments,
+          hours: row.hours,
+          aiCorrectionApplied: aiCorrectedRows.has(index),
+          manuallyEdited: manuallyEditedRows.has(index)
+        }));
+        
+        await axios.put(
+          `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries`,
+          updates,
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        
+        toast.success('Changes saved to database!');
+        setHasChanges(false);
+      } else {
+        toast.error('No batch found. Data only in memory.');
+      }
       
     } catch (error) {
       toast.error('Failed to save changes');
