@@ -2461,6 +2461,99 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
     
     return {"invoiceIds": invoice_ids}
 
+@api_router.post("/invoices/compose-filtered")
+async def compose_filtered_invoices(request: dict, current_user: User = Depends(get_current_user)):
+    """
+    Compose invoices only for specified time entry IDs (filtered rows).
+    Accepts: { batchId, entryIds: [list of time entry IDs] }
+    """
+    batch_id = request.get('batchId')
+    entry_ids = request.get('entryIds', [])
+    
+    if not batch_id:
+        raise HTTPException(status_code=400, detail="batchId is required")
+    
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Get ONLY the specified time entries
+    entries = await db.timeEntries.find({
+        "batchId": batch_id,
+        "id": {"$in": entry_ids}
+    }).to_list(10000)
+    
+    if not entries:
+        raise HTTPException(status_code=400, detail="No matching time entries found")
+    
+    # Group by customer
+    customer_groups = defaultdict(list)
+    for entry in entries:
+        customer_groups[entry["customerId"]].append(entry)
+    
+    # Create invoices
+    invoice_ids = []
+    for customer_id, customer_entries in customer_groups.items():
+        customer = await db.customers.find_one({"id": customer_id})
+        
+        invoice_id = str(uuid.uuid4())
+        invoice_doc = {
+            "id": invoice_id,
+            "batchId": batch_id,
+            "customerId": customer_id,
+            "customerName": customer["name"],
+            "invoiceDate": batch["invoiceDate"],
+            "periodFrom": batch["periodFrom"],
+            "periodTo": batch["periodTo"],
+            "dueDate": batch["dueDate"],
+            "status": "imported",
+            "total": sum(e["value"] for e in customer_entries),
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        }
+        await db.invoices.insert_one(invoice_doc)
+        
+        # Create invoice lines
+        lines = []
+        customer_unit_price = customer.get("unitPrice", 0)
+        
+        for entry in customer_entries:
+            line_id = str(uuid.uuid4())
+            project = await db.projects.find_one({"id": entry["projectId"]})
+            
+            # Determine unit price
+            if customer_unit_price > 0 and entry["hours"] > 0:
+                unit_price = customer_unit_price
+                amount = entry["hours"] * customer_unit_price
+            else:
+                unit_price = entry["value"] / entry["hours"] if entry["hours"] > 0 else 0
+                amount = entry["value"]
+            
+            line_doc = {
+                "id": line_id,
+                "invoiceId": invoice_id,
+                "timeEntryId": entry["id"],
+                "description": f"{project['name']} - {entry['employeeName']} - {entry['notes'] or ''}",
+                "quantity": entry["hours"],
+                "unitPrice": unit_price,
+                "amount": amount,
+                "taxCode": None
+            }
+            lines.append(line_doc)
+        
+        if lines:
+            await db.invoiceLines.insert_many(lines)
+        
+        invoice_ids.append(invoice_id)
+    
+    # Update batch status
+    await db.importBatches.update_one(
+        {"id": batch_id},
+        {"$set": {"status": "composed"}}
+    )
+    
+    return {"invoiceIds": invoice_ids, "entriesProcessed": len(entries)}
+
+
 @api_router.get("/invoices/{invoice_id}", response_model=Dict[str, Any])
 async def get_invoice(invoice_id: str, current_user: User = Depends(get_current_user)):
     invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
