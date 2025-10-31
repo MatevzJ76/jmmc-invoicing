@@ -42,6 +42,7 @@ const ImportVerification = () => {
   const [customerFilter, setCustomerFilter] = useState('all');
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [tariffFilter, setTariffFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all'); // New: invoiced/uninvoiced filter
   const [filteredRows, setFilteredRows] = useState([]);
   
   // Customer dropdown open state
