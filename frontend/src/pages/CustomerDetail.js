@@ -219,6 +219,38 @@ const CustomerDetail = () => {
     }
   };
 
+  const handleRefreshInvoicingSettings = async () => {
+    setRefreshing(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(
+        `${BACKEND_URL}/api/customers/refresh-invoicing-settings?customer_id=${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      const result = response.data.details?.[0];
+      if (result?.status === 'updated') {
+        toast.success(
+          `✓ Invoicing settings refreshed! Type: ${result.invoicingType}, Forfait: €${result.fixedForfaitValue || 0}, Hourly: €${result.hourlyRate || 0}`
+        );
+      } else if (result?.status === 'skipped') {
+        toast.info(`Skipped: ${result.reason}`);
+      } else {
+        toast.success(response.data.message);
+      }
+      
+      setShowRefreshConfirm(false);
+      setShowRefreshSecondConfirm(false);
+      loadCustomer();
+    } catch (error) {
+      toast.error('Failed to refresh invoicing settings');
+      console.error(error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const toggleRow = (index) => {
     setExpandedRows({
       ...expandedRows,
