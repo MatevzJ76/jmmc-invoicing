@@ -81,6 +81,10 @@ const CustomerDetail = () => {
       setUnitPrice(price);
       setUnitPriceDisplay(parseFloat(price).toFixed(2).replace('.', ','));
       
+      const forfaitVal = response.data.fixedForfaitValue || 0;
+      setFixedForfaitValue(forfaitVal);
+      setFixedForfaitDisplay(parseFloat(forfaitVal).toFixed(2).replace('.', ','));
+      
       const addressPrice = response.data.addressServiceUnitPrice || 0;
       setAddressServicePrice(addressPrice);
       setAddressServicePriceDisplay(parseFloat(addressPrice).toFixed(2).replace('.', ','));
