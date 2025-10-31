@@ -967,9 +967,17 @@ const ImportVerification = () => {
                         key={displayIndex} 
                         className={`hover:bg-slate-100 transition-colors ${
                           isFlagged ? 'bg-amber-50 hover:bg-amber-100 cursor-pointer border-l-4 border-amber-500' : ''
+                        } ${
+                          isAiCorrected && !isFlagged ? 'cursor-pointer hover:bg-blue-50' : ''
                         }`}
-                        onClick={() => isFlagged && handleRowClick(originalIndex)}
-                        title={isFlagged ? 'Click to see AI evaluation and suggestions' : ''}
+                        onClick={() => {
+                          if (isFlagged) {
+                            handleRowClick(originalIndex);
+                          } else if (isAiCorrected) {
+                            handleCorrectedRowClick(originalIndex);
+                          }
+                        }}
+                        title={isFlagged ? 'Click to see AI evaluation and suggestions' : isAiCorrected ? 'Click to view and edit corrected values' : ''}
                       >
                         <td className="px-3 py-2 text-slate-600">
                           {displayIndex + 1}
