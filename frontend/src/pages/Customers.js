@@ -237,6 +237,31 @@ const Customers = () => {
     }
   };
 
+  const handleRefreshInvoicingSettings = async () => {
+    setRefreshing(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(
+        `${BACKEND_URL}/api/customers/refresh-invoicing-settings`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success(
+        `✓ ${response.data.message}. Updated: ${response.data.updated}, Skipped: ${response.data.skipped}`
+      );
+      
+      setShowRefreshConfirm(false);
+      setShowRefreshSecondConfirm(false);
+      loadCustomers();
+    } catch (error) {
+      toast.error('Failed to refresh invoicing settings');
+      console.error(error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
