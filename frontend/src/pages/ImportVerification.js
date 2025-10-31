@@ -964,6 +964,7 @@ const ImportVerification = () => {
             <div className="relative">
               <div className="relative">
                 <Input
+                  id="customer-filter-input"
                   placeholder="Filter by customer..."
                   value={customerFilter === 'all' ? '' : customerFilter}
                   onChange={(e) => {
@@ -995,48 +996,59 @@ const ImportVerification = () => {
                   </button>
                 )}
               </div>
-              
-              {/* Suggestions List */}
-              {customerDropdownOpen && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-[100]" 
-                    onClick={() => setCustomerDropdownOpen(false)}
-                  />
-                  <div className="absolute z-[101] w-full mt-1 bg-white border-2 border-blue-400 rounded-md shadow-2xl max-h-[300px] overflow-y-auto">
-                    <button
-                      onClick={() => {
-                        setCustomerFilter('all');
-                        setCustomerDropdownOpen(false);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 font-medium border-b"
-                    >
-                      All Customers (Show all {verificationData.rows.length} rows)
-                    </button>
-                    
-                    {uniqueCustomers
-                      .filter(customer => {
-                        const filterValue = customerFilter === 'all' ? '' : customerFilter;
-                        return filterValue === '' || customer.toLowerCase().includes(filterValue.toLowerCase());
-                      })
-                      .map(customer => (
-                        <button
-                          key={customer}
-                          onClick={() => {
-                            setCustomerFilter(customer);
-                            setCustomerDropdownOpen(false);
-                          }}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-50 ${
-                            customerFilter === customer ? 'bg-blue-100 font-medium' : ''
-                          }`}
-                        >
-                          {customer}
-                        </button>
-                      ))}
-                  </div>
-                </>
-              )}
             </div>
+            
+            {/* Customer Suggestions - Rendered via PORTAL at body level */}
+            {customerDropdownOpen && createPortal(
+              <>
+                {/* Backdrop */}
+                <div 
+                  className="fixed inset-0 z-[9998]" 
+                  onClick={() => setCustomerDropdownOpen(false)}
+                />
+                
+                {/* Suggestions Panel - Rendered at BODY level via Portal */}
+                <div 
+                  className="fixed z-[9999] bg-white border-2 border-blue-500 rounded-md shadow-2xl max-h-[350px] overflow-y-auto"
+                  style={{
+                    width: document.getElementById('customer-filter-input')?.offsetWidth || 300,
+                    top: (document.getElementById('customer-filter-input')?.getBoundingClientRect().bottom || 0) + 4,
+                    left: document.getElementById('customer-filter-input')?.getBoundingClientRect().left || 0
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      setCustomerFilter('all');
+                      setCustomerDropdownOpen(false);
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 font-medium border-b sticky top-0 bg-white"
+                  >
+                    All Customers (Show all {verificationData.rows.length} rows)
+                  </button>
+                  
+                  {uniqueCustomers
+                    .filter(customer => {
+                      const filterValue = customerFilter === 'all' ? '' : customerFilter;
+                      return filterValue === '' || customer.toLowerCase().includes(filterValue.toLowerCase());
+                    })
+                    .map(customer => (
+                      <button
+                        key={customer}
+                        onClick={() => {
+                          setCustomerFilter(customer);
+                          setCustomerDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-50 ${
+                          customerFilter === customer ? 'bg-blue-100 font-medium' : ''
+                        }`}
+                      >
+                        {customer}
+                      </button>
+                    ))}
+                </div>
+              </>,
+              document.body
+            )}
             
             {/* Employee Filter */}
             <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
