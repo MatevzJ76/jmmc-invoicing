@@ -1386,7 +1386,7 @@ const ImportVerification = () => {
                 <div className="bg-white rounded-lg p-3">
                   <p className="text-xs text-slate-600 mb-1">Total Value</p>
                   <p className="text-2xl font-bold text-emerald-600">
-                    €{displayRows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0).toFixed(2)}
+                    €{formatEuro(displayRows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0))}
                   </p>
                 </div>
                 <div className="bg-white rounded-lg p-3">
