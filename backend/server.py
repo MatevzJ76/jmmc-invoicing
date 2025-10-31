@@ -565,6 +565,7 @@ async def import_xlsx(
                 "notes": str(notes) if notes else "",
                 "value": value,
                 "aiCorrectionApplied": False,  # Track if AI corrections were applied
+                "manuallyEdited": False,  # Track if row was manually edited
                 "originalNotes": None,  # Store original notes before AI correction
                 "originalHours": None  # Store original hours before AI correction
             }
