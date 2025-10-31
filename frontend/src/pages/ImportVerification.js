@@ -855,6 +855,7 @@ const ImportVerification = () => {
                       r.date === row.date
                     );
                     const isFlagged = aiResults[originalIndex];
+                    const isAiCorrected = aiCorrectedRows.has(originalIndex);
                     
                     return (
                       <tr 
@@ -868,6 +869,7 @@ const ImportVerification = () => {
                         <td className="px-3 py-2 text-slate-600">
                           {displayIndex + 1}
                           {isFlagged && <span className="ml-2 text-amber-600">⚠️</span>}
+                          {isAiCorrected && <span className="ml-2 text-purple-600" title="AI corrections applied">🤖</span>}
                         </td>
                         <td className="px-3 py-2 text-slate-700">{row.project}</td>
                         <td className="px-3 py-2 text-slate-700 font-medium">{row.customer}</td>
