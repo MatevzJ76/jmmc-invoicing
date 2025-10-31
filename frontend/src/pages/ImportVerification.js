@@ -1131,7 +1131,7 @@ const ImportVerification = () => {
                           {row.comments}
                         </td>
                         <td className="px-3 py-2 text-right text-slate-700 font-medium">{row.hours}</td>
-                        <td className="px-3 py-2 text-right text-slate-700">€{parseFloat(row.value || 0).toFixed(2)}</td>
+                        <td className="px-3 py-2 text-right text-slate-700">€{formatEuro(row.value || 0)}</td>
                         <td className="px-3 py-2 text-slate-600">{row.invoiceNumber || '-'}</td>
                       </tr>
                     );
