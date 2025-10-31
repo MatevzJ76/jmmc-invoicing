@@ -964,6 +964,8 @@ const ImportVerification = () => {
             <div className="relative">
               <button
                 onClick={() => {
+                  console.log('Opening customer dropdown. uniqueCustomers count:', uniqueCustomers.length);
+                  console.log('First 3 customers:', uniqueCustomers.slice(0, 3));
                   setCustomerDropdownOpen(!customerDropdownOpen);
                   setCustomerSearchTerm(''); // Clear search on open
                 }}
