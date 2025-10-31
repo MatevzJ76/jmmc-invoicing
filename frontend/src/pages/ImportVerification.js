@@ -993,6 +993,7 @@ const ImportVerification = () => {
                     );
                     const isFlagged = aiResults[originalIndex];
                     const isAiCorrected = aiCorrectedRows.has(originalIndex);
+                    const isManuallyEdited = manuallyEditedRows.has(originalIndex);
                     
                     return (
                       <tr 
@@ -1014,8 +1015,10 @@ const ImportVerification = () => {
                         title={
                           isFlagged 
                             ? 'Click to see AI evaluation and suggestions' 
-                            : isAiCorrected 
-                              ? 'Click to view and edit corrected values' 
+                            : isAiCorrected
+                              ? 'Click to view and edit AI-corrected values'
+                            : isManuallyEdited 
+                              ? 'Click to view and edit manually-corrected values' 
                               : 'Click to edit this row'
                         }
                       >
@@ -1023,6 +1026,7 @@ const ImportVerification = () => {
                           {displayIndex + 1}
                           {isFlagged && <span className="ml-2 text-amber-600">⚠️</span>}
                           {isAiCorrected && <span className="ml-2 text-purple-600" title="AI corrections applied">🤖</span>}
+                          {isManuallyEdited && !isAiCorrected && <span className="ml-2 text-blue-600" title="Manually edited">✍️</span>}
                         </td>
                         <td className="px-3 py-2 text-slate-700">{row.project}</td>
                         <td className="px-3 py-2 text-slate-700 font-medium">{row.customer}</td>
