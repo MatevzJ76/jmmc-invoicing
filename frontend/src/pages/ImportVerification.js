@@ -547,74 +547,28 @@ const ImportVerification = () => {
 
   const handleSaveProgress = async () => {
     if (!verificationData) return;
-    if (!hasChanges && verificationData.resuming) {
+    if (!hasChanges) {
       toast.info('No changes to save');
       return;
     }
     
     setSaving(true);
     try {
-      const token = localStorage.getItem('access_token');
-      
-      // If resuming an existing batch, update the time entries
-      if (verificationData.resuming && verificationData.batchId) {
-        // Prepare updates: send all rows with their index and AI correction status
-        const updates = verificationData.rows.map((row, index) => ({
-          index,
-          comments: row.comments,
-          hours: row.hours,
-          aiCorrectionApplied: aiCorrectedRows.has(index),
-          manuallyEdited: manuallyEditedRows.has(index)
-        }));
-        
-        await axios.put(
-          `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries`,
-          updates,
-          { headers: { Authorization: `Bearer ${token}` }}
-        );
-        
-        toast.success('Changes saved! You can continue reviewing.');
-        setHasChanges(false); // Reset changes flag
-        setSaving(false);
-        return;
-      }
-      
-      // Create new batch with in-progress status (first save)
-      const uint8Array = new Uint8Array(verificationData.fileData);
-      const blob = new Blob([uint8Array], { type: verificationData.fileType });
-      const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('title', verificationData.metadata.title);
-      formData.append('invoiceDate', verificationData.metadata.invoiceDate);
-      formData.append('periodFrom', verificationData.metadata.periodFrom);
-      formData.append('periodTo', verificationData.metadata.periodTo);
-      formData.append('dueDate', verificationData.metadata.dueDate);
-      formData.append('saveAsProgress', 'true');
-
-      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      toast.success('Progress saved! You can continue reviewing.');
-      setHasChanges(false); // Reset changes flag after save
-      
-      // Update verification data to mark as resuming with the new batch ID
+      // Simply save to sessionStorage - no database operation needed until "Proceed to Import"
       const updatedData = {
         ...verificationData,
-        resuming: true,
-        batchId: response.data.batchId
+        aiCorrectedRows: Array.from(aiCorrectedRows),
+        manuallyEditedRows: Array.from(manuallyEditedRows),
+        originalValues: originalValues
       };
-      setVerificationData(updatedData);
+      
       sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
       
+      toast.success('Changes saved to session! Click "Proceed to Import" when ready.');
+      setHasChanges(false); // Reset changes flag
+      
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || 'Failed to save progress';
-      toast.error(errorMsg);
+      toast.error('Failed to save changes');
     } finally {
       setSaving(false);
     }
