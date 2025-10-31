@@ -312,6 +312,12 @@ const ImportVerification = () => {
   const handleRowClick = (index) => {
     if (aiResults[index]) {
       setSelectedRowIndex(index);
+      // Initialize editable suggestions with AI's original suggestions
+      const suggestions = aiResults[index].suggestions || {};
+      setEditableSuggestions({
+        description: suggestions.description || '',
+        hours: suggestions.hours !== null && suggestions.hours !== undefined ? suggestions.hours : null
+      });
       setShowAiModal(true);
     }
   };
