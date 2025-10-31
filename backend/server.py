@@ -2550,6 +2550,13 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         if lines:
             await db.invoiceLines.insert_many(lines)
         
+        # Recalculate invoice total from actual line amounts
+        line_total = sum(line["amount"] for line in lines)
+        await db.invoices.update_one(
+            {"id": invoice_id},
+            {"$set": {"total": line_total}}
+        )
+        
         invoice_ids.append(invoice_id)
     
     # Update batch status
