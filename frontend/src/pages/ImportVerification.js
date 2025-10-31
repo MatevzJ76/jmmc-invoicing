@@ -1093,15 +1093,23 @@ const ImportVerification = () => {
                 variant="outline"
                 size="icon"
                 onClick={() => {
+                  // Close customer dropdown if open
+                  setCustomerDropdownOpen(false);
+                  
+                  // Clear all filter states
                   setSearchTerm('');
                   setProjectFilter('all');
                   setCustomerFilter('all');
                   setEmployeeFilter('all');
                   setTariffFilter('all');
                   setCustomerSearchTerm('');
-                  toast.success('All filters cleared');
+                  
+                  // Force table to show all rows by triggering a re-render
+                  setFilteredRows([]);
+                  
+                  toast.success('All filters cleared - showing all rows');
                 }}
-                className="rounded-full h-10 w-10"
+                className="rounded-full h-10 w-10 bg-red-50 hover:bg-red-100 border-red-300 text-red-600"
                 title="Clear All Filters"
                 disabled={searchTerm === '' && projectFilter === 'all' && customerFilter === 'all' && employeeFilter === 'all' && tariffFilter === 'all'}
               >
