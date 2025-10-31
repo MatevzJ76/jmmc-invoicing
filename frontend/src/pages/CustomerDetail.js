@@ -291,84 +291,93 @@ const CustomerDetail = () => {
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
           <h2 className="text-lg font-bold text-slate-800 mb-4">Invoicing Settings</h2>
           
-          <div className="grid grid-cols-2 gap-6">
-            {/* Company */}
-            <div>
-              <Label className="text-slate-700 mb-2 block">Company</Label>
-              <select
-                value={selectedCompanyId}
-                onChange={(e) => handleUpdateCompany(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="">No Company</option>
-                {companies.map((company) => (
-                  <option key={company.id} value={company.id}>
-                    {company.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Customer Data Section - Highlighted */}
+          <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-4 mb-6">
+            <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Customer Data
+            </h3>
             
-            {/* Invoicing Type */}
-            <div>
-              <Label className="text-slate-700 mb-2 block">Invoicing Type</Label>
-              <Select 
-                value={customer?.invoicingType || 'by-hours'}
-                onValueChange={(value) => handleFieldUpdate('invoicingType', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fixed-forfait">Fixed Forfait</SelectItem>
-                  <SelectItem value="by-hours">By Hours Spent</SelectItem>
-                  <SelectItem value="hybrid">Hybrid (Fixed + Extra)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Dynamic Pricing Fields based on Invoicing Type */}
-            {customer?.invoicingType === 'by-hours' && (
+            <div className="grid grid-cols-2 gap-6">
+              {/* Company */}
               <div>
-                <Label className="text-slate-700 mb-2 block">Hourly Rate (€)</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
-                  <Input
-                    type="text"
-                    value={isEditingPrice ? unitPriceDisplay : parseFloat(unitPrice || 0).toFixed(2).replace('.', ',')}
-                    onChange={(e) => {
-                      setIsEditingPrice(true);
-                      setUnitPriceDisplay(e.target.value);
-                    }}
-                    onFocus={(e) => {
-                      setIsEditingPrice(true);
-                      setUnitPriceDisplay(parseFloat(unitPrice || 0).toFixed(2).replace('.', ','));
-                      e.target.select();
-                    }}
-                    onBlur={(e) => {
-                      setIsEditingPrice(false);
-                      const value = e.target.value.replace(',', '.');
-                      const num = parseFloat(value);
-                      if (!isNaN(num)) {
-                        setUnitPrice(num.toFixed(2));
-                        setUnitPriceDisplay(num.toFixed(2).replace('.', ','));
-                        handleFieldUpdate('unitPrice', parseFloat(num.toFixed(2)));
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.target.blur();
-                      }
-                    }}
-                    className="pl-8"
-                    placeholder="0,00"
-                  />
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Linked to Article 000001 - Računovodstvo
-                </p>
+                <Label className="text-slate-700 mb-2 block font-medium">Company</Label>
+                <select
+                  value={selectedCompanyId}
+                  onChange={(e) => handleUpdateCompany(e.target.value)}
+                  className="w-full h-10 px-3 rounded-md border-2 border-blue-300 bg-white text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500"
+                >
+                  <option value="">No Company</option>
+                  {companies.map((company) => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
+              
+              {/* Invoicing Type */}
+              <div>
+                <Label className="text-slate-700 mb-2 block font-medium">Invoicing Type</Label>
+                <Select 
+                  value={customer?.invoicingType || 'by-hours'}
+                  onValueChange={(value) => handleFieldUpdate('invoicingType', value)}
+                >
+                  <SelectTrigger className="border-2 border-blue-300 focus:ring-blue-500 focus:border-blue-500">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed-forfait">Fixed Forfait</SelectItem>
+                    <SelectItem value="by-hours">By Hours Spent</SelectItem>
+                    <SelectItem value="hybrid">Hybrid (Fixed + Extra)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Dynamic Pricing Fields based on Invoicing Type */}
+              {customer?.invoicingType === 'by-hours' && (
+                <div>
+                  <Label className="text-slate-700 mb-2 block font-medium">Hourly Rate (€)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
+                    <Input
+                      type="text"
+                      value={isEditingPrice ? unitPriceDisplay : parseFloat(unitPrice || 0).toFixed(2).replace('.', ',')}
+                      onChange={(e) => {
+                        setIsEditingPrice(true);
+                        setUnitPriceDisplay(e.target.value);
+                      }}
+                      onFocus={(e) => {
+                        setIsEditingPrice(true);
+                        setUnitPriceDisplay(parseFloat(unitPrice || 0).toFixed(2).replace('.', ','));
+                        e.target.select();
+                      }}
+                      onBlur={(e) => {
+                        setIsEditingPrice(false);
+                        const value = e.target.value.replace(',', '.');
+                        const num = parseFloat(value);
+                        if (!isNaN(num)) {
+                          setUnitPrice(num.toFixed(2));
+                          setUnitPriceDisplay(num.toFixed(2).replace('.', ','));
+                          handleFieldUpdate('unitPrice', parseFloat(num.toFixed(2)));
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.target.blur();
+                        }
+                      }}
+                      className="pl-8 border-2 border-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500"
+                      placeholder="0,00"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Linked to Article 000001 - Računovodstvo
+                  </p>
+                </div>
+              )}
             
             {customer?.invoicingType === 'fixed-forfait' && (
               <div>
