@@ -286,8 +286,15 @@ const ImportVerification = () => {
       filtered = filtered.filter(row => row.tariff === tariffFilter);
     }
     
+    // Status filter (invoiced/uninvoiced)
+    if (statusFilter === 'invoiced') {
+      filtered = filtered.filter(row => row.invoiced === true);
+    } else if (statusFilter === 'uninvoiced') {
+      filtered = filtered.filter(row => row.invoiced !== true);
+    }
+    
     setFilteredRows(filtered);
-  }, [verificationData, searchTerm, projectFilter, customerFilter, employeeFilter, tariffFilter]);
+  }, [verificationData, searchTerm, projectFilter, customerFilter, employeeFilter, tariffFilter, statusFilter]);
 
   const handleProceedClick = () => {
     // Show confirmation dialog
