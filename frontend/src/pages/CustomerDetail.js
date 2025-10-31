@@ -337,7 +337,7 @@ const CustomerDetail = () => {
               </div>
               
               {/* Dynamic Pricing Fields based on Invoicing Type */}
-              {customer?.invoicingType === 'by-hours' && (
+              {(customer?.invoicingType === 'by-hours' || !customer?.invoicingType) && (
                 <div>
                   <Label className="text-slate-700 mb-2 block font-medium">Hourly Rate (€)</Label>
                   <div className="relative">
