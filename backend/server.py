@@ -667,6 +667,8 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
                 update_fields['hours'] = float(update_data['hours'])
             if 'aiCorrectionApplied' in update_data:
                 update_fields['aiCorrectionApplied'] = bool(update_data['aiCorrectionApplied'])
+            if 'manuallyEdited' in update_data:
+                update_fields['manuallyEdited'] = bool(update_data['manuallyEdited'])
             
             if update_fields:
                 await db.timeEntries.update_one(
