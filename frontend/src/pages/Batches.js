@@ -188,18 +188,26 @@ const Batches = () => {
         
         const timeEntries = entriesResponse.data;
         
-        // Convert time entries to verification format
-        const rows = timeEntries.map(entry => ({
-          project: entry.projectName || entry.tariff || '',  // Use projectName from backend
-          customer: entry.customerName || '',
-          date: entry.date || '',
-          tariff: entry.tariff || '',
-          employee: entry.employeeName || '',  // Fixed: was entry.employee
-          comments: entry.notes || '',
-          hours: entry.hours || 0,
-          value: entry.value || 0,
-          invoiceNumber: entry.invoiceNumber || ''
-        }));
+        // Convert time entries to verification format and track AI-corrected rows
+        const aiCorrectedRows = [];
+        const rows = timeEntries.map((entry, index) => {
+          // Track which rows have AI corrections applied
+          if (entry.aiCorrectionApplied) {
+            aiCorrectedRows.push(index);
+          }
+          
+          return {
+            project: entry.projectName || entry.tariff || '',  // Use projectName from backend
+            customer: entry.customerName || '',
+            date: entry.date || '',
+            tariff: entry.tariff || '',
+            employee: entry.employeeName || '',  // Fixed: was entry.employee
+            comments: entry.notes || '',
+            hours: entry.hours || 0,
+            value: entry.value || 0,
+            invoiceNumber: entry.invoiceNumber || ''
+          };
+        });
         
         // Navigate to verification page with batch data
         navigate('/import/verify', {
@@ -217,7 +225,8 @@ const Batches = () => {
               },
               rows,
               resuming: true,
-              batchId: batch.id
+              batchId: batch.id,
+              aiCorrectedRows  // Pass AI-corrected row indices
             }
           }
         });
