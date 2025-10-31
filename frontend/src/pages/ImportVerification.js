@@ -66,6 +66,11 @@ const ImportVerification = () => {
       setAiCorrectedRows(new Set(data.aiCorrectedRows));
     }
     
+    // Restore original values from data if available
+    if (data.originalValues) {
+      setOriginalValues(data.originalValues);
+    }
+    
     // Save to sessionStorage in case of page refresh
     if (location.state?.verificationData) {
       sessionStorage.setItem('importVerificationData', JSON.stringify(data));
