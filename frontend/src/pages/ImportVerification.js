@@ -1044,24 +1044,36 @@ const ImportVerification = () => {
               {/* Suggestions */}
               {aiResults[selectedRowIndex].suggestions && (
                 <div className="mb-6">
-                  <h4 className="text-sm font-bold text-slate-800 mb-3">AI Suggestions</h4>
+                  <h4 className="text-sm font-bold text-slate-800 mb-3">AI Suggestions (Editable)</h4>
                   <div className="space-y-3">
                     {aiResults[selectedRowIndex].suggestions.description && (
                       <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                         <p className="text-xs font-semibold text-blue-800 mb-2">Corrected Description:</p>
-                        <p className="text-sm text-blue-900">{aiResults[selectedRowIndex].suggestions.description}</p>
+                        <Textarea
+                          value={editableSuggestions.description}
+                          onChange={(e) => setEditableSuggestions({ ...editableSuggestions, description: e.target.value })}
+                          className="text-sm bg-white border-blue-300 focus:border-blue-500 min-h-[80px]"
+                          placeholder="Edit the corrected description..."
+                        />
                       </div>
                     )}
                     
                     {aiResults[selectedRowIndex].suggestions.hours !== null && aiResults[selectedRowIndex].suggestions.hours !== undefined && (
                       <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                         <p className="text-xs font-semibold text-green-800 mb-2">Suggested Hours:</p>
-                        <p className="text-sm text-green-900">
-                          {aiResults[selectedRowIndex].suggestions.hours} hours 
-                          <span className="text-xs text-green-700 ml-2">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={editableSuggestions.hours}
+                            onChange={(e) => setEditableSuggestions({ ...editableSuggestions, hours: parseFloat(e.target.value) })}
+                            className="text-sm bg-white border-green-300 focus:border-green-500 w-32"
+                            placeholder="Hours"
+                          />
+                          <span className="text-xs text-green-700">
                             (current: {verificationData.rows[selectedRowIndex].hours})
                           </span>
-                        </p>
+                        </div>
                       </div>
                     )}
                   </div>
