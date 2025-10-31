@@ -1344,7 +1344,9 @@ const ImportVerification = () => {
 
               {/* Current/Editable Values */}
               <div className="mb-6">
-                <h4 className="text-sm font-bold text-slate-800 mb-3">Corrected Values (Editable)</h4>
+                <h4 className="text-sm font-bold text-slate-800 mb-3">
+                  {originalValues[editingRowIndex] ? 'Corrected Values (Editable)' : 'Current Values (Editable)'}
+                </h4>
                 <div className="space-y-3">
                   <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                     <p className="text-xs font-semibold text-blue-800 mb-2">Description:</p>
