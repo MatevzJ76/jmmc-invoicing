@@ -1596,106 +1596,6 @@ class TestArticlesAPI:
             traceback.print_exc()
             return False
     
-                
-                # Get sample articles to verify structure
-                articles = await db.articles.find({}).limit(3).to_list(3)
-                
-                print(f"\nVerifying article structure in database...")
-                required_fields = ["code", "description", "unitMeasure", "priceWithoutVAT", "vatPercentage", "tariffCode"]
-                
-                for idx, article in enumerate(articles):
-                    print(f"\n  Article {idx + 1} from DB:")
-                    print(f"    Code: {article.get('code')}")
-                    print(f"    Description: {article.get('description')}")
-                    print(f"    Unit Measure: {article.get('unitMeasure')}")
-                    print(f"    Price Without VAT: {article.get('priceWithoutVAT')}")
-                    print(f"    VAT Percentage: {article.get('vatPercentage')}")
-                    print(f"    Tariff Code: {article.get('tariffCode')}")
-                    
-                    missing_fields = []
-                    for field in required_fields:
-                        if field not in article:
-                            missing_fields.append(field)
-                    
-                    if missing_fields:
-                        print(f"    ❌ Missing fields: {missing_fields}")
-                        client.close()
-                        return False
-                
-                print(f"\n✅ All articles in database have correct structure")
-                
-                client.close()
-                return True
-            
-            # Run async function
-            result = asyncio.run(check_db())
-            return result
-            
-        except Exception as e:
-            print(f"❌ Error checking database: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return False
-    
-    def run_all_tests(self):
-        """Run all articles API tests"""
-        print("=" * 80)
-        print("ARTICLES API - BACKEND TESTS")
-        print("=" * 80)
-        print("\nTesting Articles API endpoints:")
-        print("  1. GET /api/articles - List all articles")
-        print("  2. Verify database has 45 articles")
-        print("=" * 80)
-        
-        results = {}
-        
-        # 1. Login
-        if not self.login():
-            print("\n❌ CRITICAL: Login failed. Cannot proceed with tests.")
-            return
-        
-        # 2. Test GET /api/articles
-        results["Test 1: GET /api/articles"] = self.test_get_articles()
-        
-        # 3. Test database articles
-        results["Test 2: Verify database has articles"] = self.test_database_articles()
-        
-        # Summary
-        print("\n" + "=" * 80)
-        print("TEST SUMMARY")
-        print("=" * 80)
-        
-        passed = sum(1 for v in results.values() if v)
-        total = len(results)
-        
-        for test_name, result in results.items():
-            status = "✅ PASS" if result else "❌ FAIL"
-            print(f"{status} - {test_name}")
-        
-        print(f"\nTotal: {passed}/{total} tests passed")
-        
-        if passed == total:
-            print("\n🎉 ALL TESTS PASSED!")
-            print("\n✅ Articles API is working correctly:")
-            print("  - GET /api/articles returns 45 articles ✅")
-            print("  - Each article has all required fields ✅")
-            print("  - No _id field in response ✅")
-            print("  - Database has 45 articles ✅")
-        else:
-            print(f"\n⚠️  {total - passed} test(s) failed")
-            print("\n🔍 Debugging Hints:")
-            print("  1. Check if articles collection exists in database")
-            print("  2. Verify articles were seeded correctly")
-            print("  3. Check GET /api/articles endpoint implementation")
-            print("  4. Verify authentication is working")
-
-
-# Commented out - using main block at end of file
-# if __name__ == "__main__":
-#     # Run Articles API tests
-#     tester = TestArticlesAPI()
-#     tester.run_all_tests()
-
 
 
 class TestFilteredInvoiceComposition:
@@ -2169,6 +2069,132 @@ class TestFilteredInvoiceComposition:
             print("  3. Check if invoices are created only for specified entry IDs")
             print("  4. Verify invoice totals are calculated correctly")
             print("  5. Check if batch status is updated after composition")
+
+    def test_database_articles(self) -> bool:
+        """Test 2: Verify database has 45 articles"""
+        print("\n=== Test 2: Verify database has articles ===")
+        try:
+            # Connect to MongoDB directly
+            from motor.motor_asyncio import AsyncIOMotorClient
+            import asyncio
+            import os
+            
+            async def check_db():
+                mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+                db_name = os.environ.get('DB_NAME', 'test_database')
+                
+                client = AsyncIOMotorClient(mongo_url)
+                db = client[db_name]
+                
+                # Count articles in database
+                article_count = await db.articles.count_documents({})
+                print(f"Database article count: {article_count}")
+                
+                if article_count != 45:
+                    print(f"❌ Expected 45 articles in database, got {article_count}")
+                    client.close()
+                    return False
+                
+                print(f"✅ Database has correct article count: 45 articles")
+                
+                # Get sample articles to verify structure
+                articles = await db.articles.find({}).limit(3).to_list(3)
+                
+                print(f"\nVerifying article structure in database...")
+                required_fields = ["code", "description", "unitMeasure", "priceWithoutVAT", "vatPercentage", "tariffCode"]
+                
+                for idx, article in enumerate(articles):
+                    print(f"\n  Article {idx + 1} from DB:")
+                    print(f"    Code: {article.get('code')}")
+                    print(f"    Description: {article.get('description')}")
+                    print(f"    Unit Measure: {article.get('unitMeasure')}")
+                    print(f"    Price Without VAT: {article.get('priceWithoutVAT')}")
+                    print(f"    VAT Percentage: {article.get('vatPercentage')}")
+                    print(f"    Tariff Code: {article.get('tariffCode')}")
+                    
+                    missing_fields = []
+                    for field in required_fields:
+                        if field not in article:
+                            missing_fields.append(field)
+                    
+                    if missing_fields:
+                        print(f"    ❌ Missing fields: {missing_fields}")
+                        client.close()
+                        return False
+                
+                print(f"\n✅ All articles in database have correct structure")
+                
+                client.close()
+                return True
+            
+            # Run async function
+            result = asyncio.run(check_db())
+            return result
+            
+        except Exception as e:
+            print(f"❌ Error checking database: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def run_all_tests(self):
+        """Run all articles API tests"""
+        print("=" * 80)
+        print("ARTICLES API - BACKEND TESTS")
+        print("=" * 80)
+        print("\nTesting Articles API endpoints:")
+        print("  1. GET /api/articles - List all articles")
+        print("  2. Verify database has 45 articles")
+        print("=" * 80)
+        
+        results = {}
+        
+        # 1. Login
+        if not self.login():
+            print("\n❌ CRITICAL: Login failed. Cannot proceed with tests.")
+            return
+        
+        # 2. Test GET /api/articles
+        results["Test 1: GET /api/articles"] = self.test_get_articles()
+        
+        # 3. Test database articles
+        results["Test 2: Verify database has articles"] = self.test_database_articles()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for v in results.values() if v)
+        total = len(results)
+        
+        for test_name, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            print(f"{status} - {test_name}")
+        
+        print(f"\nTotal: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED!")
+            print("\n✅ Articles API is working correctly:")
+            print("  - GET /api/articles returns 45 articles ✅")
+            print("  - Each article has all required fields ✅")
+            print("  - No _id field in response ✅")
+            print("  - Database has 45 articles ✅")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed")
+            print("\n🔍 Debugging Hints:")
+            print("  1. Check if articles collection exists in database")
+            print("  2. Verify articles were seeded correctly")
+            print("  3. Check GET /api/articles endpoint implementation")
+            print("  4. Verify authentication is working")
+
+
+# Commented out - using main block at end of file
+# if __name__ == "__main__":
+#     # Run Articles API tests
+#     tester = TestArticlesAPI()
+#     tester.run_all_tests()
 
 
 class TestEracuniIntegration:
