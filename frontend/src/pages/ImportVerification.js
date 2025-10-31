@@ -986,9 +986,20 @@ const ImportVerification = () => {
                 </div>
                 <div className="max-h-[300px] overflow-y-auto">
                   <SelectItem value="all">All Customers</SelectItem>
-                  {uniqueCustomers.map(customer => (
-                    <SelectItem key={customer} value={customer}>{customer}</SelectItem>
-                  ))}
+                  {uniqueCustomers
+                    .filter(customer => 
+                      !customerSearchTerm || customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                    )
+                    .map(customer => (
+                      <SelectItem key={customer} value={customer}>{customer}</SelectItem>
+                    ))}
+                  {customerSearchTerm && uniqueCustomers.filter(customer => 
+                    customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                  ).length === 0 && (
+                    <div className="p-2 text-sm text-slate-500 text-center">
+                      No customers found
+                    </div>
+                  )}
                 </div>
               </SelectContent>
             </Select>
