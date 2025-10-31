@@ -680,6 +680,8 @@ const ImportVerification = () => {
       toast.success(`✅ Import Complete! Created ${importResults.invoicesCreated} invoices from ${importResults.rowsImported} rows`);
       
       // DON'T clear sessionStorage - keep data accessible
+      // Users can still return to Import Verification page to see all rows
+      
       // DON'T navigate away - stay on this page
       
     } catch (error) {
