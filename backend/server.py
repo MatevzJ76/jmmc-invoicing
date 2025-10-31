@@ -146,6 +146,13 @@ class Article(BaseModel):
     vatPercentage: float
     tariffCode: str = ""  # For future mapping to tariff codes
 
+class Employee(BaseModel):
+    employee_name: str
+    cost: Optional[float] = None  # Can be null/empty
+    archived: bool = False
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
 # ============ AUTH HELPERS ============
 def create_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
