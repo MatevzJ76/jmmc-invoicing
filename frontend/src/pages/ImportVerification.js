@@ -39,6 +39,7 @@ const ImportVerification = () => {
   const [cancelVerification, setCancelVerification] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [aiCorrectedRows, setAiCorrectedRows] = useState(new Set()); // Track rows with AI corrections applied
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
