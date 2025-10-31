@@ -331,17 +331,21 @@ const ImportVerification = () => {
       updatedRows[selectedRowIndex].hours = suggestions.hours;
     }
     
+    // Mark this row as AI-corrected
+    const newAiCorrectedRows = new Set(aiCorrectedRows);
+    newAiCorrectedRows.add(selectedRowIndex);
+    setAiCorrectedRows(newAiCorrectedRows);
+    
     // Update verification data
-    setVerificationData({
+    const updatedData = {
       ...verificationData,
-      rows: updatedRows
-    });
+      rows: updatedRows,
+      aiCorrectedRows: Array.from(newAiCorrectedRows)
+    };
+    setVerificationData(updatedData);
     
     // Update sessionStorage
-    sessionStorage.setItem('importVerificationData', JSON.stringify({
-      ...verificationData,
-      rows: updatedRows
-    }));
+    sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
     
     // Mark that changes have been made
     setHasChanges(true);
@@ -351,7 +355,7 @@ const ImportVerification = () => {
     delete newResults[selectedRowIndex];
     setAiResults(newResults);
     
-    toast.success('Changes applied successfully');
+    toast.success('AI corrections applied - row marked with 🤖');
     setShowAiModal(false);
     setSelectedRowIndex(null);
   };
