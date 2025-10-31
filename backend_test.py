@@ -2190,10 +2190,11 @@ class TestFilteredInvoiceComposition:
             print("  4. Verify authentication is working")
 
 
-if __name__ == "__main__":
-    # Run Articles API tests
-    tester = TestArticlesAPI()
-    tester.run_all_tests()
+# Commented out - using main block at end of file
+# if __name__ == "__main__":
+#     # Run Articles API tests
+#     tester = TestArticlesAPI()
+#     tester.run_all_tests()
 
 
 class TestEracuniIntegration:
