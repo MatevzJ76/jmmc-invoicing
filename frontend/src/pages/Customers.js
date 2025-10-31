@@ -45,6 +45,9 @@ const Customers = () => {
   const [creating, setCreating] = useState(false);
   const [sortColumn, setSortColumn] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
+  const [showRefreshSecondConfirm, setShowRefreshSecondConfirm] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadCompanies();
