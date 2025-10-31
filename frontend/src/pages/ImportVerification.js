@@ -594,29 +594,41 @@ const ImportVerification = () => {
         uniqueCustomers: 0
       };
       
-      // Create the batch and import data (this is the ACTUAL import, not just save progress)
-      const formData = new FormData();
-      
-      // Re-create the file from the stored data
-      const uint8Array = new Uint8Array(verificationData.fileData);
-      const blob = new Blob([uint8Array], { type: verificationData.fileType });
-      const file = new File([blob], verificationData.fileName, { type: verificationData.fileType });
-      
-      formData.append('file', file);
-      formData.append('title', verificationData.metadata.title);
-      formData.append('invoiceDate', verificationData.metadata.invoiceDate);
-      formData.append('periodFrom', verificationData.metadata.periodFrom);
-      formData.append('periodTo', verificationData.metadata.periodTo);
-      formData.append('dueDate', verificationData.metadata.dueDate);
-      // DON'T send saveAsProgress - we want full import now
-
-      // Import data (this creates time entries)
-      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+      // Prepare rows data with correction flags
+      const rowsWithFlags = rowsToImport.map((row, displayIndex) => {
+        // Find original index to get correction flags
+        const originalIndex = verificationData.rows.findIndex(r => 
+          r.customer === row.customer && 
+          r.employee === row.employee && 
+          r.comments === row.comments &&
+          r.date === row.date
+        );
+        
+        return {
+          ...row,
+          aiCorrectionApplied: originalIndex >= 0 ? aiCorrectedRows.has(originalIndex) : false,
+          manuallyEdited: originalIndex >= 0 ? manuallyEditedRows.has(originalIndex) : false,
+          originalNotes: originalIndex >= 0 && originalValues[originalIndex] ? originalValues[originalIndex].comments : null,
+          originalHours: originalIndex >= 0 && originalValues[originalIndex] ? originalValues[originalIndex].hours : null
+        };
       });
+      
+      // Create batch and time entries using the new endpoint
+      const importPayload = {
+        title: verificationData.metadata.title,
+        invoiceDate: verificationData.metadata.invoiceDate,
+        periodFrom: verificationData.metadata.periodFrom,
+        periodTo: verificationData.metadata.periodTo,
+        dueDate: verificationData.metadata.dueDate,
+        filename: verificationData.fileName,
+        rows: rowsWithFlags
+      };
+      
+      const response = await axios.post(
+        `${BACKEND_URL}/api/imports/from-verification`,
+        importPayload,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
       
       // Compose invoices
       const composeResponse = await axios.post(
