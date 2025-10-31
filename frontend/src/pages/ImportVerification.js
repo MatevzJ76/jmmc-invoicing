@@ -965,19 +965,27 @@ const ImportVerification = () => {
                     return (
                       <tr 
                         key={displayIndex} 
-                        className={`hover:bg-slate-100 transition-colors ${
-                          isFlagged ? 'bg-amber-50 hover:bg-amber-100 cursor-pointer border-l-4 border-amber-500' : ''
-                        } ${
-                          isAiCorrected && !isFlagged ? 'cursor-pointer hover:bg-blue-50' : ''
+                        className={`transition-colors cursor-pointer ${
+                          isFlagged 
+                            ? 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500' 
+                            : 'hover:bg-blue-50'
                         }`}
                         onClick={() => {
                           if (isFlagged) {
+                            // Open AI Evaluation modal for flagged rows
                             handleRowClick(originalIndex);
-                          } else if (isAiCorrected) {
+                          } else {
+                            // Open Edit modal for all other rows (corrected or not)
                             handleCorrectedRowClick(originalIndex);
                           }
                         }}
-                        title={isFlagged ? 'Click to see AI evaluation and suggestions' : isAiCorrected ? 'Click to view and edit corrected values' : ''}
+                        title={
+                          isFlagged 
+                            ? 'Click to see AI evaluation and suggestions' 
+                            : isAiCorrected 
+                              ? 'Click to view and edit corrected values' 
+                              : 'Click to edit this row'
+                        }
                       >
                         <td className="px-3 py-2 text-slate-600">
                           {displayIndex + 1}
