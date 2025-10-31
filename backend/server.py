@@ -488,11 +488,6 @@ async def import_xlsx(
         }
         await db.importBatches.insert_one(batch_doc)
         
-        # If saving as progress, DON'T create time entries yet
-        # They will be created when user clicks "Proceed to Import"
-        if saveAsProgress == "true":
-            return {"batchId": batch_id, "rowCount": 0, "message": "Batch saved as 'in progress'. No time entries created yet."}
-        
         # Parse rows - Stranka (customer) appears on each data row, not as section headers
         entries = []
         current_project = "General"
