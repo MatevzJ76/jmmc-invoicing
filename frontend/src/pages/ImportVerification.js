@@ -325,17 +325,16 @@ const ImportVerification = () => {
   const handleApplySuggestions = () => {
     if (selectedRowIndex === null || !aiResults[selectedRowIndex]) return;
     
-    const suggestions = aiResults[selectedRowIndex].suggestions || {};
     const updatedRows = [...verificationData.rows];
     
-    // Apply description correction if available
-    if (suggestions.description) {
-      updatedRows[selectedRowIndex].comments = suggestions.description;
+    // Apply description correction if available (use edited value)
+    if (editableSuggestions.description && editableSuggestions.description.trim()) {
+      updatedRows[selectedRowIndex].comments = editableSuggestions.description.trim();
     }
     
-    // Apply hours correction if available
-    if (suggestions.hours !== null && suggestions.hours !== undefined) {
-      updatedRows[selectedRowIndex].hours = suggestions.hours;
+    // Apply hours correction if available (use edited value)
+    if (editableSuggestions.hours !== null && editableSuggestions.hours !== undefined) {
+      updatedRows[selectedRowIndex].hours = editableSuggestions.hours;
     }
     
     // Mark this row as AI-corrected
@@ -365,6 +364,7 @@ const ImportVerification = () => {
     toast.success('AI corrections applied - row marked with 🤖');
     setShowAiModal(false);
     setSelectedRowIndex(null);
+    setEditableSuggestions({ description: '', hours: null }); // Reset editable suggestions
   };
 
   const handleSaveProgress = async () => {
