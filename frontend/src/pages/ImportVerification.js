@@ -1078,7 +1078,6 @@ const ImportVerification = () => {
                   setCustomerFilter('all');
                   setEmployeeFilter('all');
                   setTariffFilter('all');
-                  setCustomerSearchTerm('');
                   
                   // Force table to show all rows by triggering a re-render
                   setFilteredRows([]);
