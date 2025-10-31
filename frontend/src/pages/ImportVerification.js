@@ -985,7 +985,7 @@ const ImportVerification = () => {
                 <>
                   {/* Backdrop - Click to close */}
                   <div 
-                    className="fixed inset-0 z-40" 
+                    className="fixed inset-0 z-[55]" 
                     onClick={() => setCustomerDropdownOpen(false)}
                   />
                   
