@@ -971,14 +971,10 @@ const ImportVerification = () => {
                     const value = e.target.value;
                     if (value === '') {
                       setCustomerFilter('all');
+                      setCustomerDropdownOpen(true); // Keep open when clearing
                     } else {
-                      // Find exact match or keep typing
-                      const exactMatch = uniqueCustomers.find(c => c.toLowerCase() === value.toLowerCase());
-                      if (exactMatch) {
-                        setCustomerFilter(exactMatch);
-                      } else {
-                        setCustomerFilter(value);
-                      }
+                      setCustomerFilter(value);
+                      setCustomerDropdownOpen(true); // Keep open while typing
                     }
                   }}
                   onFocus={() => setCustomerDropdownOpen(true)}
@@ -986,11 +982,12 @@ const ImportVerification = () => {
                 />
                 {customerFilter !== 'all' && customerFilter !== '' && (
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setCustomerFilter('all');
                       setCustomerDropdownOpen(false);
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-600 z-10"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1007,7 +1004,7 @@ const ImportVerification = () => {
                   onClick={() => setCustomerDropdownOpen(false)}
                 />
                 
-                {/* Suggestions Panel - Rendered at BODY level via Portal */}
+                {/* Suggestions Panel - ALWAYS SHOWS ALL CUSTOMERS */}
                 <div 
                   className="fixed z-[9999] bg-white border-2 border-blue-500 rounded-md shadow-2xl max-h-[350px] overflow-y-auto"
                   style={{
@@ -1021,30 +1018,26 @@ const ImportVerification = () => {
                       setCustomerFilter('all');
                       setCustomerDropdownOpen(false);
                     }}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 font-medium border-b sticky top-0 bg-white"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 font-medium border-b sticky top-0 bg-white z-10"
                   >
-                    All Customers (Show all {verificationData.rows.length} rows)
+                    ✓ All Customers (Show all {verificationData.rows.length} rows)
                   </button>
                   
-                  {uniqueCustomers
-                    .filter(customer => {
-                      const filterValue = customerFilter === 'all' ? '' : customerFilter;
-                      return filterValue === '' || customer.toLowerCase().includes(filterValue.toLowerCase());
-                    })
-                    .map(customer => (
-                      <button
-                        key={customer}
-                        onClick={() => {
-                          setCustomerFilter(customer);
-                          setCustomerDropdownOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-50 ${
-                          customerFilter === customer ? 'bg-blue-100 font-medium' : ''
-                        }`}
-                      >
-                        {customer}
-                      </button>
-                    ))}
+                  {/* ALWAYS show ALL customers - no filtering based on input value */}
+                  {uniqueCustomers.map(customer => (
+                    <button
+                      key={customer}
+                      onClick={() => {
+                        setCustomerFilter(customer);
+                        setCustomerDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-50 ${
+                        customerFilter === customer ? 'bg-blue-100 font-medium' : ''
+                      }`}
+                    >
+                      {customer}
+                    </button>
+                  ))}
                 </div>
               </>,
               document.body
