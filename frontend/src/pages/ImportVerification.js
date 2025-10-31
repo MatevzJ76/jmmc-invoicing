@@ -1271,21 +1271,66 @@ const ImportVerification = () => {
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle className="w-8 h-8 text-amber-600" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-2">Confirm Import</h3>
               <p className="text-slate-600">
-                Have you reviewed and compared the import file data with the verification table displayed below?
+                {displayRows.length !== verificationData?.rows.length 
+                  ? 'You are about to import FILTERED rows only' 
+                  : 'You are about to import ALL rows'}
               </p>
+            </div>
+            
+            {/* Statistics Section */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 mb-4 border border-blue-200">
+              <h4 className="text-sm font-semibold text-slate-800 mb-3">Import Summary</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-xs text-slate-600 mb-1">Rows to Import</p>
+                  <p className="text-2xl font-bold text-blue-600">{displayRows.length}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-xs text-slate-600 mb-1">Total Hours</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {displayRows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(2)}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-xs text-slate-600 mb-1">Total Value</p>
+                  <p className="text-2xl font-bold text-emerald-600">
+                    €{displayRows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0).toFixed(2)}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-xs text-slate-600 mb-1">Unique Customers</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {new Set(displayRows.map(r => r.customer)).size}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Filter Info */}
+              {displayRows.length !== verificationData?.rows.length && (
+                <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <p className="text-xs font-semibold text-amber-800 mb-1">Active Filters:</p>
+                  <div className="text-xs text-amber-700 space-y-1">
+                    {customerFilter !== 'all' && <div>• Customer: <span className="font-semibold">{customerFilter}</span></div>}
+                    {projectFilter !== 'all' && <div>• Project: <span className="font-semibold">{projectFilter}</span></div>}
+                    {employeeFilter !== 'all' && <div>• Employee: <span className="font-semibold">{employeeFilter}</span></div>}
+                    {tariffFilter !== 'all' && <div>• Tariff: <span className="font-semibold">{tariffFilter}</span></div>}
+                    {searchTerm && <div>• Search: <span className="font-semibold">"{searchTerm}"</span></div>}
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="bg-blue-50 rounded-lg p-4 mb-6">
               <p className="text-sm text-blue-800">
                 <strong>Important:</strong> Please verify that all data is correct before proceeding. 
-                This action will create {verificationData?.rows.length} time entries and generate invoices.
+                This action will create {displayRows.length} time entries and generate invoices.
               </p>
             </div>
             
