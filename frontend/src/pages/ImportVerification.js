@@ -604,12 +604,23 @@ const ImportVerification = () => {
           r.date === row.date
         );
         
+        // Convert European format numbers to standard float format
+        const parseEuropeanNumber = (value) => {
+          if (typeof value === 'number') return value;
+          if (!value) return 0;
+          // Remove thousand separators (.) and replace decimal comma (,) with dot (.)
+          const cleaned = String(value).replace(/\./g, '').replace(',', '.');
+          return parseFloat(cleaned) || 0;
+        };
+        
         return {
           ...row,
+          hours: parseEuropeanNumber(row.hours),
+          value: parseEuropeanNumber(row.value),
           aiCorrectionApplied: originalIndex >= 0 ? aiCorrectedRows.has(originalIndex) : false,
           manuallyEdited: originalIndex >= 0 ? manuallyEditedRows.has(originalIndex) : false,
           originalNotes: originalIndex >= 0 && originalValues[originalIndex] ? originalValues[originalIndex].comments : null,
-          originalHours: originalIndex >= 0 && originalValues[originalIndex] ? originalValues[originalIndex].hours : null
+          originalHours: originalIndex >= 0 && originalValues[originalIndex] ? parseEuropeanNumber(originalValues[originalIndex].hours) : null
         };
       });
       
