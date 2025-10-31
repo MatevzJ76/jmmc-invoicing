@@ -1265,6 +1265,113 @@ const ImportVerification = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Corrected Values Modal */}
+      {showEditModal && editingRowIndex !== null && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🤖</span>
+                  <h3 className="text-xl font-bold">Edit Corrected Values</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingRowIndex(null);
+                    setEditableSuggestions({ description: '', hours: null });
+                  }}
+                  className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-200px)]">
+              {/* Row Information */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-800 mb-3">Entry Details</h4>
+                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-2 text-sm">
+                  <div><span className="font-semibold">Employee:</span> {verificationData.rows[editingRowIndex].employee}</div>
+                  <div><span className="font-semibold">Customer:</span> {verificationData.rows[editingRowIndex].customer}</div>
+                  <div><span className="font-semibold">Date:</span> {verificationData.rows[editingRowIndex].date}</div>
+                </div>
+              </div>
+
+              {/* Original Values (if available) */}
+              {originalValues[editingRowIndex] && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-slate-800 mb-3">Original Values</h4>
+                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-3">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-600 mb-1">Original Description:</p>
+                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].comments}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-600 mb-1">Original Hours:</p>
+                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].hours}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Current/Editable Values */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-800 mb-3">Corrected Values (Editable)</h4>
+                <div className="space-y-3">
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <p className="text-xs font-semibold text-blue-800 mb-2">Description:</p>
+                    <Textarea
+                      value={editableSuggestions.description}
+                      onChange={(e) => setEditableSuggestions({ ...editableSuggestions, description: e.target.value })}
+                      className="text-sm bg-white border-blue-300 focus:border-blue-500 min-h-[80px]"
+                      placeholder="Edit the description..."
+                    />
+                  </div>
+                  
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <p className="text-xs font-semibold text-green-800 mb-2">Hours:</p>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={editableSuggestions.hours}
+                      onChange={(e) => setEditableSuggestions({ ...editableSuggestions, hours: parseFloat(e.target.value) })}
+                      className="text-sm bg-white border-green-300 focus:border-green-500 w-32"
+                      placeholder="Hours"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="p-6 border-t border-slate-200 bg-slate-50">
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingRowIndex(null);
+                    setEditableSuggestions({ description: '', hours: null });
+                  }}
+                  className="flex-1 rounded-full"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleApplyEdits}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 rounded-full"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
