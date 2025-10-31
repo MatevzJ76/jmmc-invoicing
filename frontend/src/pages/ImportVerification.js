@@ -430,9 +430,18 @@ const ImportVerification = () => {
       updatedRows[editingRowIndex].hours = editableSuggestions.hours;
     }
     
-    // Mark this row as manually corrected (add robot icon)
+    // Mark this row as manually edited (add human icon)
+    // If it was already AI-corrected, keep it as AI-corrected
+    const newManuallyEditedRows = new Set(manuallyEditedRows);
     const newAiCorrectedRows = new Set(aiCorrectedRows);
-    newAiCorrectedRows.add(editingRowIndex);
+    
+    if (!aiCorrectedRows.has(editingRowIndex)) {
+      // First edit is manual, so mark as manual
+      newManuallyEditedRows.add(editingRowIndex);
+    }
+    // If already AI-corrected, don't change the icon
+    
+    setManuallyEditedRows(newManuallyEditedRows);
     setAiCorrectedRows(newAiCorrectedRows);
     
     // Update verification data
@@ -440,6 +449,7 @@ const ImportVerification = () => {
       ...verificationData,
       rows: updatedRows,
       aiCorrectedRows: Array.from(newAiCorrectedRows),
+      manuallyEditedRows: Array.from(newManuallyEditedRows),
       originalValues: newOriginalValues
     };
     setVerificationData(updatedData);
@@ -450,7 +460,8 @@ const ImportVerification = () => {
     // Mark that changes have been made
     setHasChanges(true);
     
-    toast.success('Changes saved - row marked with 🤖');
+    const iconEmoji = !aiCorrectedRows.has(editingRowIndex) ? '✍️' : '🤖';
+    toast.success(`Changes saved - row marked with ${iconEmoji}`);
     setShowEditModal(false);
     setEditingRowIndex(null);
     setEditableSuggestions({ description: '', hours: null });
