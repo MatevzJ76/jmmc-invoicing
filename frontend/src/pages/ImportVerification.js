@@ -646,19 +646,47 @@ const ImportVerification = () => {
         uniqueCustomers: 0
       };
       
-      // If we have a batch already (resuming), just compose invoices
+      // If we have a batch already (resuming), compose invoices for filtered rows only
       if (verificationData.batchId) {
-        toast.info('Creating invoices from selected rows...');
+        toast.info(`Creating invoices from ${rowsToImport.length} selected rows...`);
         
-        // Compose invoices for the existing batch
+        // Fetch all time entries to get their IDs
+        const entriesResponse = await axios.get(
+          `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries`,
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        const allTimeEntries = entriesResponse.data;
+        
+        // Match displayed rows to time entries and get their IDs
+        const selectedEntryIds = [];
+        rowsToImport.forEach(row => {
+          // Find matching time entry
+          const matchingEntry = allTimeEntries.find(entry =>
+            entry.customerName === row.customer &&
+            entry.employeeName === row.employee &&
+            entry.notes === row.comments &&
+            entry.date === row.date &&
+            entry.hours === parseFloat(row.hours)
+          );
+          if (matchingEntry) {
+            selectedEntryIds.push(matchingEntry.id);
+          }
+        });
+        
+        console.log(`Composing invoices for ${selectedEntryIds.length} filtered entries`);
+        
+        // Compose invoices ONLY for filtered entries
         const composeResponse = await axios.post(
-          `${BACKEND_URL}/api/invoices/compose?batchId=${verificationData.batchId}`,
-          {},
+          `${BACKEND_URL}/api/invoices/compose-filtered`,
+          {
+            batchId: verificationData.batchId,
+            entryIds: selectedEntryIds
+          },
           { headers: { Authorization: `Bearer ${token}` }}
         );
 
         importResults = {
-          rowsImported: rowsToImport.length,
+          rowsImported: composeResponse.data.entriesProcessed,
           invoicesCreated: composeResponse.data.invoiceIds.length,
           batchId: verificationData.batchId,
           totalHours: rowsToImport.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0),
