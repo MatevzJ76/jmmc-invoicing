@@ -458,12 +458,26 @@ const BatchDetail = () => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
               <Button 
-                onClick={() => navigate('/batches')} 
+                onClick={() => {
+                  // Navigate back to Import Verification if batch is in progress or has a batchId
+                  if (batch.id) {
+                    navigate('/import/verify', {
+                      state: {
+                        verificationData: {
+                          batchId: batch.id,
+                          resuming: true
+                        }
+                      }
+                    });
+                  } else {
+                    navigate('/batches');
+                  }
+                }}
                 className="rounded-full bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black text-white shadow-md hover:shadow-lg transition-all duration-200 font-medium px-5"
                 size="sm"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Batches
+                Back to Import Verification
               </Button>
             </div>
             <div className="flex items-center gap-2">
