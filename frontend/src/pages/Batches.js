@@ -190,6 +190,7 @@ const Batches = () => {
         
         // Convert time entries to verification format and track AI-corrected rows and original values
         const aiCorrectedRows = [];
+        const manuallyEditedRows = [];
         const originalValues = {};
         const rows = timeEntries.map((entry, index) => {
           // Track which rows have AI corrections applied
@@ -198,6 +199,19 @@ const Batches = () => {
             
             // Store original values if they exist
             if (entry.originalNotes !== null || entry.originalHours !== null) {
+              originalValues[index] = {
+                comments: entry.originalNotes || '',
+                hours: entry.originalHours || 0
+              };
+            }
+          }
+          
+          // Track which rows have manual edits
+          if (entry.manuallyEdited) {
+            manuallyEditedRows.push(index);
+            
+            // Store original values if they exist and not already stored
+            if (!originalValues[index] && (entry.originalNotes !== null || entry.originalHours !== null)) {
               originalValues[index] = {
                 comments: entry.originalNotes || '',
                 hours: entry.originalHours || 0
