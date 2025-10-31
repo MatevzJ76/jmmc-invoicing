@@ -138,6 +138,98 @@ const ImportVerification = () => {
     }
   };
   
+  const loadBatchDataForVerification = async (batchId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      // Fetch batch details
+      const batchResponse = await axios.get(`${BACKEND_URL}/api/batches/${batchId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const batchData = batchResponse.data;
+      
+      // Fetch time entries
+      const entriesResponse = await axios.get(`${BACKEND_URL}/api/batches/${batchId}/time-entries`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const timeEntries = entriesResponse.data;
+      
+      // Convert time entries to verification format and track corrections
+      const aiCorrectedRowsArray = [];
+      const manuallyEditedRowsArray = [];
+      const originalValuesObj = {};
+      
+      const rows = timeEntries.map((entry, index) => {
+        // Track AI corrections
+        if (entry.aiCorrectionApplied) {
+          aiCorrectedRowsArray.push(index);
+          if (entry.originalNotes !== null || entry.originalHours !== null) {
+            originalValuesObj[index] = {
+              comments: entry.originalNotes || '',
+              hours: entry.originalHours || 0
+            };
+          }
+        }
+        
+        // Track manual edits
+        if (entry.manuallyEdited) {
+          manuallyEditedRowsArray.push(index);
+          if (!originalValuesObj[index] && (entry.originalNotes !== null || entry.originalHours !== null)) {
+            originalValuesObj[index] = {
+              comments: entry.originalNotes || '',
+              hours: entry.originalHours || 0
+            };
+          }
+        }
+        
+        return {
+          project: entry.projectName || entry.tariff || '',
+          customer: entry.customerName || '',
+          date: entry.date || '',
+          tariff: entry.tariff || '',
+          employee: entry.employeeName || '',
+          comments: entry.notes || '',
+          hours: entry.hours || 0,
+          value: entry.value || 0,
+          invoiceNumber: entry.invoiceNumber || ''
+        };
+      });
+      
+      // Build complete verification data
+      const fullData = {
+        fileName: batchData.filename,
+        fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        fileData: [],
+        metadata: {
+          title: batchData.title,
+          invoiceDate: batchData.invoiceDate,
+          periodFrom: batchData.periodFrom,
+          periodTo: batchData.periodTo,
+          dueDate: batchData.dueDate
+        },
+        rows,
+        resuming: true,
+        batchId: batchId,
+        aiCorrectedRows: aiCorrectedRowsArray,
+        manuallyEditedRows: manuallyEditedRowsArray,
+        originalValues: originalValuesObj
+      };
+      
+      setVerificationData(fullData);
+      setAiCorrectedRows(new Set(aiCorrectedRowsArray));
+      setManuallyEditedRows(new Set(manuallyEditedRowsArray));
+      setOriginalValues(originalValuesObj);
+      
+      // Save to sessionStorage
+      sessionStorage.setItem('importVerificationData', JSON.stringify(fullData));
+      
+    } catch (error) {
+      console.error('Failed to load batch data:', error);
+      toast.error('Failed to load batch data');
+      navigate('/batches');
+    }
+  };
+  
   // Filter rows based on filters
   useEffect(() => {
     if (!verificationData) return;
