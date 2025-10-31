@@ -1237,8 +1237,8 @@ const ImportVerification = () => {
                         }
                       >
                         <td className="px-3 py-2 text-slate-600">
-                          {isInvoiced && <span className="mr-2 text-green-600 font-bold" title="Already invoiced">✓</span>}
-                          {!isInvoiced && <span className="mr-2 text-slate-400" title="Not invoiced">○</span>}
+                          {isInvoiced && <span className="mr-2 text-green-600 font-bold text-lg" title="Already invoiced">✓</span>}
+                          {!isInvoiced && <span className="mr-2 text-slate-300 text-sm" title="Not invoiced">○</span>}
                           {displayIndex + 1}
                           {isFlagged && <span className="ml-2 text-amber-600">⚠️</span>}
                           {isAiCorrected && <span className="ml-2 text-purple-600" title="AI corrections applied">🤖</span>}
