@@ -326,6 +326,32 @@ backend:
           agent: "testing"
           comment: "Auto-population logic for invoicing settings is FULLY WORKING. Tested with real customer history XLSX file (report-20251031-080554-537-ZlHlmEdc.xlsx). The system correctly analyzes Article 000001 entries from the latest period (most recent month) and auto-populates invoicing settings. TEST RESULTS: (1) ✅ Article 000001 Detection - Found 2 Article 000001 entries in latest period (September 2025). (2) ✅ Case B - Hybrid Detection - Correctly identified hybrid invoicing type (2+ Article 000001 entries). (3) ✅ Fixed Forfait Value - Correctly set to €180.0 from 1st Article 000001 entry (Računovodstvo). (4) ✅ Hourly Rate - Correctly set to €45.0 from 2nd Article 000001 entry (Računovodstvo - dodatna dela). (5) ✅ GET /api/customers/{customer_id} - Returns all auto-populated fields correctly. LOGIC VERIFICATION: Case A (Fixed Forfait): Single Article 000001 with empty/simple description → invoicingType='fixed-forfait', fixedForfaitValue=unitPrice. Case B (Hybrid): 2+ Article 000001 entries → invoicingType='hybrid', fixedForfaitValue=1st unitPrice, unitPrice=2nd unitPrice. Case C (By Hours): Single Article 000001 with work list (dates like '2024-10-17' or '17.10.24') → invoicingType='by-hours', unitPrice=unitPrice. All three cases implemented correctly in server.py lines 1657-1743. Feature is PRODUCTION-READY and working as designed."
 
+frontend:
+  - task: "Import Verification - AI corrections marking with robot icon"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ImportVerification.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW FEATURE IMPLEMENTED: When user clicks 'Apply Changes' in the AI Evaluation modal after reviewing AI suggestions, the affected row is now marked with a distinctive robot icon (🤖) in purple color. The icon appears in the same position as the warning icon (⚠️). Implementation details: (1) Added aiCorrectedRows state (Set) to track rows with AI corrections. (2) Modified handleApplySuggestions to add corrected row index to the set and persist to sessionStorage. (3) Updated table rendering to display robot icon for AI-corrected rows. (4) Robot icon has title tooltip 'AI corrections applied'. (5) AI correction status persists when saving progress and resuming batches. Backend changes: (1) Added aiCorrectionApplied field to time entry schema (default: false). (2) Updated POST /api/imports endpoint to initialize field. (3) Updated PUT /api/batches/{batch_id}/time-entries to accept and save aiCorrectionApplied. (4) Updated Batches.js to load and pass aiCorrectedRows when resuming. Feature ready for comprehensive testing."
+
+backend:
+  - task: "Time entry schema - aiCorrectionApplied field"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added new field 'aiCorrectionApplied' (boolean) to time entry schema in POST /api/imports endpoint. Field is initialized to False for all new imports. Updated PUT /api/batches/{batch_id}/time-entries endpoint to accept and update this field when frontend saves AI corrections. This enables persistent tracking of which rows have been corrected by AI suggestions. Field is returned in GET /api/batches/{batch_id}/time-entries response for restoration when resuming 'in progress' batches."
+
 backend:
   - task: "GET /api/customers endpoint"
     implemented: true
