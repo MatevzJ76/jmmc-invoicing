@@ -1731,6 +1731,17 @@ async def upload_customer_history(
                         update_data["addressServiceUnitPrice"] = address_service_price
                         logger.info(f"Updating address service unit price to: €{address_service_price}")
                     
+                    # Add auto-detected invoicing settings
+                    if invoicing_type is not None:
+                        update_data["invoicingType"] = invoicing_type
+                        logger.info(f"Setting invoicing type to: {invoicing_type}")
+                    if fixed_forfait_value is not None:
+                        update_data["fixedForfaitValue"] = fixed_forfait_value
+                        logger.info(f"Setting fixed forfait value to: €{fixed_forfait_value}")
+                    if hourly_rate is not None:
+                        update_data["unitPrice"] = hourly_rate  # Use unitPrice for hourly rate
+                        logger.info(f"Setting hourly rate to: €{hourly_rate}")
+                    
                     # Update in database
                     await db.customers.update_one(
                         {"id": target_customer["id"]},
