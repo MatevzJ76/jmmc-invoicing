@@ -1011,6 +1011,7 @@ const ImportVerification = () => {
                   onClick={() => {
                     setShowAiModal(false);
                     setSelectedRowIndex(null);
+                    setEditableSuggestions({ description: '', hours: null });
                   }}
                   className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
                 >
