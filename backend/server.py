@@ -1309,6 +1309,164 @@ async def add_manual_historical_entry(
     
     return {"message": "Manual entry added successfully"}
 
+@api_router.post("/customers/refresh-invoicing-settings")
+async def refresh_invoicing_settings(
+    customer_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """Refresh invoicing settings for customers based on their historical invoice data
+    
+    Analyzes Article 000001 entries from the latest period to auto-populate:
+    - invoicingType (fixed-forfait, by-hours, or hybrid)
+    - fixedForfaitValue
+    - unitPrice (hourly rate)
+    
+    If customer_id is provided, updates only that customer.
+    Otherwise, updates ALL customers with historical data.
+    """
+    import re
+    
+    # Determine which customers to update
+    if customer_id:
+        customers = await db.customers.find({"id": customer_id}, {"_id": 0}).to_list(1)
+        if not customers:
+            raise HTTPException(status_code=404, detail="Customer not found")
+    else:
+        # Get all customers with historical invoices
+        customers = await db.customers.find(
+            {"historicalInvoices": {"$exists": True, "$ne": []}},
+            {"_id": 0}
+        ).to_list(10000)
+    
+    updated_count = 0
+    skipped_count = 0
+    results = []
+    
+    for customer in customers:
+        customer_name = customer.get("name", "Unknown")
+        customer_id_val = customer.get("id")
+        historical_invoices = customer.get("historicalInvoices", [])
+        
+        if not historical_invoices:
+            skipped_count += 1
+            continue
+        
+        # Get the latest (most recent) entry
+        # Sort by date to ensure we get the latest
+        sorted_entries = sorted(
+            historical_invoices,
+            key=lambda x: x.get("date", ""),
+            reverse=True
+        )
+        
+        if not sorted_entries:
+            skipped_count += 1
+            continue
+        
+        latest_entry = sorted_entries[0]
+        individual_rows = latest_entry.get("individualRows", [])
+        
+        # Find all Article 000001 entries in the latest period
+        article_000001_rows = []
+        for row in individual_rows:
+            article_code = row.get("articleCode", "").strip()
+            if article_code == "000001":
+                article_000001_rows.append(row)
+        
+        if not article_000001_rows:
+            skipped_count += 1
+            results.append({
+                "customerId": customer_id_val,
+                "customerName": customer_name,
+                "status": "skipped",
+                "reason": "No Article 000001 found in latest period"
+            })
+            continue
+        
+        # Analyze and determine invoicing type
+        invoicing_type = None
+        fixed_forfait_value = None
+        hourly_rate = None
+        
+        if len(article_000001_rows) == 1:
+            # Single Article 000001 entry
+            single_row = article_000001_rows[0]
+            detailed_desc = single_row.get("detailedDescription", "").strip()
+            unit_price = single_row.get("unitPrice")
+            
+            # Check if detailed description contains work list (dates, tasks, values)
+            has_work_list = False
+            if detailed_desc:
+                # Look for patterns like "2024-10-17" or "17.10.24" followed by tasks
+                date_patterns = [
+                    r'\d{4}-\d{2}-\d{2}',  # 2024-10-17
+                    r'\d{2}\.\d{2}\.\d{2,4}',  # 17.10.24 or 17.10.2024
+                ]
+                for pattern in date_patterns:
+                    if re.search(pattern, detailed_desc):
+                        has_work_list = True
+                        break
+            
+            if has_work_list and unit_price is not None:
+                # Case C: By Hours Spent
+                invoicing_type = "by-hours"
+                hourly_rate = unit_price
+            elif unit_price is not None:
+                # Case A: Fixed Forfait (empty or simple description)
+                invoicing_type = "fixed-forfait"
+                fixed_forfait_value = unit_price
+        
+        elif len(article_000001_rows) >= 2:
+            # Case B: Hybrid - Multiple Article 000001 entries
+            invoicing_type = "hybrid"
+            # First row = Fixed Forfait
+            if article_000001_rows[0].get("unitPrice") is not None:
+                fixed_forfait_value = article_000001_rows[0]["unitPrice"]
+            # Second row = Hourly Rate (usually "dodatna dela")
+            if article_000001_rows[1].get("unitPrice") is not None:
+                hourly_rate = article_000001_rows[1]["unitPrice"]
+        
+        # Update customer if we detected settings
+        if invoicing_type:
+            update_data = {"invoicingType": invoicing_type}
+            if fixed_forfait_value is not None:
+                update_data["fixedForfaitValue"] = fixed_forfait_value
+            if hourly_rate is not None:
+                update_data["unitPrice"] = hourly_rate
+            
+            await db.customers.update_one(
+                {"id": customer_id_val},
+                {"$set": update_data}
+            )
+            
+            updated_count += 1
+            results.append({
+                "customerId": customer_id_val,
+                "customerName": customer_name,
+                "status": "updated",
+                "invoicingType": invoicing_type,
+                "fixedForfaitValue": fixed_forfait_value,
+                "hourlyRate": hourly_rate
+            })
+            
+            logger.info(f"Updated {customer_name}: type={invoicing_type}, forfait={fixed_forfait_value}, hourly={hourly_rate}")
+        else:
+            skipped_count += 1
+            results.append({
+                "customerId": customer_id_val,
+                "customerName": customer_name,
+                "status": "skipped",
+                "reason": "Could not determine invoicing type"
+            })
+    
+    return {
+        "message": f"Refreshed invoicing settings for {updated_count} customer(s)",
+        "updated": updated_count,
+        "skipped": skipped_count,
+        "total": len(customers),
+        "details": results
+    }
+
 @api_router.post("/customers/upload-history")
 async def upload_customer_history(
     file: UploadFile = File(...),
