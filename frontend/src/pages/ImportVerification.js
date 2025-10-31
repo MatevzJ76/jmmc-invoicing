@@ -1153,7 +1153,7 @@ const ImportVerification = () => {
                     {displayRows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(2)}
                   </td>
                   <td className="px-3 py-3 text-right text-sm font-bold text-green-700">
-                    €{displayRows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0).toFixed(2)}
+                    €{formatEuro(displayRows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0))}
                   </td>
                   <td className="px-3 py-3"></td>
                 </tr>
