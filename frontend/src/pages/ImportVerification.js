@@ -62,6 +62,12 @@ const ImportVerification = () => {
       return;
     }
     
+    // If data only contains batchId and resuming flag (coming from Batch Detail), fetch full data
+    if (data.batchId && data.resuming && !data.rows) {
+      loadBatchDataForVerification(data.batchId);
+      return;
+    }
+    
     setVerificationData(data);
     
     // Restore AI-corrected rows from data if available
