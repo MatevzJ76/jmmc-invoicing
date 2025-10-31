@@ -960,14 +960,16 @@ const ImportVerification = () => {
               </SelectContent>
             </Select>
             
-            {/* Customer Filter - Custom Dropdown */}
+            {/* Customer Filter - SIMPLIFIED Custom Dropdown */}
             <div className="relative">
               <button
                 onClick={() => {
-                  console.log('Opening customer dropdown. uniqueCustomers count:', uniqueCustomers.length);
-                  console.log('First 3 customers:', uniqueCustomers.slice(0, 3));
-                  setCustomerDropdownOpen(!customerDropdownOpen);
-                  setCustomerSearchTerm(''); // Clear search on open
+                  const newState = !customerDropdownOpen;
+                  setCustomerDropdownOpen(newState);
+                  if (newState) {
+                    // Opening - clear search
+                    setCustomerSearchTerm('');
+                  }
                 }}
                 className="w-full flex items-center justify-between h-10 px-3 py-2 text-sm bg-white border border-slate-200 rounded-md hover:bg-slate-50"
               >
@@ -981,17 +983,14 @@ const ImportVerification = () => {
               
               {customerDropdownOpen && (
                 <>
-                  {/* Backdrop */}
+                  {/* Backdrop - Click to close */}
                   <div 
                     className="fixed inset-0 z-40" 
-                    onClick={() => {
-                      setCustomerDropdownOpen(false);
-                      setCustomerSearchTerm('');
-                    }}
+                    onClick={() => setCustomerDropdownOpen(false)}
                   />
                   
-                  {/* Dropdown Content */}
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg">
+                  {/* Dropdown Panel */}
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-[400px] flex flex-col">
                     {/* Search Input */}
                     <div className="p-2 border-b border-slate-200">
                       <Input
@@ -1003,53 +1002,48 @@ const ImportVerification = () => {
                       />
                     </div>
                     
-                    {/* Options List */}
-                    <div className="max-h-[300px] overflow-y-auto">
+                    {/* Customer List - ALWAYS RENDERED */}
+                    <div className="overflow-y-auto flex-1">
+                      {/* All Customers Option */}
                       <button
                         onClick={() => {
                           setCustomerFilter('all');
                           setCustomerDropdownOpen(false);
-                          setCustomerSearchTerm('');
                         }}
-                        className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100 flex items-center justify-between"
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100 flex items-center justify-between border-b border-slate-100"
                       >
-                        <span>All Customers</span>
-                        {customerFilter === 'all' && <span className="text-blue-600">✓</span>}
+                        <span className="font-medium">All Customers</span>
+                        {customerFilter === 'all' && <span className="text-blue-600 font-bold">✓</span>}
                       </button>
                       
-                      {(() => {
-                        console.log('Rendering customer list. Total unique customers:', uniqueCustomers.length);
-                        console.log('Search term:', customerSearchTerm);
+                      {/* Customer Options */}
+                      {uniqueCustomers.map(customer => {
+                        // Filter: show if search is empty OR customer name includes search term
+                        const searchLower = customerSearchTerm.toLowerCase();
+                        const customerLower = customer.toLowerCase();
+                        const shouldShow = searchLower === '' || customerLower.includes(searchLower);
                         
-                        const filtered = uniqueCustomers.filter(customer => {
-                          const match = customerSearchTerm === '' || 
-                                       customer.toLowerCase().includes(customerSearchTerm.toLowerCase());
-                          return match;
-                        });
+                        if (!shouldShow) return null;
                         
-                        console.log('Filtered customers:', filtered.length);
-                        
-                        return filtered.map(customer => (
+                        return (
                           <button
                             key={customer}
                             onClick={() => {
                               setCustomerFilter(customer);
                               setCustomerDropdownOpen(false);
-                              setCustomerSearchTerm('');
                             }}
                             className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100 flex items-center justify-between"
                           >
-                            <span>{customer}</span>
-                            {customerFilter === customer && <span className="text-blue-600">✓</span>}
+                            <span className="truncate">{customer}</span>
+                            {customerFilter === customer && <span className="text-blue-600 font-bold ml-2">✓</span>}
                           </button>
-                        ));
-                      })()}
+                        );
+                      })}
                       
-                      {customerSearchTerm && uniqueCustomers.filter(customer => 
-                        customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
-                      ).length === 0 && (
-                        <div className="p-3 text-sm text-slate-500 text-center">
-                          No customers found
+                      {/* No Results Message */}
+                      {customerSearchTerm !== '' && uniqueCustomers.every(c => !c.toLowerCase().includes(customerSearchTerm.toLowerCase())) && (
+                        <div className="p-4 text-sm text-slate-500 text-center">
+                          No customers found matching "{customerSearchTerm}"
                         </div>
                       )}
                     </div>
