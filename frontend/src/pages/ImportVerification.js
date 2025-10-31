@@ -996,14 +996,22 @@ const ImportVerification = () => {
                     const isAiCorrected = aiCorrectedRows.has(originalIndex);
                     const isManuallyEdited = manuallyEditedRows.has(originalIndex);
                     
+                    // Determine row background color based on edit status
+                    let rowBgClass = '';
+                    if (isFlagged) {
+                      rowBgClass = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500';
+                    } else if (isAiCorrected) {
+                      rowBgClass = 'bg-purple-50/30 hover:bg-purple-50';
+                    } else if (isManuallyEdited) {
+                      rowBgClass = 'bg-blue-50/30 hover:bg-blue-50';
+                    } else {
+                      rowBgClass = 'hover:bg-blue-50';
+                    }
+                    
                     return (
                       <tr 
                         key={displayIndex} 
-                        className={`transition-colors cursor-pointer ${
-                          isFlagged 
-                            ? 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500' 
-                            : 'hover:bg-blue-50'
-                        }`}
+                        className={`transition-colors cursor-pointer ${rowBgClass}`}
                         onClick={() => {
                           if (isFlagged) {
                             // Open AI Evaluation modal for flagged rows
