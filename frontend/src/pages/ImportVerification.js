@@ -740,6 +740,18 @@ const ImportVerification = () => {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Batches
             </Button>
+            
+            {/* Always visible button to navigate to Invoices & Verification */}
+            {verificationData.batchId && (
+              <Button 
+                variant="outline"
+                onClick={() => navigate(`/batches/${verificationData.batchId}`)}
+                className="rounded-full border-blue-600 text-blue-600 hover:bg-blue-50 font-medium px-5"
+              >
+                View Invoices & Verification
+                <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+              </Button>
+            )}
           </div>
           <h2 className="text-3xl font-bold text-slate-800 mb-2">Import Verification</h2>
           <p className="text-slate-600">Review imported data before creating invoices</p>
