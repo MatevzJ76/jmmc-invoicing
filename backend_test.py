@@ -3754,12 +3754,12 @@ class TestCustomerUpdate:
             print(f"\n⚠️  {total - passed} test(s) failed")
 
 if __name__ == "__main__":
-    # Run Filtered Invoice Composition tests
+    # Run Employee Costs API tests
     print("\n" + "=" * 80)
-    print("RUNNING FILTERED INVOICE COMPOSITION TESTS")
+    print("RUNNING EMPLOYEE COSTS API TESTS")
     print("=" * 80)
     
-    tester = TestFilteredInvoiceComposition()
+    tester = TestEmployeeCostsAPI()
     tester.run_all_tests()
 
 
