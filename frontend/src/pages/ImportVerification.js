@@ -1001,9 +1001,9 @@ const ImportVerification = () => {
                     if (isFlagged) {
                       rowBgClass = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500';
                     } else if (isAiCorrected) {
-                      rowBgClass = 'bg-purple-50/30 hover:bg-purple-50';
+                      rowBgClass = 'bg-purple-100/60 hover:bg-purple-100';
                     } else if (isManuallyEdited) {
-                      rowBgClass = 'bg-blue-50/30 hover:bg-blue-50';
+                      rowBgClass = 'bg-blue-100/60 hover:bg-blue-100';
                     } else {
                       rowBgClass = 'hover:bg-blue-50';
                     }
