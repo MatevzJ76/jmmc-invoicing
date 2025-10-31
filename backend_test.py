@@ -3279,11 +3279,11 @@ class TestCustomerUpdate:
             print(f"\n⚠️  {total - passed} test(s) failed")
 
 if __name__ == "__main__":
-    # Run customer update tests
+    # Run Articles API tests
     print("\n" + "=" * 80)
-    print("RUNNING CUSTOMER UPDATE TESTS")
+    print("RUNNING ARTICLES API TESTS")
     print("=" * 80)
     
-    customer_tester = TestCustomerUpdate()
-    customer_tester.run_all_tests()
+    articles_tester = TestArticlesAPI()
+    articles_tester.run_all_tests()
 
