@@ -355,7 +355,7 @@ const CustomerDetail = () => {
                 <select
                   value={selectedCompanyId}
                   onChange={(e) => handleUpdateCompany(e.target.value)}
-                  className="w-full h-10 px-3 rounded-md border-2 border-blue-300 bg-white text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500"
+                  className="w-full h-10 px-3 rounded-md border-2 border-blue-300 bg-white text-sm font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500"
                 >
                   <option value="">No Company</option>
                   {companies.map((company) => (
