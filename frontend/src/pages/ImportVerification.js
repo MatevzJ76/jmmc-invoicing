@@ -1141,6 +1141,7 @@ const ImportVerification = () => {
                   setCustomerFilter('all');
                   setEmployeeFilter('all');
                   setTariffFilter('all');
+                  setStatusFilter('all');
                   
                   // Force table to show all rows by triggering a re-render
                   setFilteredRows([]);
