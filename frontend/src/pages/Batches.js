@@ -250,6 +250,7 @@ const Batches = () => {
               resuming: true,
               batchId: batch.id,
               aiCorrectedRows,  // Pass AI-corrected row indices
+              manuallyEditedRows,  // Pass manually-edited row indices
               originalValues  // Pass original values before corrections
             }
           }
