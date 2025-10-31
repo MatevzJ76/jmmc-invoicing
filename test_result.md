@@ -241,6 +241,79 @@ backend:
           agent: "testing"
           comment: "Role change functionality working correctly. PUT /api/admin/users/{user_id}/role successfully updates user role. Tested changing test user from USER to ADMIN, received HTTP 200 success with message 'User role updated to ADMIN'. Self-role-change prevention working: admin attempting to change their own role correctly rejected with HTTP 400 and error 'Cannot change your own role'. Role validation ensures only ADMIN or USER values accepted."
 
+
+  - task: "GET /api/customers/{customer_id} - Return fixedForfaitValue field"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET endpoint working correctly. Tested with customer ID 290cf431-a8c1-4dca-bc5c-e06fa66ad926 ('123 HIŠKA d.o.o.'). Response includes all customer fields: name, unitPrice, fixedForfaitValue, invoicingType, companyId, companyName. The fixedForfaitValue field is properly returned (value was None initially, then updated to various test values). All fields present and accessible."
+
+  - task: "PUT /api/customers/{customer_id} - Update unitPrice field"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PUT endpoint working correctly for unitPrice updates. Tested updating unitPrice to 50.5, verified with GET request. Value persisted correctly in database. Update request returned HTTP 200 with message 'Customer updated successfully'. Subsequent GET confirmed unitPrice was updated and stored correctly."
+
+  - task: "PUT /api/customers/{customer_id} - Update fixedForfaitValue field (NEW)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PUT endpoint working correctly for fixedForfaitValue updates (NEW FIELD). Tested updating fixedForfaitValue to 1234.56, verified with GET request. Value persisted correctly in database. The new field 'fixedForfaitValue' was successfully added to allowed_fields list (line 1270 in server.py). Update request returned HTTP 200, subsequent GET confirmed value was stored correctly. This is the key new functionality for hybrid invoicing type support."
+
+  - task: "PUT /api/customers/{customer_id} - Update both unitPrice and fixedForfaitValue"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PUT endpoint working correctly for simultaneous updates of both pricing fields. Tested updating unitPrice to 1000.0 and fixedForfaitValue to 0 in single request. Both values persisted correctly. This is important for hybrid invoicing type where both hourly rate and fixed forfait value need to be set. Update request returned HTTP 200, subsequent GET confirmed both values were updated correctly."
+
+  - task: "PUT /api/customers/{customer_id} - Update invoicingType field"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PUT endpoint working correctly for invoicingType updates. Tested all three invoicing types: 'by-hours' (shows unitPrice/Hourly Rate), 'fixed-forfait' (shows fixedForfaitValue), and 'hybrid' (shows both fields). All three types updated and persisted correctly. This field controls which pricing fields are displayed in the frontend Customer Detail page Invoicing Settings tile. Update requests returned HTTP 200, subsequent GETs confirmed invoicingType was stored correctly for each type."
+
+  - task: "European format value handling for customer pricing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "European format value handling working correctly. Tested various price values: 0 (zero), 50.50 (decimal), 1000.00 (thousand), 1234.56 (complex). All values stored and retrieved correctly with proper decimal precision. Backend stores values as floats, frontend can format them in European style (1.234,56) for display. No data loss or precision issues detected. Values round-trip correctly through PUT and GET operations."
+
 backend:
   - task: "GET /api/customers endpoint"
     implemented: true
