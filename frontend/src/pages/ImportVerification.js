@@ -67,6 +67,11 @@ const ImportVerification = () => {
       setAiCorrectedRows(new Set(data.aiCorrectedRows));
     }
     
+    // Restore manually-edited rows from data if available
+    if (data.manuallyEditedRows) {
+      setManuallyEditedRows(new Set(data.manuallyEditedRows));
+    }
+    
     // Restore original values from data if available
     if (data.originalValues) {
       setOriginalValues(data.originalValues);
