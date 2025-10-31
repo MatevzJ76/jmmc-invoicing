@@ -764,8 +764,405 @@ class TestInvoicingSettingsAutoPopulation:
             print("  4. Ensure the logic in server.py is correctly implemented")
 
 
+class TestAICorrectionTracking:
+    """Test AI correction tracking feature for Import Verification page"""
+    
+    def __init__(self):
+        self.token = None
+        self.batch_id = None
+        self.time_entries = []
+        
+    def login(self) -> bool:
+        """Login as admin and get auth token"""
+        print("\n=== Testing Login ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                print(f"✅ Login successful")
+                print(f"User: {data.get('user', {}).get('email')}")
+                print(f"Role: {data.get('user', {}).get('role')}")
+                return True
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
+    
+    def get_headers(self) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.token}"}
+    
+    def create_test_import(self) -> bool:
+        """Test 1: Create new import and verify aiCorrectionApplied field initialization"""
+        print("\n=== Test 1: New Import - AI Field Initialization ===")
+        
+        # Create a simple test XLSX file
+        try:
+            import openpyxl
+            from datetime import datetime
+            
+            # Create workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            
+            # Add headers
+            headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št. računa"]
+            ws.append(headers)
+            
+            # Add test data rows
+            test_rows = [
+                ["Project A", "Test Customer", datetime(2025, 10, 1), "Standard", "John Doe", "Test work description", 2.5, 100.0, "INV-001"],
+                ["Project B", "Test Customer", datetime(2025, 10, 2), "Standard", "Jane Smith", "Another test task", 3.0, 120.0, "INV-001"],
+                ["Project C", "Test Customer", datetime(2025, 10, 3), "Standard", "Bob Johnson", "Third test entry", 1.5, 60.0, "INV-001"],
+            ]
+            
+            for row in test_rows:
+                ws.append(row)
+            
+            # Save to temp file
+            test_file_path = "/tmp/test_ai_correction.xlsx"
+            wb.save(test_file_path)
+            print(f"✅ Created test XLSX file: {test_file_path}")
+            
+            # Upload the file
+            with open(test_file_path, 'rb') as f:
+                files = {'file': ('test_ai_correction.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                data = {
+                    'title': 'AI Correction Test Import',
+                    'invoiceDate': '2025-10-31',
+                    'periodFrom': '2025-10-01',
+                    'periodTo': '2025-10-31',
+                    'dueDate': '2025-11-15'
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/imports",
+                    headers=self.get_headers(),
+                    files=files,
+                    data=data
+                )
+            
+            print(f"Import Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.batch_id = result.get("batchId")
+                row_count = result.get("rowCount")
+                
+                print(f"✅ Import successful")
+                print(f"  Batch ID: {self.batch_id}")
+                print(f"  Row Count: {row_count}")
+                
+                # Now get time entries and verify aiCorrectionApplied field
+                response = requests.get(
+                    f"{BACKEND_URL}/batches/{self.batch_id}/time-entries",
+                    headers=self.get_headers()
+                )
+                
+                if response.status_code == 200:
+                    self.time_entries = response.json()
+                    print(f"✅ Retrieved {len(self.time_entries)} time entries")
+                    
+                    # Verify all entries have aiCorrectionApplied=false
+                    all_false = True
+                    missing_field = False
+                    
+                    for idx, entry in enumerate(self.time_entries):
+                        if "aiCorrectionApplied" not in entry:
+                            print(f"❌ Entry {idx} missing aiCorrectionApplied field")
+                            missing_field = True
+                        elif entry.get("aiCorrectionApplied") != False:
+                            print(f"❌ Entry {idx} has aiCorrectionApplied={entry.get('aiCorrectionApplied')}, expected False")
+                            all_false = False
+                    
+                    if missing_field:
+                        print("❌ Some entries missing aiCorrectionApplied field")
+                        return False
+                    
+                    if not all_false:
+                        print("❌ Some entries have aiCorrectionApplied != False")
+                        return False
+                    
+                    print("✅ All time entries have aiCorrectionApplied=False by default")
+                    return True
+                else:
+                    print(f"❌ Failed to get time entries: {response.text}")
+                    return False
+            else:
+                print(f"❌ Import failed: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error creating import: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def test_update_ai_correction_status(self) -> bool:
+        """Test 2: Update AI correction status via PUT endpoint"""
+        print("\n=== Test 2: Update AI Correction Status ===")
+        
+        if not self.batch_id or not self.time_entries:
+            print("❌ No batch or time entries available")
+            return False
+        
+        try:
+            # Update first entry with aiCorrectionApplied=true
+            updates = [
+                {
+                    "index": 0,
+                    "comments": "Updated by AI",
+                    "hours": 2.5,
+                    "aiCorrectionApplied": True
+                }
+            ]
+            
+            response = requests.put(
+                f"{BACKEND_URL}/batches/{self.batch_id}/time-entries",
+                headers=self.get_headers(),
+                json=updates
+            )
+            
+            print(f"Update Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                updated_count = result.get("updated_count", 0)
+                
+                if updated_count == 1:
+                    print(f"✅ Successfully updated {updated_count} entry")
+                    return True
+                else:
+                    print(f"❌ Expected 1 update, got {updated_count}")
+                    return False
+            else:
+                print(f"❌ Update failed: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error updating entries: {str(e)}")
+            return False
+    
+    def test_retrieve_ai_correction_status(self) -> bool:
+        """Test 3: Retrieve AI correction status and verify persistence"""
+        print("\n=== Test 3: Retrieve AI Correction Status ===")
+        
+        if not self.batch_id:
+            print("❌ No batch available")
+            return False
+        
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/batches/{self.batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            print(f"Get Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                entries = response.json()
+                print(f"✅ Retrieved {len(entries)} time entries")
+                
+                # Verify first entry has aiCorrectionApplied=true
+                if len(entries) > 0:
+                    first_entry = entries[0]
+                    
+                    if "aiCorrectionApplied" not in first_entry:
+                        print("❌ First entry missing aiCorrectionApplied field")
+                        return False
+                    
+                    if first_entry.get("aiCorrectionApplied") != True:
+                        print(f"❌ First entry has aiCorrectionApplied={first_entry.get('aiCorrectionApplied')}, expected True")
+                        return False
+                    
+                    print(f"✅ First entry has aiCorrectionApplied=True (persisted correctly)")
+                    
+                    # Verify other entries still have false
+                    for idx in range(1, len(entries)):
+                        entry = entries[idx]
+                        if entry.get("aiCorrectionApplied") != False:
+                            print(f"❌ Entry {idx} has aiCorrectionApplied={entry.get('aiCorrectionApplied')}, expected False")
+                            return False
+                    
+                    print(f"✅ Other entries still have aiCorrectionApplied=False")
+                    return True
+                else:
+                    print("❌ No entries returned")
+                    return False
+            else:
+                print(f"❌ Failed to get entries: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error retrieving entries: {str(e)}")
+            return False
+    
+    def test_multiple_updates(self) -> bool:
+        """Test 4: Update multiple rows with different aiCorrectionApplied values"""
+        print("\n=== Test 4: Multiple Updates ===")
+        
+        if not self.batch_id or not self.time_entries:
+            print("❌ No batch or time entries available")
+            return False
+        
+        try:
+            # Update multiple entries
+            updates = [
+                {
+                    "index": 0,
+                    "comments": "First AI correction",
+                    "hours": 2.0,
+                    "aiCorrectionApplied": True
+                },
+                {
+                    "index": 1,
+                    "comments": "Second AI correction",
+                    "hours": 3.5,
+                    "aiCorrectionApplied": True
+                },
+                {
+                    "index": 2,
+                    "comments": "No AI correction",
+                    "hours": 1.5,
+                    "aiCorrectionApplied": False
+                }
+            ]
+            
+            response = requests.put(
+                f"{BACKEND_URL}/batches/{self.batch_id}/time-entries",
+                headers=self.get_headers(),
+                json=updates
+            )
+            
+            print(f"Update Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                updated_count = result.get("updated_count", 0)
+                
+                if updated_count == 3:
+                    print(f"✅ Successfully updated {updated_count} entries")
+                    
+                    # Verify the updates
+                    response = requests.get(
+                        f"{BACKEND_URL}/batches/{self.batch_id}/time-entries",
+                        headers=self.get_headers()
+                    )
+                    
+                    if response.status_code == 200:
+                        entries = response.json()
+                        
+                        # Check each entry
+                        expected_values = [True, True, False]
+                        all_correct = True
+                        
+                        for idx, expected in enumerate(expected_values):
+                            if idx < len(entries):
+                                actual = entries[idx].get("aiCorrectionApplied")
+                                if actual != expected:
+                                    print(f"❌ Entry {idx}: expected aiCorrectionApplied={expected}, got {actual}")
+                                    all_correct = False
+                                else:
+                                    print(f"✅ Entry {idx}: aiCorrectionApplied={actual} (correct)")
+                        
+                        if all_correct:
+                            print("✅ All entries have correct aiCorrectionApplied values")
+                            return True
+                        else:
+                            print("❌ Some entries have incorrect values")
+                            return False
+                    else:
+                        print(f"❌ Failed to verify updates: {response.text}")
+                        return False
+                else:
+                    print(f"❌ Expected 3 updates, got {updated_count}")
+                    return False
+            else:
+                print(f"❌ Update failed: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error updating multiple entries: {str(e)}")
+            return False
+    
+    def run_all_tests(self):
+        """Run all AI correction tracking tests"""
+        print("=" * 80)
+        print("AI CORRECTION TRACKING FEATURE - BACKEND TESTS")
+        print("=" * 80)
+        print("\nTesting new feature: Track when AI suggestions are applied to time entries")
+        print("Feature: When user clicks 'Apply Changes' in AI Evaluation modal,")
+        print("the row should be marked with aiCorrectionApplied=true in database")
+        print("=" * 80)
+        
+        results = {}
+        
+        # 1. Login
+        if not self.login():
+            print("\n❌ CRITICAL: Login failed. Cannot proceed with tests.")
+            return
+        
+        # 2. Test new import with AI field initialization
+        results["Test 1: New Import - AI Field Initialization"] = self.create_test_import()
+        
+        if not results["Test 1: New Import - AI Field Initialization"]:
+            print("\n❌ CRITICAL: Import test failed. Cannot proceed with other tests.")
+            return
+        
+        # 3. Test updating AI correction status
+        results["Test 2: Update AI Correction Status"] = self.test_update_ai_correction_status()
+        
+        # 4. Test retrieving AI correction status
+        results["Test 3: Retrieve AI Correction Status"] = self.test_retrieve_ai_correction_status()
+        
+        # 5. Test multiple updates
+        results["Test 4: Multiple Updates"] = self.test_multiple_updates()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for v in results.values() if v)
+        total = len(results)
+        
+        for test_name, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            print(f"{status} - {test_name}")
+        
+        print(f"\nTotal: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED!")
+            print("\n✅ AI Correction Tracking Feature is working correctly:")
+            print("  - aiCorrectionApplied field initialized to False on import ✅")
+            print("  - Field can be updated via PUT endpoint ✅")
+            print("  - Field persists in database ✅")
+            print("  - Field is returned in GET responses ✅")
+            print("  - Multiple rows can be updated with different values ✅")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed")
+            print("\n🔍 Debugging Hints:")
+            print("  1. Check if aiCorrectionApplied field is in time entry schema")
+            print("  2. Verify POST /api/imports initializes the field")
+            print("  3. Verify PUT /api/batches/{batch_id}/time-entries accepts the field")
+            print("  4. Verify GET /api/batches/{batch_id}/time-entries returns the field")
+            print("  5. Check backend logs for any errors")
+
+
 if __name__ == "__main__":
-    tester = TestMoveTimeEntry()
+    # Run AI Correction Tracking tests
+    tester = TestAICorrectionTracking()
     tester.run_all_tests()
 
 
