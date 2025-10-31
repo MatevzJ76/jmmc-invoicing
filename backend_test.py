@@ -392,6 +392,378 @@ class TestMoveTimeEntry:
         else:
             print(f"\n⚠️  {total - passed} test(s) failed")
 
+class TestInvoicingSettingsAutoPopulation:
+    """Test auto-population of invoicing settings based on Article 000001 analysis"""
+    
+    def __init__(self):
+        self.token = None
+        self.test_customer_id = None
+        self.test_customer_name = "Test Auto-Population Customer"
+        
+    def login(self) -> bool:
+        """Login as admin and get auth token"""
+        print("\n=== Testing Login ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                print(f"✅ Login successful")
+                print(f"User: {data.get('user', {}).get('email')}")
+                print(f"Role: {data.get('user', {}).get('role')}")
+                return True
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
+    
+    def get_headers(self) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.token}"}
+    
+    def create_test_customer(self) -> bool:
+        """Create a test customer for uploading history"""
+        print("\n=== Creating Test Customer ===")
+        try:
+            customer_data = {
+                "name": self.test_customer_name,
+                "unitPrice": 0
+            }
+            
+            response = requests.post(
+                f"{BACKEND_URL}/customers",
+                headers=self.get_headers(),
+                json=customer_data
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.test_customer_id = result.get("customerId")
+                print(f"✅ Test customer created")
+                print(f"  Customer ID: {self.test_customer_id}")
+                print(f"  Name: {self.test_customer_name}")
+                return True
+            else:
+                print(f"❌ Failed to create customer: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error creating customer: {str(e)}")
+            return False
+    
+    def upload_customer_history(self, file_path: str) -> bool:
+        """Upload customer history XLSX file"""
+        print(f"\n=== Uploading Customer History: {file_path} ===")
+        try:
+            with open(file_path, 'rb') as f:
+                files = {'file': ('test_invoice_settings.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                data = {
+                    'customer_ids': self.test_customer_id
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/customers/upload-history",
+                    headers=self.get_headers(),
+                    files=files,
+                    data=data
+                )
+            
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text[:500]}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                print(f"✅ Customer history uploaded successfully")
+                print(f"  Message: {result.get('message')}")
+                print(f"  Customers updated: {result.get('updated_count', 0)}")
+                return True
+            else:
+                print(f"❌ Failed to upload history: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error uploading history: {str(e)}")
+            return False
+    
+    def get_customer_details(self) -> Optional[Dict[str, Any]]:
+        """Get customer details including invoicing settings"""
+        print(f"\n=== Getting Customer Details: {self.test_customer_id} ===")
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/customers/{self.test_customer_id}",
+                headers=self.get_headers()
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                customer = response.json()
+                print(f"✅ Customer details retrieved")
+                print(f"  Name: {customer.get('name')}")
+                print(f"  Invoicing Type: {customer.get('invoicingType')}")
+                print(f"  Fixed Forfait Value: {customer.get('fixedForfaitValue')}")
+                print(f"  Unit Price (Hourly Rate): {customer.get('unitPrice')}")
+                print(f"  Historical Invoices: {len(customer.get('historicalInvoices', []))}")
+                return customer
+            else:
+                print(f"❌ Failed to get customer: {response.text}")
+                return None
+        except Exception as e:
+            print(f"❌ Error getting customer: {str(e)}")
+            return None
+    
+    def check_backend_logs(self):
+        """Check backend logs for detection messages"""
+        print("\n=== Checking Backend Logs ===")
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["tail", "-n", "50", "/var/log/supervisor/backend.out.log"],
+                capture_output=True,
+                text=True
+            )
+            
+            logs = result.stdout
+            
+            # Look for auto-detection messages
+            detection_messages = []
+            for line in logs.split('\n'):
+                if 'Auto-detected' in line or 'Article 000001' in line or 'invoicing' in line.lower():
+                    detection_messages.append(line)
+            
+            if detection_messages:
+                print("✅ Found detection messages in logs:")
+                for msg in detection_messages[-10:]:  # Show last 10
+                    print(f"  {msg}")
+            else:
+                print("⚠️  No detection messages found in recent logs")
+            
+        except Exception as e:
+            print(f"⚠️  Could not check logs: {str(e)}")
+    
+    def verify_auto_population(self, customer: Dict[str, Any]) -> Dict[str, bool]:
+        """Verify that invoicing settings were auto-populated correctly"""
+        print("\n=== Verifying Auto-Population Logic ===")
+        
+        results = {}
+        
+        # Get historical invoices to analyze Article 000001
+        historical_invoices = customer.get('historicalInvoices', [])
+        
+        if not historical_invoices:
+            print("❌ No historical invoices found")
+            return {"has_historical_data": False}
+        
+        print(f"Found {len(historical_invoices)} historical invoice periods")
+        
+        # Get the latest period (most recent)
+        latest_period = historical_invoices[-1] if historical_invoices else None
+        
+        if not latest_period:
+            print("❌ No latest period found")
+            return {"has_latest_period": False}
+        
+        print(f"\nLatest Period: {latest_period.get('date', 'N/A')}")
+        
+        # Analyze Article 000001 entries
+        individual_rows = latest_period.get('individualRows', [])
+        article_000001_rows = [row for row in individual_rows if row.get('articleCode', '').strip() == '000001']
+        
+        print(f"Found {len(article_000001_rows)} Article 000001 entries in latest period")
+        
+        if not article_000001_rows:
+            print("⚠️  No Article 000001 entries found")
+            results["has_article_000001"] = False
+            return results
+        
+        results["has_article_000001"] = True
+        
+        # Display Article 000001 entries
+        for idx, row in enumerate(article_000001_rows):
+            print(f"\nArticle 000001 Entry #{idx + 1}:")
+            print(f"  Description: {row.get('description', 'N/A')}")
+            print(f"  Detailed Description: {row.get('detailedDescription', 'N/A')[:100]}...")
+            print(f"  Unit Price: €{row.get('unitPrice', 0)}")
+            print(f"  Quantity: {row.get('quantity', 'N/A')}")
+        
+        # Determine expected invoicing type based on logic
+        expected_type = None
+        expected_forfait = None
+        expected_hourly = None
+        
+        if len(article_000001_rows) == 1:
+            single_row = article_000001_rows[0]
+            detailed_desc = single_row.get('detailedDescription', '').strip()
+            unit_price = single_row.get('unitPrice')
+            
+            # Check for work list patterns
+            import re
+            has_work_list = False
+            if detailed_desc:
+                date_patterns = [
+                    r'\d{4}-\d{2}-\d{2}',  # 2024-10-17
+                    r'\d{2}\.\d{2}\.\d{2,4}',  # 17.10.24 or 17.10.2024
+                ]
+                for pattern in date_patterns:
+                    if re.search(pattern, detailed_desc):
+                        has_work_list = True
+                        break
+            
+            if has_work_list:
+                # Case C: By Hours Spent
+                expected_type = "by-hours"
+                expected_hourly = unit_price
+                print(f"\n📋 Expected: By Hours Spent (hourly rate: €{expected_hourly})")
+            else:
+                # Case A: Fixed Forfait
+                expected_type = "fixed-forfait"
+                expected_forfait = unit_price
+                print(f"\n📋 Expected: Fixed Forfait (value: €{expected_forfait})")
+        
+        elif len(article_000001_rows) >= 2:
+            # Case B: Hybrid
+            expected_type = "hybrid"
+            expected_forfait = article_000001_rows[0].get('unitPrice')
+            expected_hourly = article_000001_rows[1].get('unitPrice')
+            print(f"\n📋 Expected: Hybrid (forfait: €{expected_forfait}, hourly: €{expected_hourly})")
+        
+        # Verify actual values match expected
+        actual_type = customer.get('invoicingType')
+        actual_forfait = customer.get('fixedForfaitValue')
+        actual_hourly = customer.get('unitPrice')
+        
+        print(f"\n🔍 Verification:")
+        print(f"  Expected Type: {expected_type}")
+        print(f"  Actual Type: {actual_type}")
+        
+        if expected_type == actual_type:
+            print(f"  ✅ Invoicing Type matches")
+            results["invoicing_type_correct"] = True
+        else:
+            print(f"  ❌ Invoicing Type mismatch")
+            results["invoicing_type_correct"] = False
+        
+        if expected_type in ["fixed-forfait", "hybrid"]:
+            print(f"  Expected Forfait: €{expected_forfait}")
+            print(f"  Actual Forfait: €{actual_forfait}")
+            
+            if expected_forfait == actual_forfait:
+                print(f"  ✅ Fixed Forfait Value matches")
+                results["forfait_value_correct"] = True
+            else:
+                print(f"  ❌ Fixed Forfait Value mismatch")
+                results["forfait_value_correct"] = False
+        
+        if expected_type in ["by-hours", "hybrid"]:
+            print(f"  Expected Hourly Rate: €{expected_hourly}")
+            print(f"  Actual Hourly Rate: €{actual_hourly}")
+            
+            if expected_hourly == actual_hourly:
+                print(f"  ✅ Hourly Rate matches")
+                results["hourly_rate_correct"] = True
+            else:
+                print(f"  ❌ Hourly Rate mismatch")
+                results["hourly_rate_correct"] = False
+        
+        return results
+    
+    def cleanup_test_customer(self):
+        """Delete the test customer"""
+        print(f"\n=== Cleaning Up Test Customer ===")
+        try:
+            # Note: There's no delete endpoint, so we'll just archive or leave it
+            print("⚠️  No cleanup performed (no delete endpoint available)")
+        except Exception as e:
+            print(f"⚠️  Cleanup error: {str(e)}")
+    
+    def run_all_tests(self):
+        """Run all auto-population tests"""
+        print("=" * 80)
+        print("INVOICING SETTINGS AUTO-POPULATION - BACKEND TESTS")
+        print("=" * 80)
+        print("\nTesting auto-population logic for invoicing settings based on")
+        print("Article 000001 analysis from customer history XLSX files.")
+        print("\nTest Cases:")
+        print("  Case A - Fixed Forfait: Article 000001 appears ONCE, empty/simple description")
+        print("  Case B - Hybrid: Article 000001 appears 2+ TIMES")
+        print("  Case C - By Hours: Article 000001 appears ONCE with work list (dates)")
+        print("=" * 80)
+        
+        results = {}
+        
+        # 1. Login
+        if not self.login():
+            print("\n❌ CRITICAL: Login failed. Cannot proceed with tests.")
+            return
+        
+        # 2. Create test customer
+        results["Create Test Customer"] = self.create_test_customer()
+        if not results["Create Test Customer"]:
+            print("\n❌ CRITICAL: Failed to create test customer. Cannot proceed.")
+            return
+        
+        # 3. Upload customer history XLSX
+        test_file = "/tmp/test_invoice_settings.xlsx"
+        results["Upload Customer History"] = self.upload_customer_history(test_file)
+        
+        if not results["Upload Customer History"]:
+            print("\n❌ CRITICAL: Failed to upload customer history. Cannot proceed.")
+            return
+        
+        # 4. Check backend logs
+        self.check_backend_logs()
+        
+        # 5. Get customer details
+        customer = self.get_customer_details()
+        
+        if not customer:
+            print("\n❌ CRITICAL: Failed to get customer details. Cannot proceed.")
+            return
+        
+        # 6. Verify auto-population
+        verification_results = self.verify_auto_population(customer)
+        
+        # Merge verification results
+        results.update(verification_results)
+        
+        # 7. Cleanup
+        self.cleanup_test_customer()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for v in results.values() if v is True)
+        total = len([v for v in results.values() if isinstance(v, bool)])
+        
+        for test_name, result in results.items():
+            if isinstance(result, bool):
+                status = "✅ PASS" if result else "❌ FAIL"
+                print(f"{status} - {test_name}")
+        
+        print(f"\nTotal: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED!")
+            print("\n✅ Auto-population logic is working correctly:")
+            print("  - Article 000001 entries detected ✅")
+            print("  - Invoicing type auto-populated ✅")
+            print("  - Pricing values auto-populated ✅")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed")
+            print("\n🔍 Debugging Hints:")
+            print("  1. Check backend logs for auto-detection messages")
+            print("  2. Verify Article 000001 entries exist in the XLSX file")
+            print("  3. Check that the XLSX file has the correct format")
+            print("  4. Ensure the logic in server.py is correctly implemented")
+
+
 if __name__ == "__main__":
     tester = TestMoveTimeEntry()
     tester.run_all_tests()
