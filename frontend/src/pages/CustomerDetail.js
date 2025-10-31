@@ -36,6 +36,9 @@ const CustomerDetail = () => {
   const [unitPrice, setUnitPrice] = useState(0);
   const [unitPriceDisplay, setUnitPriceDisplay] = useState('');
   const [isEditingPrice, setIsEditingPrice] = useState(false);
+  const [fixedForfaitValue, setFixedForfaitValue] = useState(0);
+  const [fixedForfaitDisplay, setFixedForfaitDisplay] = useState('');
+  const [isEditingForfait, setIsEditingForfait] = useState(false);
   const [addressServicePrice, setAddressServicePrice] = useState(0);
   const [addressServicePriceDisplay, setAddressServicePriceDisplay] = useState('');
   const [isEditingAddressPrice, setIsEditingAddressPrice] = useState(false);
