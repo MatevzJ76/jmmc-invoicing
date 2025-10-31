@@ -1297,7 +1297,9 @@ const ImportVerification = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">🤖</span>
-                  <h3 className="text-xl font-bold">Edit Corrected Values</h3>
+                  <h3 className="text-xl font-bold">
+                    {originalValues[editingRowIndex] ? 'Edit Corrected Values' : 'Edit Row Values'}
+                  </h3>
                 </div>
                 <button
                   onClick={() => {
