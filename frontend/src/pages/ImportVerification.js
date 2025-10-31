@@ -25,6 +25,9 @@ const ImportVerification = () => {
   const [tariffFilter, setTariffFilter] = useState('all');
   const [filteredRows, setFilteredRows] = useState([]);
   
+  // Customer dropdown search
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('');
+  
   // AI verification states
   const [aiVerifying, setAiVerifying] = useState(false);
   const [aiResults, setAiResults] = useState({});
