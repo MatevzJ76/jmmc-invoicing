@@ -1017,14 +1017,19 @@ const ImportVerification = () => {
                         {customerFilter === 'all' && <span className="text-blue-600">✓</span>}
                       </button>
                       
-                      {uniqueCustomers.map(customer => {
-                        // Show if no search term OR customer matches search
-                        const matchesSearch = customerSearchTerm === '' || 
-                                            customer.toLowerCase().includes(customerSearchTerm.toLowerCase());
+                      {(() => {
+                        console.log('Rendering customer list. Total unique customers:', uniqueCustomers.length);
+                        console.log('Search term:', customerSearchTerm);
                         
-                        if (!matchesSearch) return null;
+                        const filtered = uniqueCustomers.filter(customer => {
+                          const match = customerSearchTerm === '' || 
+                                       customer.toLowerCase().includes(customerSearchTerm.toLowerCase());
+                          return match;
+                        });
                         
-                        return (
+                        console.log('Filtered customers:', filtered.length);
+                        
+                        return filtered.map(customer => (
                           <button
                             key={customer}
                             onClick={() => {
@@ -1037,8 +1042,8 @@ const ImportVerification = () => {
                             <span>{customer}</span>
                             {customerFilter === customer && <span className="text-blue-600">✓</span>}
                           </button>
-                        );
-                      })}
+                        ));
+                      })()}
                       
                       {customerSearchTerm && uniqueCustomers.filter(customer => 
                         customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
