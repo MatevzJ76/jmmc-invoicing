@@ -509,6 +509,8 @@ const CustomerDetail = () => {
           
           {/* Other Settings */}
           <div className="grid grid-cols-2 gap-6">
+            {/* Invoicing Period */}
+            <div>
               <Label className="text-slate-700 mb-2 block">Invoicing Period</Label>
               <Select 
                 value={customer?.invoicingPeriod || 'monthly'}
