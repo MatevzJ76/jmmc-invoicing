@@ -292,6 +292,23 @@ const CustomerDetail = () => {
           <h2 className="text-lg font-bold text-slate-800 mb-4">Invoicing Settings</h2>
           
           <div className="grid grid-cols-2 gap-6">
+            {/* Company */}
+            <div>
+              <Label className="text-slate-700 mb-2 block">Company</Label>
+              <select
+                value={selectedCompanyId}
+                onChange={(e) => handleUpdateCompany(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">No Company</option>
+                {companies.map((company) => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
             {/* Invoicing Type */}
             <div>
               <Label className="text-slate-700 mb-2 block">Invoicing Type</Label>
@@ -309,6 +326,175 @@ const CustomerDetail = () => {
                 </SelectContent>
               </Select>
             </div>
+            
+            {/* Dynamic Pricing Fields based on Invoicing Type */}
+            {customer?.invoicingType === 'by-hours' && (
+              <div>
+                <Label className="text-slate-700 mb-2 block">Hourly Rate (€)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
+                  <Input
+                    type="text"
+                    value={isEditingPrice ? unitPriceDisplay : parseFloat(unitPrice || 0).toFixed(2).replace('.', ',')}
+                    onChange={(e) => {
+                      setIsEditingPrice(true);
+                      setUnitPriceDisplay(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setIsEditingPrice(true);
+                      setUnitPriceDisplay(parseFloat(unitPrice || 0).toFixed(2).replace('.', ','));
+                      e.target.select();
+                    }}
+                    onBlur={(e) => {
+                      setIsEditingPrice(false);
+                      const value = e.target.value.replace(',', '.');
+                      const num = parseFloat(value);
+                      if (!isNaN(num)) {
+                        setUnitPrice(num.toFixed(2));
+                        setUnitPriceDisplay(num.toFixed(2).replace('.', ','));
+                        handleFieldUpdate('unitPrice', parseFloat(num.toFixed(2)));
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.target.blur();
+                      }
+                    }}
+                    className="pl-8"
+                    placeholder="0,00"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Linked to Article 000001 - Računovodstvo
+                </p>
+              </div>
+            )}
+            
+            {customer?.invoicingType === 'fixed-forfait' && (
+              <div>
+                <Label className="text-slate-700 mb-2 block">Fixed Forfait Value (€)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
+                  <Input
+                    type="text"
+                    value={isEditingForfait ? fixedForfaitDisplay : parseFloat(fixedForfaitValue || 0).toFixed(2).replace('.', ',')}
+                    onChange={(e) => {
+                      setIsEditingForfait(true);
+                      setFixedForfaitDisplay(e.target.value);
+                    }}
+                    onFocus={(e) => {
+                      setIsEditingForfait(true);
+                      setFixedForfaitDisplay(parseFloat(fixedForfaitValue || 0).toFixed(2).replace('.', ','));
+                      e.target.select();
+                    }}
+                    onBlur={(e) => {
+                      setIsEditingForfait(false);
+                      const value = e.target.value.replace(',', '.');
+                      const num = parseFloat(value);
+                      if (!isNaN(num)) {
+                        setFixedForfaitValue(num.toFixed(2));
+                        setFixedForfaitDisplay(num.toFixed(2).replace('.', ','));
+                        handleFieldUpdate('fixedForfaitValue', parseFloat(num.toFixed(2)));
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.target.blur();
+                      }
+                    }}
+                    className="pl-8"
+                    placeholder="0,00"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Linked to Article 000001 - Računovodstvo
+                </p>
+              </div>
+            )}
+            
+            {customer?.invoicingType === 'hybrid' && (
+              <>
+                <div>
+                  <Label className="text-slate-700 mb-2 block">Hourly Rate (€)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
+                    <Input
+                      type="text"
+                      value={isEditingPrice ? unitPriceDisplay : parseFloat(unitPrice || 0).toFixed(2).replace('.', ',')}
+                      onChange={(e) => {
+                        setIsEditingPrice(true);
+                        setUnitPriceDisplay(e.target.value);
+                      }}
+                      onFocus={(e) => {
+                        setIsEditingPrice(true);
+                        setUnitPriceDisplay(parseFloat(unitPrice || 0).toFixed(2).replace('.', ','));
+                        e.target.select();
+                      }}
+                      onBlur={(e) => {
+                        setIsEditingPrice(false);
+                        const value = e.target.value.replace(',', '.');
+                        const num = parseFloat(value);
+                        if (!isNaN(num)) {
+                          setUnitPrice(num.toFixed(2));
+                          setUnitPriceDisplay(num.toFixed(2).replace('.', ','));
+                          handleFieldUpdate('unitPrice', parseFloat(num.toFixed(2)));
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.target.blur();
+                        }
+                      }}
+                      className="pl-8"
+                      placeholder="0,00"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    For services not included in forfait
+                  </p>
+                </div>
+                
+                <div>
+                  <Label className="text-slate-700 mb-2 block">Fixed Forfait Value (€)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-600">€</span>
+                    <Input
+                      type="text"
+                      value={isEditingForfait ? fixedForfaitDisplay : parseFloat(fixedForfaitValue || 0).toFixed(2).replace('.', ',')}
+                      onChange={(e) => {
+                        setIsEditingForfait(true);
+                        setFixedForfaitDisplay(e.target.value);
+                      }}
+                      onFocus={(e) => {
+                        setIsEditingForfait(true);
+                        setFixedForfaitDisplay(parseFloat(fixedForfaitValue || 0).toFixed(2).replace('.', ','));
+                        e.target.select();
+                      }}
+                      onBlur={(e) => {
+                        setIsEditingForfait(false);
+                        const value = e.target.value.replace(',', '.');
+                        const num = parseFloat(value);
+                        if (!isNaN(num)) {
+                          setFixedForfaitValue(num.toFixed(2));
+                          setFixedForfaitDisplay(num.toFixed(2).replace('.', ','));
+                          handleFieldUpdate('fixedForfaitValue', parseFloat(num.toFixed(2)));
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.target.blur();
+                        }
+                      }}
+                      className="pl-8"
+                      placeholder="0,00"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Base forfait amount
+                  </p>
+                </div>
+              </>
+            )}
             
             {/* Invoicing Period */}
             <div>
@@ -378,7 +564,7 @@ const CustomerDetail = () => {
                       e.target.blur();
                     }
                   }}
-                  className="pl-8 font-bold"
+                  className="pl-8"
                   placeholder="00,00"
                 />
               </div>
