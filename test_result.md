@@ -529,3 +529,33 @@ agent_communication:
       message: "✅ VERIFICATION ENDPOINT BEHAVIOR TESTING COMPLETE! ALL 2 TESTS PASSED (2/2). Test Results: (1) ✅ 'in progress' batch returns empty arrays: Created test batch with saveAsProgress=true, verified batch status is 'in progress', called GET /api/batches/{batch_id}/verification, confirmed all arrays (jmmcHP, jmmcFinance, noClient, extra) are empty as expected. The endpoint correctly checks batch status BEFORE processing entries (lines 691-697 in server.py). (2) ✅ 'composed' batch returns populated arrays: Called POST /api/invoices/compose to compose invoices for the same batch, verified batch status changed to 'composed', called GET /api/batches/{batch_id}/verification again, confirmed arrays are now populated with 4 categorized entries (1 JMMC HP, 1 JMMC Finance, 1 no client, 1 extra). The endpoint correctly processes and categorizes entries for non-'in progress' batches (lines 699-733 in server.py). CONCLUSION: Verification endpoint behavior is CORRECT and PRODUCTION-READY. Status check happens BEFORE processing entries, 'in progress' batches return empty arrays, 'composed' batches return populated arrays with proper categorization. NO FURTHER ACTION REQUIRED - feature is working as designed."
     - agent: "testing"
       message: "✅ ARTICLES API TESTING COMPLETE! ALL 2 TESTS PASSED (2/2). Test Results: (1) ✅ GET /api/articles - Successfully retrieved 45 articles. Each article has all required fields: code, description, unitMeasure, priceWithoutVAT, vatPercentage, tariffCode. No _id field in response (correctly excluded). First 3 articles verified: Article 000001 (Računovodstvo - Contabilita`, €45.00, VAT 22%), Article 000002 (Najem sedeža - Sede legale, €50.00, VAT 22%), Article 000003 (Uporaba programa - Utilizzo gestionale, €15.00, VAT 22%). (2) ✅ Database Verification - Confirmed articles collection has 45 documents with correct structure. All articles properly seeded via seed_articles.py script (fixed to use correct DB_NAME from environment). CONCLUSION: Articles API is PRODUCTION-READY. Endpoint implementation correct (lines 3002-3006 in server.py), authentication working, response format correct with _id excluded. NO ISSUES FOUND."
+
+backend:
+  - task: "POST /api/invoices/compose-filtered - Filtered invoice composition"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TESTING COMPLETED - ALL TESTS PASSED (5/5). Test Results: (1) ✅ Create batch with saveAsProgress=true: Successfully created test batch with 5 time entries. Batch status correctly set to 'in progress'. Verified batch details and time entries were created in database. (2) ✅ Get time entry IDs: Successfully retrieved 5 time entries from batch. Extracted first 3 entry IDs for filtered composition testing. Entry details verified (customer names, employee names, hours, values). (3) ✅ Compose invoices for filtered entries: Called POST /api/invoices/compose-filtered with payload {batchId, entryIds: [3 IDs]}. Endpoint returned HTTP 200 with correct response structure: {invoiceIds: [2 invoice IDs], entriesProcessed: 3}. Verified response has invoiceIds array and entriesProcessed count matches input. (4) ✅ Verify invoices created in database: Retrieved 2 invoices from batch via GET /api/batches/{batch_id}/invoices. All invoice IDs from compose response found in database. Invoice 1: JMMC HP d.o.o., Total: €382.5, Status: imported, 2 lines. Invoice 2: JMMC Finance d.o.o., Total: €180.0, Status: imported, 1 line. All invoices have totals > 0, all required fields present (id, batchId, customerId, customerName, invoiceDate, periodFrom, periodTo, dueDate, status, total). All invoice lines have correct structure (id, invoiceId, description, quantity, unitPrice, amount). (5) ✅ Batch status updated: Verified batch status changed from 'in progress' to 'composed' after invoice composition. CONCLUSION: Filtered invoice composition flow is FULLY FUNCTIONAL and production-ready. The endpoint correctly: (a) Accepts {batchId, entryIds} payload, (b) Creates invoices only for specified time entry IDs (not all entries in batch), (c) Groups entries by customer and creates separate invoices, (d) Calculates invoice totals correctly, (e) Persists invoices and lines to database, (f) Updates batch status to 'composed', (g) Returns correct response with invoiceIds and entriesProcessed count. Feature is working as designed and ready for production use."
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 8
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "✅ FILTERED INVOICE COMPOSITION TESTING COMPLETE! ALL 5 TESTS PASSED (5/5). Test results: (1) ✅ Batch created with 'in progress' status - Created test batch with saveAsProgress=true, verified status is 'in progress', confirmed 5 time entries created. (2) ✅ Time entry IDs retrieved - Successfully extracted first 3 time entry IDs from batch (2 from JMMC HP, 1 from JMMC Finance). (3) ✅ Filtered composition successful - POST /api/invoices/compose-filtered returned HTTP 200 with {invoiceIds: [2 IDs], entriesProcessed: 3}. Endpoint correctly processed only the 3 specified entry IDs, not all 5 entries in batch. (4) ✅ Invoices verified in database - 2 invoices created (1 for JMMC HP with €382.5 total and 2 lines, 1 for JMMC Finance with €180.0 total and 1 line). All invoices have correct structure, totals > 0, and all required fields. Invoice lines have correct structure. (5) ✅ Batch status updated to 'composed' - Verified batch status changed from 'in progress' to 'composed' after composition. CONCLUSION: The filtered invoice composition feature is PRODUCTION-READY and working correctly. The endpoint successfully: creates invoices for filtered entries only (not all batch entries), groups entries by customer, calculates totals correctly, persists to database, and updates batch status. NO ISSUES FOUND. Main agent should summarize and finish."
+
