@@ -1,34 +1,34 @@
 <analysis>
-The AI engineer successfully implemented a comprehensive set of features and fixes for the JMMC Invoicing application, primarily enhancing the customer management system. Key additions include robust company management with automatic assignment from XLSX imports, ensuring data consistency and normalization. The system now supports manual customer creation, improved display of historical invoice details with additional transaction columns, and European number formatting. The engineer also added advanced UI features like sortable tables in monthly batches and bold styling for company names. Problem-solving involved debugging  errors and  related to MongoDB ObjectIDs, which were addressed by meticulous code adjustments and verification steps. The work concluded with integrating company data into the invoice detail page.
+The AI engineer systematically enhanced the JMMC Invoicing application. Initially, work focused on security, user management,  support, and a comprehensive Import Verification page with AI-powered data validation. This included detailed customer settings, invoice table refinements, and batch list improvements.
+
+The recent trajectory involved significant updates to the Customer Settings Detail page. The engineer implemented dynamic display of  and a new  field based on  (Fixed, Hourly, Hybrid), integrated these into the Invoicing Settings tile, and fixed a frontend bug for Hourly Rate visibility. Subsequently, backend logic was updated in  to auto-populate these invoicing settings directly from historical XLSX imports by analyzing Article 000001 entries. To apply this to existing data, a new backend endpoint was created, triggered by Refresh Invoicing Settings buttons with double confirmation modals on both the Customer List and Customer Detail pages. The UI for Invoicing Settings was further reorganized into three distinct, highlighted tiles: Customer Data, Invoicing Period, and Address Service, with the Company dropdown text finally made bold. Throughout, backend tests passed, and frontend UI changes were verified where possible despite recurring screenshot and login issues.
 </analysis>
 
 <product_requirements>
-The JMMC Invoicing application (FastAPI, MongoDB, React) facilitates monthly invoicing, featuring user authentication, XLSX import with validation, a three-phase workflow (Import, Edit, Review & Post to eRačuni), and audit logging.
-**Implemented Features:**
-1.  **Core Functionality:** Seeded users, login, XLSX import, batch management, AI Agent settings, AI-powered content verification, e-računi API integration.
-2.  **Invoice Number Handling:** Auto-population of read-only invoice  from e-računi response.
-3.  **AI Warnings:** Rounding of hours values in AI notifications and XLSX imports.
-4.  **UI Enhancements:** Easter egg requiring specific text, sortable monthly batches table (by Customer Name, Status, Amount; default Customer Name A-Z), EXXXTRA verification category.
-5.  **Customer Management System:** Database storage,  and  pages.
-    *   Upload historical invoice data (XLS/XLSX) with auto-creation of customers, monthly grouping, and manual entry.
-    *   No duplication on re-import; deletion of individual historical entries.
-    *   Displays name, average monthly invoices, unit price.
-    *   **Company Management**: Added JMMC HP d.o.o. and JMMC Finance d.o.o. companies with dropdown filters, table columns, and edit capabilities. Auto-assignment from XLSX Podjetje (column or row 3 metadata), with company name normalization.
-    *   **Enhanced Individual Transactions**: Added Description, Qty, Unit, Unit Price columns to historical invoice details.
-    *   **Manual Customer Creation**: Option to add new customers from  and  pages.
-    *   **European Number Formatting**: Implemented 1.000,00 format for all Euro values.
-    *   **Auto-update Unit Price**: Automatically sets customer's default unit price from Računovodstvo entries in XLSX.
-    *   **UI Polish**: Bold text for selected company in dropdowns; read-only company field on Invoice Detail page.
+The JMMC Invoicing application manages monthly invoicing with user authentication, XLSX/XLS import/validation, a three-phase workflow (Import, Edit, Review & Post), and audit logging.
+
+**Key features developed/enhanced during the trajectory:**
+*   **Customer Settings Detail Page (Invoicing Settings):**
+    *   Moved  and  dropdown into the  tile.
+    *   Implemented dynamic pricing fields:  (for Fixed Forfait and Hybrid invoicing types) and  (for By Hours Spent and Hybrid). Both linked to Article 000001 - Računovodstvo.
+    *   Preserved European number formatting (1.000,00) and editability for these fields.
+    *   Visually separated Customer Data within Invoicing Settings with a light blue background.
+    *   Auto-population logic in backend for , , and  from latest historical XLSX import rows (Article 000001 analysis).
+    *   Trigger buttons on  list and  pages to update all customer invoicing settings with double confirmation warnings.
+    *   Reorganized Invoicing Settings into three distinct tiles: Customer Data, Invoicing Period, and Address Service.
+    *   Made the Company dropdown text bold.
+*   **Customer Management:** Improved historical invoices table with article codes and enhanced description display. Added statistics and sorting to the customer list.
+*   **Import Verification:** Enhanced workflow with pre-import review, filtering, dynamic totals, and AI validation. Added auto-save and original file download.
+*   **Batch List:** Added a Total column to display the sum of all invoice values per batch.
+*   **User Management & Security:** Implemented user profile and admin user management, removed exposed credentials, and added avatar support.
 </product_requirements>
 
 <key_technical_concepts>
 -   **FastAPI:** Python backend for API development.
--   **React:** Frontend library for UIs, using Shadcn UI and Sonner.
--   **MongoDB:** NoSQL database, with Motor for asynchronous Python interaction.
--   **Pydantic:** Data validation and settings management.
--   **JWT & Argon2:** Secure user authentication.
--   **XLSX Parsing:** Client-side (SheetJS) and server-side (OpenPyXL) processing.
--   **Axios:** HTTP client for frontend API calls.
+-   **React:** Frontend library, utilizing Shadcn UI components.
+-   **MongoDB:** NoSQL database, with Motor for async Python.
+-   **OpenPyXL/xlrd:** Python libraries for XLSX/XLS parsing.
+-   **emergentintegrations:** Library for LLM (AI) integration.
 </key_technical_concepts>
 
 <code_architecture>
@@ -37,44 +37,49 @@ The application uses a standard full-stack structure with a FastAPI backend and 
 
 
 -   ****:
-    -   **Importance:** Core FastAPI application handling backend logic and API endpoints.
+    -   **Importance:** Lists Python dependencies.
+    -   **Changes Made:** Added .
+-   ****:
+    -   **Importance:** Core FastAPI application with API endpoints.
     -   **Changes Made:**
-        -   **Company Management:** Added  model (with uid=0(root) gid=0(root) groups=0(root), ) and endpoints (, ).
-        -   **Customer Model Update:**  model extended with  and .
-        -   **:** Updated to calculate  and include .
-        -   **:** Modified to allow updating .
-        -   **:** Enhanced to parse company names from XLSX (both column Podjetje and metadata in Row 3), auto-create companies, normalize company names to JMMC HP d.o.o. or JMMC Finance d.o.o., and extract additional fields (description, quantity, unit, unit_price) for historical invoices. Also auto-updates  from Računovodstvo entries.
-        -   **:** New endpoint () for manual customer creation, supporting  and .
+        -    schema updated to include .
+        -    updated to parse  (Šifra art.) and auto-populate , ,  based on Article 000001 logic from XLSX data.
+        -   New endpoint  added to apply auto-population logic to existing customers.
+        -   Other changes (User/Auth, XLS/XLSX Import, Invoice/Batch, Import Verification AI/Progress, Time Entry, Customer Management) as previously summarized.
 -   ****:
     -   **Importance:** Defines frontend routes.
-    -   **Changes Made:** Routes for  and  were already present, implicitly used for new features.
+    -   **Changes Made:** Added routes for , , and .
 -   ****:
-    -   **Importance:** Displays list of customers.
-    -   **Changes Made:** Added Company column with sorting, a company filter dropdown in the header, and a + Add Customer button with a modal for manual customer creation. Implemented  function for European number formatting in table values.
+    -   **Importance:** Displays customer list.
+    -   **Changes Made:** Added a Refresh Invoicing Settings button with double confirmation modals to the header for bulk updates.
 -   ****:
-    -   **Importance:** Displays detailed customer info.
-    -   **Changes Made:** Added a company dropdown selector (bold text for selected value), enhanced the Individual Transactions table with Description, Qty, Unit, and Unit Price columns. Implemented  function for European number formatting.
+    -   **Importance:** Displays and manages detailed customer information and invoicing settings.
+    -   **Changes Made:**
+        -    state added and implemented for display.
+        -   Moved Default Unit Price and Company fields into the Invoicing Settings tile.
+        -   Implemented dynamic display logic for  and  based on .
+        -   Fixed a bug where the  field was not showing when  was 'by-hours' due to undefined initial state.
+        -   Restructured Invoicing Settings into three distinct blue-tinted tiles: Customer Data, Invoicing Period, and Address Service.
+        -   Added a Refresh Invoicing Settings button with double confirmation modals.
+        -   Made the Company dropdown text bold.
 -   ****:
-    -   **Importance:** Manages application settings.
-    -   **Changes Made:** Added a Customer Management section with a form to manually create new customers, including selecting a company and setting unit price. Matevž easter egg was added and then reverted.
+    -   **Importance:** Displays monthly batch list.
+    -   **Changes Made:** Added a Total column displaying the sum of all invoice values per batch.
 -   ****:
-    -   **Importance:** Displays details of a specific batch.
-    -   **Changes Made:** Converted the invoice display from cards to a sortable table. Implemented sorting for Customer Name, Status, and Amount columns, with Customer Name A-Z as default. Applied European formatting for amounts.
--   ****:
-    -   **Importance:** Displays individual invoices.
-    -   **Changes Made:** Added a read-only Company field in the Summary section, displaying the customer's assigned company from settings.
+    -   **Importance:** Reusable UI component for avatars.
+    -   **Changes Made:** New file created.
 </code_architecture>
 
 <pending_tasks>
--   Implement drag to reorder functionality for invoice line items in the Edit phase.
--   Address persistent  errors when accessing customer-related API endpoints in the frontend.
 -   Visually verify the frontend display of the automatically populated and read-only invoice number after posting a new invoice to e-računi.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary, the AI engineer successfully implemented and verified the display of customer's associated company data on the  page. This involved modifying  to fetch company information related to the invoice's customer and present it in a read-only dropdown within the invoice's summary section. The selected company name in this dropdown is rendered in bold text, matching the user's explicit request from a screenshot. This feature enhances context for users viewing individual invoices by clearly showing which company the customer belongs to, consistent with the newly introduced company management system. The implementation was thoroughly tested with screenshots, confirming correct data display and styling.
+Immediately before this summary, the AI engineer completed the user's request to enhance the visual presentation of the Company dropdown text within the Customer Data subsection of the Invoicing Settings tile on the Customer Detail page ().
+
+Specifically, the  component used for the Company field was modified to ensure its displayed text is bold, aligning with the user's explicit request for visual emphasis based on the UI's color scheme. This change was implemented by adding appropriate styling to the component's structure. Following this modification, the frontend service was restarted, and a screenshot attempt was made to verify the change, though recurring customer loading issues persisted for screenshot verification. The core styling change, however, was successfully applied.
 </current_work>
 
 <optional_next_step>
-I will implement the drag to reorder functionality for invoice line items in the Edit phase.
+Address the pending task to visually verify the frontend display of the automatically populated and read-only invoice number after posting a new invoice to e-računi.
 </optional_next_step>
