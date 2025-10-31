@@ -1191,10 +1191,13 @@ const ImportVerification = () => {
                     const isFlagged = aiResults[originalIndex];
                     const isAiCorrected = aiCorrectedRows.has(originalIndex);
                     const isManuallyEdited = manuallyEditedRows.has(originalIndex);
+                    const isInvoiced = row.invoiced === true;
                     
                     // Determine row background color based on edit status
                     let rowBgClass = '';
-                    if (isFlagged) {
+                    if (isInvoiced) {
+                      rowBgClass = 'bg-green-50/50 hover:bg-green-50 opacity-70';
+                    } else if (isFlagged) {
                       rowBgClass = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500';
                     } else if (isAiCorrected) {
                       rowBgClass = 'bg-purple-100/60 hover:bg-purple-100';
@@ -1209,6 +1212,10 @@ const ImportVerification = () => {
                         key={displayIndex} 
                         className={`transition-colors cursor-pointer ${rowBgClass}`}
                         onClick={() => {
+                          if (isInvoiced) {
+                            toast.info('This row has already been invoiced');
+                            return;
+                          }
                           if (isFlagged) {
                             // Open AI Evaluation modal for flagged rows
                             handleRowClick(originalIndex);
@@ -1218,7 +1225,9 @@ const ImportVerification = () => {
                           }
                         }}
                         title={
-                          isFlagged 
+                          isInvoiced 
+                            ? 'Already invoiced - cannot edit'
+                            : isFlagged 
                             ? 'Click to see AI evaluation and suggestions' 
                             : isAiCorrected
                               ? 'Click to view and edit AI-corrected values'
