@@ -651,6 +651,15 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
             
             # Update fields if provided
             update_fields = {}
+            
+            # If this is the first AI correction, save original values
+            if 'aiCorrectionApplied' in update_data and update_data['aiCorrectionApplied'] and not entry.get('aiCorrectionApplied'):
+                # Save original values before overwriting
+                if 'originalNotes' not in entry or entry.get('originalNotes') is None:
+                    update_fields['originalNotes'] = entry.get('notes', '')
+                if 'originalHours' not in entry or entry.get('originalHours') is None:
+                    update_fields['originalHours'] = entry.get('hours', 0)
+            
             if 'comments' in update_data:
                 update_fields['notes'] = update_data['comments']
             if 'hours' in update_data:
