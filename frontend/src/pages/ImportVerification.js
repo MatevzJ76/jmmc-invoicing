@@ -1520,6 +1520,74 @@ const ImportVerification = () => {
           </div>
         </div>
       )}
+
+      {/* Import Complete Report Modal */}
+      {importComplete && importReport && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 mb-2">Import Complete!</h3>
+              <p className="text-slate-600">
+                Your data has been successfully imported and invoices have been generated.
+              </p>
+            </div>
+            
+            {/* Import Statistics */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 mb-4 border border-green-200">
+              <h4 className="text-sm font-semibold text-slate-800 mb-3">Import Summary</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-xs text-slate-600 mb-1">Rows Imported</p>
+                  <p className="text-2xl font-bold text-blue-600">{importReport.rowsImported}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-xs text-slate-600 mb-1">Invoices Created</p>
+                  <p className="text-2xl font-bold text-green-600">{importReport.invoicesCreated}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-xs text-slate-600 mb-1">Total Hours</p>
+                  <p className="text-xl font-bold text-purple-600">{importReport.totalHours.toFixed(2)}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-xs text-slate-600 mb-1">Total Value</p>
+                  <p className="text-xl font-bold text-emerald-600">€{importReport.totalValue.toFixed(2)}</p>
+                </div>
+              </div>
+              
+              <div className="mt-3 p-3 bg-white rounded-lg">
+                <p className="text-xs text-slate-600 mb-1">Unique Customers</p>
+                <p className="text-xl font-bold text-indigo-600">{importReport.uniqueCustomers}</p>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-800">
+                <strong>What's next?</strong> You can now view the generated invoices and verification sections in the Batch Detail page.
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/batches')}
+                className="flex-1 rounded-full"
+              >
+                View All Batches
+              </Button>
+              <Button
+                onClick={() => navigate(`/batches/${importReport.batchId}`)}
+                className="flex-1 bg-green-600 hover:bg-green-700 rounded-full"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                View Invoices & Verification
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
