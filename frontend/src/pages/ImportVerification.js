@@ -960,50 +960,92 @@ const ImportVerification = () => {
               </SelectContent>
             </Select>
             
-            {/* Customer Filter */}
-            <Select 
-              value={customerFilter} 
-              onValueChange={(value) => {
-                setCustomerFilter(value);
-                setCustomerSearchTerm(''); // Reset search when selection changes
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All Customers" />
-              </SelectTrigger>
-              <SelectContent onOpenAutoFocus={(e) => {
-                e.preventDefault();
-                setCustomerSearchTerm(''); // Clear search when dropdown opens
-              }}>
-                <div className="p-2 border-b border-slate-200">
-                  <Input
-                    placeholder="Search customers..."
-                    value={customerSearchTerm}
-                    onChange={(e) => setCustomerSearchTerm(e.target.value)}
-                    className="h-8 text-sm"
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => e.stopPropagation()}
+            {/* Customer Filter - Custom Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setCustomerDropdownOpen(!customerDropdownOpen);
+                  setCustomerSearchTerm(''); // Clear search on open
+                }}
+                className="w-full flex items-center justify-between h-10 px-3 py-2 text-sm bg-white border border-slate-200 rounded-md hover:bg-slate-50"
+              >
+                <span className={customerFilter === 'all' ? 'text-slate-500' : 'text-slate-900'}>
+                  {customerFilter === 'all' ? 'All Customers' : customerFilter}
+                </span>
+                <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {customerDropdownOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => {
+                      setCustomerDropdownOpen(false);
+                      setCustomerSearchTerm('');
+                    }}
                   />
-                </div>
-                <div className="max-h-[300px] overflow-y-auto">
-                  <SelectItem value="all">All Customers</SelectItem>
-                  {uniqueCustomers
-                    .filter(customer => 
-                      !customerSearchTerm || customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
-                    )
-                    .map(customer => (
-                      <SelectItem key={customer} value={customer}>{customer}</SelectItem>
-                    ))}
-                  {customerSearchTerm && uniqueCustomers.filter(customer => 
-                    customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
-                  ).length === 0 && (
-                    <div className="p-2 text-sm text-slate-500 text-center">
-                      No customers found
+                  
+                  {/* Dropdown Content */}
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg">
+                    {/* Search Input */}
+                    <div className="p-2 border-b border-slate-200">
+                      <Input
+                        placeholder="Search customers..."
+                        value={customerSearchTerm}
+                        onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                        className="h-8 text-sm"
+                        autoFocus
+                      />
                     </div>
-                  )}
-                </div>
-              </SelectContent>
-            </Select>
+                    
+                    {/* Options List */}
+                    <div className="max-h-[300px] overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          setCustomerFilter('all');
+                          setCustomerDropdownOpen(false);
+                          setCustomerSearchTerm('');
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100 flex items-center justify-between"
+                      >
+                        <span>All Customers</span>
+                        {customerFilter === 'all' && <span className="text-blue-600">✓</span>}
+                      </button>
+                      
+                      {uniqueCustomers
+                        .filter(customer => 
+                          !customerSearchTerm || customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                        )
+                        .map(customer => (
+                          <button
+                            key={customer}
+                            onClick={() => {
+                              setCustomerFilter(customer);
+                              setCustomerDropdownOpen(false);
+                              setCustomerSearchTerm('');
+                            }}
+                            className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100 flex items-center justify-between"
+                          >
+                            <span>{customer}</span>
+                            {customerFilter === customer && <span className="text-blue-600">✓</span>}
+                          </button>
+                        ))}
+                      
+                      {uniqueCustomers.filter(customer => 
+                        customer.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                      ).length === 0 && customerSearchTerm && (
+                        <div className="p-3 text-sm text-slate-500 text-center">
+                          No customers found
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
             
             {/* Employee Filter */}
             <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
