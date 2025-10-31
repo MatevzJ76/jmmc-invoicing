@@ -4,7 +4,7 @@ Monthly invoicing system for time tracking & invoice management with AI-powered 
 
 ## Quick Start
 
-**Live URL**: https://invoiceflow-40.preview.emergentagent.com
+**Live URL**: https://invoice-ai-verify.preview.emergentagent.com
 
 **Default Credentials**:
 - Admin: `admin@local` / `Admin2025!`
