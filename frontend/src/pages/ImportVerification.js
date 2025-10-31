@@ -624,7 +624,6 @@ const ImportVerification = () => {
       
       // Determine which rows to import (filtered or all)
       const rowsToImport = displayRows;
-      const isFiltered = displayRows.length !== verificationData.rows.length;
       
       let importResults = {
         rowsImported: 0,
@@ -635,68 +634,31 @@ const ImportVerification = () => {
         uniqueCustomers: 0
       };
       
-      // Prepare rows data with correction flags
-      const rowsWithFlags = rowsToImport.map((row, displayIndex) => {
-        // Find original index to get correction flags
-        const originalIndex = verificationData.rows.findIndex(r => 
-          r.customer === row.customer && 
-          r.employee === row.employee && 
-          r.comments === row.comments &&
-          r.date === row.date
+      // If we have a batch already (resuming), just compose invoices
+      if (verificationData.batchId) {
+        toast.info('Creating invoices from selected rows...');
+        
+        // Compose invoices for the existing batch
+        const composeResponse = await axios.post(
+          `${BACKEND_URL}/api/invoices/compose?batchId=${verificationData.batchId}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` }}
         );
-        
-        // Convert European format numbers to standard float format
-        const parseEuropeanNumber = (value) => {
-          if (typeof value === 'number') return value;
-          if (!value) return 0;
-          // Remove thousand separators (.) and replace decimal comma (,) with dot (.)
-          const cleaned = String(value).replace(/\./g, '').replace(',', '.');
-          return parseFloat(cleaned) || 0;
-        };
-        
-        return {
-          ...row,
-          hours: parseEuropeanNumber(row.hours),
-          value: parseEuropeanNumber(row.value),
-          aiCorrectionApplied: originalIndex >= 0 ? aiCorrectedRows.has(originalIndex) : false,
-          manuallyEdited: originalIndex >= 0 ? manuallyEditedRows.has(originalIndex) : false,
-          originalNotes: originalIndex >= 0 && originalValues[originalIndex] ? originalValues[originalIndex].comments : null,
-          originalHours: originalIndex >= 0 && originalValues[originalIndex] ? parseEuropeanNumber(originalValues[originalIndex].hours) : null
-        };
-      });
-      
-      // Create batch and time entries using the new endpoint
-      const importPayload = {
-        title: verificationData.metadata.title,
-        invoiceDate: verificationData.metadata.invoiceDate,
-        periodFrom: verificationData.metadata.periodFrom,
-        periodTo: verificationData.metadata.periodTo,
-        dueDate: verificationData.metadata.dueDate,
-        filename: verificationData.fileName,
-        rows: rowsWithFlags
-      };
-      
-      const response = await axios.post(
-        `${BACKEND_URL}/api/imports/from-verification`,
-        importPayload,
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-      
-      // Compose invoices
-      const composeResponse = await axios.post(
-        `${BACKEND_URL}/api/invoices/compose?batchId=${response.data.batchId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
 
-      importResults = {
-        rowsImported: response.data.rowCount,
-        invoicesCreated: composeResponse.data.invoiceIds.length,
-        batchId: response.data.batchId,
-        totalHours: rowsToImport.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0),
-        totalValue: rowsToImport.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0),
-        uniqueCustomers: new Set(rowsToImport.map(r => r.customer)).size
-      };
+        importResults = {
+          rowsImported: rowsToImport.length,
+          invoicesCreated: composeResponse.data.invoiceIds.length,
+          batchId: verificationData.batchId,
+          totalHours: rowsToImport.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0),
+          totalValue: rowsToImport.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0),
+          uniqueCustomers: new Set(rowsToImport.map(r => r.customer)).size
+        };
+      } else {
+        // Should not happen - batch should be created on page load
+        toast.error('No batch found. Please try importing again.');
+        setLoading(false);
+        return;
+      }
       
       // Set import complete and show report
       setImportComplete(true);
@@ -705,9 +667,7 @@ const ImportVerification = () => {
       // Show success message
       toast.success(`✅ Import Complete! Created ${importResults.invoicesCreated} invoices from ${importResults.rowsImported} rows`);
       
-      // Clear sessionStorage
-      sessionStorage.removeItem('importVerificationData');
-      
+      // DON'T clear sessionStorage - keep data accessible
       // DON'T navigate away - stay on this page
       
     } catch (error) {
