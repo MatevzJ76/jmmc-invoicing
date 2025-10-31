@@ -1033,6 +1033,29 @@ const ImportVerification = () => {
                 ))}
               </SelectContent>
             </Select>
+            
+            {/* Reset Filters Icon Button */}
+            <div className="flex items-center justify-center">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  setSearchTerm('');
+                  setProjectFilter('all');
+                  setCustomerFilter('all');
+                  setEmployeeFilter('all');
+                  setTariffFilter('all');
+                  setCustomerSearchTerm('');
+                  setCustomerDropdownKey(prev => prev + 1);
+                  toast.success('All filters cleared');
+                }}
+                className="rounded-full h-10 w-10"
+                title="Clear All Filters"
+                disabled={searchTerm === '' && projectFilter === 'all' && customerFilter === 'all' && employeeFilter === 'all' && tariffFilter === 'all'}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
           
           {/* Clear Filters Button */}
