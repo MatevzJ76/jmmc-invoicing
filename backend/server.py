@@ -1654,6 +1654,67 @@ async def upload_customer_history(
                         if address_service_price is not None:
                             break
                     
+                    # AUTO-POPULATE INVOICING TYPE AND PRICING based on Article 000001 from latest period
+                    invoicing_type = None
+                    fixed_forfait_value = None
+                    hourly_rate = None
+                    
+                    # Get the latest (most recent) entry
+                    if all_new_entries:
+                        latest_entry = all_new_entries[-1]  # Most recent entry
+                        individual_rows = latest_entry.get("individualRows", [])
+                        
+                        # Find all Article 000001 entries in the latest period
+                        article_000001_rows = []
+                        for row in individual_rows:
+                            article_code = row.get("articleCode", "").strip()
+                            if article_code == "000001":
+                                article_000001_rows.append(row)
+                        
+                        logger.info(f"Found {len(article_000001_rows)} Article 000001 entries in latest period")
+                        
+                        if len(article_000001_rows) == 1:
+                            # Single Article 000001 entry
+                            single_row = article_000001_rows[0]
+                            detailed_desc = single_row.get("detailedDescription", "").strip()
+                            unit_price = single_row.get("unitPrice")
+                            
+                            # Check if detailed description contains work list (dates, tasks, values)
+                            has_work_list = False
+                            if detailed_desc:
+                                # Look for patterns like "2024-10-17" or "17.10.24" followed by tasks
+                                import re
+                                date_patterns = [
+                                    r'\d{4}-\d{2}-\d{2}',  # 2024-10-17
+                                    r'\d{2}\.\d{2}\.\d{2,4}',  # 17.10.24 or 17.10.2024
+                                ]
+                                for pattern in date_patterns:
+                                    if re.search(pattern, detailed_desc):
+                                        has_work_list = True
+                                        break
+                            
+                            if has_work_list and unit_price is not None:
+                                # Case C: By Hours Spent
+                                invoicing_type = "by-hours"
+                                hourly_rate = unit_price
+                                logger.info(f"Auto-detected: By Hours Spent (hourly rate: €{hourly_rate})")
+                            elif unit_price is not None:
+                                # Case A: Fixed Forfait (empty or simple description)
+                                invoicing_type = "fixed-forfait"
+                                fixed_forfait_value = unit_price
+                                logger.info(f"Auto-detected: Fixed Forfait (value: €{fixed_forfait_value})")
+                        
+                        elif len(article_000001_rows) >= 2:
+                            # Case B: Hybrid - Multiple Article 000001 entries
+                            invoicing_type = "hybrid"
+                            # First row = Fixed Forfait
+                            if article_000001_rows[0].get("unitPrice") is not None:
+                                fixed_forfait_value = article_000001_rows[0]["unitPrice"]
+                            # Second row = Hourly Rate (usually "dodatna dela")
+                            if article_000001_rows[1].get("unitPrice") is not None:
+                                hourly_rate = article_000001_rows[1]["unitPrice"]
+                            logger.info(f"Auto-detected: Hybrid (forfait: €{fixed_forfait_value}, hourly: €{hourly_rate})")
+                    
                     # Keep only manual entries
                     existing_history = target_customer.get("historicalInvoices", [])
                     manual_entries = [entry for entry in existing_history if entry.get("source") == "manual"]
