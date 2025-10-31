@@ -2998,6 +2998,33 @@ async def ai_suggest(request: AIRequest, current_user: User = Depends(get_curren
     except Exception as e:
         return {"suggestion": request.text, "message": f"AI error: {str(e)}"}
 
+# ============ ARTICLE CODES ENDPOINTS ============
+@api_router.get("/articles")
+async def get_articles(current_user: User = Depends(get_current_user)):
+    """Get all article codes"""
+    articles = await db.articles.find({}, {"_id": 0}).to_list(1000)
+    return articles
+
+@api_router.put("/articles/{article_code}")
+async def update_article(article_code: str, article_data: dict, current_user: User = Depends(get_current_user)):
+    """Update article code data"""
+    # Only allow updating specific fields
+    allowed_fields = ['description', 'unitMeasure', 'priceWithoutVAT', 'vatPercentage', 'tariffCode']
+    update_data = {k: v for k, v in article_data.items() if k in allowed_fields}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    
+    result = await db.articles.update_one(
+        {"code": article_code},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Article not found")
+    
+    return {"message": "Article updated successfully"}
+
 # Include router
 app.include_router(api_router)
 
