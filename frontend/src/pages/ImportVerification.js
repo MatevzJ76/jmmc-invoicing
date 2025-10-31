@@ -45,6 +45,7 @@ const ImportVerification = () => {
   
   // Customer dropdown search
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
+  const [customerDropdownKey, setCustomerDropdownKey] = useState(0); // Force re-render
   
   // AI verification states
   const [aiVerifying, setAiVerifying] = useState(false);
