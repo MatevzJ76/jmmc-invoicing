@@ -990,7 +990,7 @@ const ImportVerification = () => {
                   />
                   
                   {/* Dropdown Panel */}
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-[400px] flex flex-col">
+                  <div className="absolute z-[60] w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-[400px] flex flex-col">
                     {/* Search Input */}
                     <div className="p-2 border-b border-slate-200">
                       <Input
