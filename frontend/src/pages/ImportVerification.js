@@ -405,6 +405,16 @@ const ImportVerification = () => {
     
     const updatedRows = [...verificationData.rows];
     
+    // Save original values if this is the first edit (and not already AI-corrected)
+    const newOriginalValues = { ...originalValues };
+    if (!newOriginalValues[editingRowIndex]) {
+      newOriginalValues[editingRowIndex] = {
+        comments: updatedRows[editingRowIndex].comments,
+        hours: updatedRows[editingRowIndex].hours
+      };
+      setOriginalValues(newOriginalValues);
+    }
+    
     // Apply edited values
     if (editableSuggestions.description && editableSuggestions.description.trim()) {
       updatedRows[editingRowIndex].comments = editableSuggestions.description.trim();
@@ -414,12 +424,17 @@ const ImportVerification = () => {
       updatedRows[editingRowIndex].hours = editableSuggestions.hours;
     }
     
+    // Mark this row as manually corrected (add robot icon)
+    const newAiCorrectedRows = new Set(aiCorrectedRows);
+    newAiCorrectedRows.add(editingRowIndex);
+    setAiCorrectedRows(newAiCorrectedRows);
+    
     // Update verification data
     const updatedData = {
       ...verificationData,
       rows: updatedRows,
-      aiCorrectedRows: Array.from(aiCorrectedRows),
-      originalValues: originalValues
+      aiCorrectedRows: Array.from(newAiCorrectedRows),
+      originalValues: newOriginalValues
     };
     setVerificationData(updatedData);
     
@@ -429,7 +444,7 @@ const ImportVerification = () => {
     // Mark that changes have been made
     setHasChanges(true);
     
-    toast.success('Changes saved');
+    toast.success('Changes saved - row marked with 🤖');
     setShowEditModal(false);
     setEditingRowIndex(null);
     setEditableSuggestions({ description: '', hours: null });
