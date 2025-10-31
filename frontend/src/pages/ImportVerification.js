@@ -1330,11 +1330,11 @@ const ImportVerification = () => {
                   <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-3">
                     <div>
                       <p className="text-xs font-semibold text-slate-600 mb-1">Original Description:</p>
-                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].comments}</p>
+                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].comments || 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-slate-600 mb-1">Original Hours:</p>
-                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].hours}</p>
+                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].hours || 0}</p>
                     </div>
                   </div>
                 </div>
