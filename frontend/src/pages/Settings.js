@@ -267,17 +267,39 @@ const ArticleCodesSection = () => {
           
           return (
             <div key={article.code} className="border border-slate-200 rounded-lg overflow-hidden">
-              {/* Article Header - Clickable */}
+              {/* Article Header - Clickable - Enhanced with all data */}
               <button
                 onClick={() => toggleArticle(article.code)}
                 className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
               >
-                <div className="flex items-center gap-4 text-left">
-                  <span className="font-mono font-semibold text-purple-600">{article.code}</span>
-                  <span className="text-sm text-slate-700">{currentData.description}</span>
+                <div className="flex items-center gap-6 text-left flex-1">
+                  {/* Article Code */}
+                  <span className="font-mono font-semibold text-purple-600 w-20">{article.code}</span>
+                  
+                  {/* Description */}
+                  <span className="text-sm text-slate-700 flex-1 min-w-0 truncate">{currentData.description}</span>
+                  
+                  {/* Unit Measure */}
+                  <span className="text-sm text-slate-600 w-16 text-center">
+                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                      {currentData.unitMeasure}
+                    </span>
+                  </span>
+                  
+                  {/* Price without VAT */}
+                  <span className="text-sm font-semibold text-emerald-600 w-28 text-right">
+                    €{formatEuro(currentData.priceWithoutVAT)}
+                  </span>
+                  
+                  {/* VAT % */}
+                  <span className="text-sm font-medium text-orange-600 w-20 text-right">
+                    {currentData.vatPercentage}% DDV
+                  </span>
                 </div>
+                
+                {/* Expand/Collapse Icon */}
                 <svg 
-                  className={`w-5 h-5 text-slate-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 text-slate-600 transition-transform ml-4 ${isExpanded ? 'rotate-180' : ''}`}
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
