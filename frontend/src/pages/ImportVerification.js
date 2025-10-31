@@ -985,12 +985,12 @@ const ImportVerification = () => {
                 <>
                   {/* Backdrop - Click to close */}
                   <div 
-                    className="fixed inset-0 z-[55]" 
+                    className="fixed inset-0 z-[100]" 
                     onClick={() => setCustomerDropdownOpen(false)}
                   />
                   
                   {/* Dropdown Panel */}
-                  <div className="absolute z-[60] w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-[400px] flex flex-col">
+                  <div className="absolute z-[101] w-full mt-1 bg-white border-2 border-blue-500 rounded-md shadow-2xl max-h-[400px] flex flex-col">
                     {/* Search Input */}
                     <div className="p-2 border-b border-slate-200">
                       <Input
