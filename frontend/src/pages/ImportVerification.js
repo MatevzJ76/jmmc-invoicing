@@ -211,7 +211,8 @@ const ImportVerification = () => {
           comments: entry.notes || '',
           hours: entry.hours || 0,
           value: entry.value || 0,
-          invoiceNumber: entry.invoiceNumber || ''
+          invoiceNumber: entry.invoiceNumber || '',
+          invoiced: entry.invoiced || false
         };
       });
       
