@@ -1473,6 +1473,9 @@ ${randomFinal}`;
         {/* Article Codes Tile */}
         <ArticleCodesSection />
 
+        {/* Costs Tile */}
+        <EmployeeCostsSection />
+
         {/* Customer Management Tile */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
           <div className="flex items-center gap-3 mb-6">
