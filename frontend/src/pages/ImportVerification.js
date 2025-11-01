@@ -287,7 +287,8 @@ const ImportVerification = () => {
   useEffect(() => {
     if (!verificationData) return;
     
-    let filtered = verificationData.rows;
+    // Add original index to each row for stable tracking
+    let filtered = verificationData.rows.map((row, index) => ({ ...row, _originalIndex: index }));
     
     // Search filter (searches in customer, employee, and comments)
     if (searchTerm) {
