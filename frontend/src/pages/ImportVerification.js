@@ -1728,7 +1728,7 @@ const ImportVerification = () => {
                   onClick={() => {
                     setShowEditModal(false);
                     setEditingRowIndex(null);
-                    setEditableSuggestions({ description: '', hours: null });
+                    setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '' });
                   }}
                   className="flex-1 rounded-full"
                 >
