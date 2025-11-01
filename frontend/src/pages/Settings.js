@@ -1078,6 +1078,7 @@ const Settings = () => {
   // Collapsible tiles state
   const [aiProviderExpanded, setAiProviderExpanded] = useState(false);
   const [aiPromptsExpanded, setAiPromptsExpanded] = useState(false);
+  const [dtmExpanded, setDtmExpanded] = useState(false);
   const [eracuniExpanded, setEracuniExpanded] = useState(false);
   
   // Prompt testing states
