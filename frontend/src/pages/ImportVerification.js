@@ -223,7 +223,8 @@ const ImportVerification = () => {
               comments: entry.originalNotes || '',
               hours: entry.originalHours || 0,
               customerId: entry.originalCustomerId || '',
-              customer: customersMap[entry.originalCustomerId] || '' // Resolve customer name from ID
+              customer: customersMap[entry.originalCustomerId] || '', // Resolve customer name from ID
+              tariff: entry.originalTariff || ''
             };
             console.log(`AI-corrected row ${index} has original values:`, originalValuesObj[index]);
           }
@@ -237,7 +238,8 @@ const ImportVerification = () => {
               comments: entry.originalNotes || '',
               hours: entry.originalHours || 0,
               customerId: entry.originalCustomerId || '',
-              customer: customersMap[entry.originalCustomerId] || '' // Resolve customer name from ID
+              customer: customersMap[entry.originalCustomerId] || '', // Resolve customer name from ID
+              tariff: entry.originalTariff || ''
             };
             console.log(`Manually-edited row ${index} has original values:`, originalValuesObj[index]);
           }
