@@ -1959,6 +1959,7 @@ ${randomFinal}`;
                 </div>
               )}
             </div>
+          </div>
           )}
         </div>
 
