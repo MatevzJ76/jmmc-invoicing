@@ -701,6 +701,14 @@ const ArticleCodesSection = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newArticle, setNewArticle] = useState({ 
+    code: '', 
+    description: '', 
+    unitMeasure: 'kos',
+    priceWithoutVAT: 0,
+    vatPercentage: 22
+  });
 
   useEffect(() => {
     loadArticles();
