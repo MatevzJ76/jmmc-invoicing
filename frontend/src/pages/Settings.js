@@ -1788,11 +1788,41 @@ ${randomFinal}`;
                 )}
               </div>
             </div>
+          </div>
+          )}
+        </div>
+
+        {/* 2xDTM Settings Tile */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+          <button
+            onClick={() => setDtmExpanded(!dtmExpanded)}
+            className="w-full flex items-center justify-between cursor-pointer group"
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-6 h-6 text-pink-600" />
+              <h2 className="text-xl font-bold text-slate-800">2xDTM (Do The Magic)</h2>
+            </div>
+            
+            <svg 
+              className={`w-5 h-5 text-slate-600 transition-transform ${dtmExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {dtmExpanded && (
+          <div className="mt-6">
+            <p className="text-sm text-slate-600 mb-6">
+              Special AI enhancement prompt for advanced data processing (hidden by default for security)
+            </p>
 
             {/* 2xDTM Prompt */}
             <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
               <div className="flex items-center justify-between">
-                <Label htmlFor="dtm" className="text-base font-semibold">2xDTM (Do The Magic, Do The Magic)</Label>
+                <Label htmlFor="dtm" className="text-base font-semibold">2xDTM Prompt</Label>
                 <button
                   onClick={() => setShowDtmPrompt(!showDtmPrompt)}
                   className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
@@ -1820,7 +1850,7 @@ ${randomFinal}`;
                 data-testid="dtm-prompt-input"
                 disabled={!showDtmPrompt}
               />
-              <p className="text-xs text-slate-500">Special AI enhancement prompt for future use (hidden by default)</p>
+              <p className="text-xs text-slate-500">Click 'Show' to view and edit the system prompt</p>
               
               {/* Test Section */}
               <div className="mt-4 pt-4 border-t border-slate-300">
