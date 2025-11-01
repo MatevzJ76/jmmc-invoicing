@@ -2497,11 +2497,11 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
                 {"$set": {"total": line_total}}
             )
         
-        # Mark all entries in this invoice as "invoiced"
+        # Mark all entries in this invoice as "invoiced" (change status to 'invoiced')
         entry_ids_to_mark = [entry["id"] for entry in customer_entries]
         await db.timeEntries.update_many(
             {"id": {"$in": entry_ids_to_mark}},
-            {"$set": {"invoiced": True}}
+            {"$set": {"status": "invoiced"}}
         )
         
         invoice_ids.append(invoice_id)
@@ -2603,11 +2603,11 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
                 {"$set": {"total": line_total}}
             )
         
-        # Mark all entries in this invoice as "invoiced"
+        # Mark all entries in this invoice as "invoiced" (change status to 'invoiced')
         entry_ids_to_mark = [entry["id"] for entry in customer_entries]
         await db.timeEntries.update_many(
             {"id": {"$in": entry_ids_to_mark}},
-            {"$set": {"invoiced": True}}
+            {"$set": {"status": "invoiced"}}
         )
         
         invoice_ids.append(invoice_id)
