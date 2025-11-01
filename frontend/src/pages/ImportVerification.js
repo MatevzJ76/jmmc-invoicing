@@ -73,6 +73,9 @@ const ImportVerification = () => {
   const [importReport, setImportReport] = useState(null); // Store import results
   const [allCustomers, setAllCustomers] = useState([]); // Store all customers for dropdown
   const [customerSearchTerm, setCustomerSearchTerm] = useState(''); // Search term for customer dropdown
+  const [aiProcessing, setAiProcessing] = useState(false); // Track AI processing state
+  const [aiProcessResults, setAiProcessResults] = useState({}); // Store AI processing results: { grammar: '', fraud: '', gdpr: '', verification: '', dtm: '' }
+  const [expandedAiResults, setExpandedAiResults] = useState(new Set()); // Track which AI result tiles are expanded
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
