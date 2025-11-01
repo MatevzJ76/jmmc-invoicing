@@ -250,7 +250,7 @@ const TariffCodesSection = () => {
       );
       
       toast.success('Tariff added successfully');
-      setNewTariff({ code: '', description: '' });
+      setNewTariff({ code: '', description: '', value: 0 });
       setShowAddForm(false);
       loadTariffs(); // Reload list
       
@@ -360,7 +360,7 @@ const TariffCodesSection = () => {
                 <Button
                   onClick={() => {
                     setShowAddForm(false);
-                    setNewTariff({ code: '', description: '' });
+                    setNewTariff({ code: '', description: '', value: 0 });
                   }}
                   variant="outline"
                   size="sm"
