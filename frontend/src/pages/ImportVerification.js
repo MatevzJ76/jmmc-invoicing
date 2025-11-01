@@ -1000,7 +1000,7 @@ const ImportVerification = () => {
                 <Euro className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-600">Vrednost</p>
+                <p className="text-sm text-slate-600">Total</p>
                 <p className="text-2xl font-bold text-slate-800">€{formatEuro(totalValue)}</p>
               </div>
             </div>
