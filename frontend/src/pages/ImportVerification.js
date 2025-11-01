@@ -1697,17 +1697,48 @@ const ImportVerification = () => {
                           customerId: value,
                           customer: selectedCustomer?.name || ''
                         });
+                        setCustomerSearchTerm(''); // Reset search on selection
                       }}
                     >
                       <SelectTrigger className="bg-white border-orange-300 focus:border-orange-500">
                         <SelectValue placeholder="Select customer" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {allCustomers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.name}
-                          </SelectItem>
-                        ))}
+                        {/* Search Input */}
+                        <div className="p-2 border-b border-slate-200 sticky top-0 bg-white z-10">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Input
+                              type="text"
+                              placeholder="Search customers..."
+                              value={customerSearchTerm}
+                              onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                              className="pl-9 h-8 text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Filtered Customer List */}
+                        {allCustomers
+                          .filter(customer => 
+                            customer.name.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                          )
+                          .map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>
+                              {customer.name}
+                            </SelectItem>
+                          ))}
+                        
+                        {/* No results message */}
+                        {allCustomers.filter(customer => 
+                          customer.name.toLowerCase().includes(customerSearchTerm.toLowerCase())
+                        ).length === 0 && (
+                          <div className="p-3 text-center text-sm text-slate-500">
+                            No customers found
+                          </div>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
