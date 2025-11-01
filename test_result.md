@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test enhanced Excel import functionality supporting both .xlsx and .xls files + AI Verification row marking with robot icon"
+user_problem_statement: "Fix hourly rate (tariff value) persistence issue in Import Verification page + rename column from 'Hourly Rate (€)' to 'Value (€)'"
 
 backend:
   - task: "POST /api/imports - XLSX file import (existing functionality)"
