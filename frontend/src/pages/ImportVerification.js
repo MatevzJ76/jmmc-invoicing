@@ -115,7 +115,23 @@ const ImportVerification = () => {
     if (!data.resuming && data.fileData && data.fileData.length > 0) {
       autoSaveAsInProgress(data);
     }
+    
+    // Load all customers for dropdown
+    loadAllCustomers();
   }, [location, navigate]);
+  
+  const loadAllCustomers = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/customers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAllCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to load customers:', error);
+      // Don't block UI if customers fail to load
+    }
+  };
   
   const autoSaveAsInProgress = async (data) => {
     try {
