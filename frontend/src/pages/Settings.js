@@ -570,6 +570,42 @@ const EmployeeCostsSection = () => {
     }
   };
 
+  const handleAddEmployee = async () => {
+    if (!newEmployee.employee_name.trim()) {
+      toast.error('Employee name is required');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      // Create employee in database
+      const now = new Date().toISOString();
+      await axios.post(
+        `${BACKEND_URL}/api/employee-costs/create`,
+        {
+          employee_name: newEmployee.employee_name.trim(),
+          cost: newEmployee.cost,
+          archived: false,
+          created_at: now,
+          updated_at: now
+        },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Employee added successfully');
+      setNewEmployee({ employee_name: '', cost: 0 });
+      setShowAddForm(false);
+      loadEmployees(); // Reload list
+      
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to add employee');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const formatEuro = (number) => {
     if (number === null || number === undefined || number === '') return '';
     const num = parseFloat(number);
