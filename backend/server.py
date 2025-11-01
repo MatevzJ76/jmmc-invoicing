@@ -783,8 +783,14 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
                     update_fields['originalCustomerId'] = entry.get('customerId', '')
             
             if 'comments' in update_data:
+                # Save original notes if this is the first edit
+                if 'originalNotes' not in entry or entry.get('originalNotes') is None:
+                    update_fields['originalNotes'] = entry.get('notes', '')
                 update_fields['notes'] = update_data['comments']
             if 'hours' in update_data:
+                # Save original hours if this is the first edit
+                if 'originalHours' not in entry or entry.get('originalHours') is None:
+                    update_fields['originalHours'] = entry.get('hours', 0)
                 update_fields['hours'] = float(update_data['hours'])
             if 'customerId' in update_data:
                 # If this is the first customer change, save original
