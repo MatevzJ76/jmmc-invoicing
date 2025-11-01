@@ -105,6 +105,18 @@
 user_problem_statement: "Fix hourly rate (tariff value) persistence issue in Import Verification page + rename column from 'Hourly Rate (€)' to 'Value (€)'"
 
 backend:
+  - task: "POST /api/imports - Add hourlyRate field to time entry schema"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "CRITICAL BUG FIX: hourlyRate field was missing from time entry schema. Changes made: (1) Added tariff_codes fetch before import loop (line 507-509) to create tariff_rates mapping. (2) Added hourlyRate calculation from tariff code during import (line 584-585). (3) Added hourlyRate field to time entry document (line 591). (4) Updated PUT /api/batches/{batch_id}/time-entries to update hourlyRate when tariff changes (line 833-837) and allow manual hourlyRate updates (line 839-841). This ensures hourlyRate is saved to database during import and persists when navigating between pages."
+
   - task: "POST /api/imports - XLSX file import (existing functionality)"
     implemented: true
     working: true
