@@ -1074,6 +1074,11 @@ const Settings = () => {
   const [showApiDebugModal, setShowApiDebugModal] = useState(false);
   const [apiDebugData, setApiDebugData] = useState(null);
   
+  // Collapsible tiles state
+  const [aiProviderExpanded, setAiProviderExpanded] = useState(false);
+  const [aiPromptsExpanded, setAiPromptsExpanded] = useState(false);
+  const [eracuniExpanded, setEracuniExpanded] = useState(false);
+  
   // Prompt testing states
   const [testInputs, setTestInputs] = useState({
     grammar: '',
