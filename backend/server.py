@@ -583,6 +583,10 @@ async def import_xlsx(
             else:
                 project_id = project["id"]
             
+            # Calculate hourly rate from tariff code
+            tariff_code = str(tariff) if tariff else "N/A"
+            hourly_rate = tariff_rates.get(tariff_code, 0)
+            
             entry = {
                 "id": str(uuid.uuid4()),
                 "batchId": batch_id,
@@ -591,7 +595,8 @@ async def import_xlsx(
                 "employeeName": employee or "Unknown",
                 "date": datum_val.isoformat() if hasattr(datum_val, 'isoformat') else str(datum_val),
                 "hours": hours,
-                "tariff": str(tariff) if tariff else "N/A",
+                "tariff": tariff_code,
+                "hourlyRate": hourly_rate,  # Hourly rate from tariff code
                 "notes": str(notes) if notes else "",
                 "value": value,
                 "aiCorrectionApplied": False,  # Track if AI corrections were applied
