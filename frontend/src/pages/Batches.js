@@ -197,8 +197,8 @@ const Batches = () => {
           if (entry.aiCorrectionApplied) {
             aiCorrectedRows.push(index);
             
-            // Store original values if they exist
-            if (entry.originalNotes !== null || entry.originalHours !== null || entry.originalCustomerId !== null) {
+            // Store original values if they exist (check for not undefined, not just not null)
+            if (entry.originalNotes !== undefined || entry.originalHours !== undefined || entry.originalCustomerId !== undefined) {
               originalValues[index] = {
                 comments: entry.originalNotes || '',
                 hours: entry.originalHours || 0,
@@ -212,8 +212,8 @@ const Batches = () => {
           if (entry.manuallyEdited) {
             manuallyEditedRows.push(index);
             
-            // Store original values if they exist and not already stored
-            if (!originalValues[index] && (entry.originalNotes !== null || entry.originalHours !== null || entry.originalCustomerId !== null)) {
+            // Store original values if they exist and not already stored (check for not undefined)
+            if (!originalValues[index] && (entry.originalNotes !== undefined || entry.originalHours !== undefined || entry.originalCustomerId !== undefined)) {
               originalValues[index] = {
                 comments: entry.originalNotes || '',
                 hours: entry.originalHours || 0,
