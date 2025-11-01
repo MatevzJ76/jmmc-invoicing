@@ -814,11 +814,18 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
                 if 'originalHours' not in entry or entry.get('originalHours') is None:
                     update_fields['originalHours'] = entry.get('hours', 0)
                 update_fields['hours'] = float(update_data['hours'])
+                
+                # Recalculate value when hours change: value = hours × hourlyRate
+                new_hours = float(update_data['hours'])
+                current_hourly_rate = entry.get('hourlyRate', 0)
+                update_fields['value'] = round(new_hours * current_hourly_rate, 2)
+                
             if 'customerId' in update_data:
                 # If this is the first customer change, save original
                 if 'originalCustomerId' not in entry or entry.get('originalCustomerId') is None:
                     update_fields['originalCustomerId'] = entry.get('customerId', '')
                 update_fields['customerId'] = update_data['customerId']
+                
             if 'tariff' in update_data:
                 # If this is the first tariff change, save original
                 if 'originalTariff' not in entry or entry.get('originalTariff') is None:
@@ -829,11 +836,21 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
                 tariff_code = update_data['tariff']
                 tariff_doc = await db.tariffs.find_one({"code": tariff_code})
                 if tariff_doc:
-                    update_fields['hourlyRate'] = tariff_doc.get('value', 0)
+                    new_hourly_rate = tariff_doc.get('value', 0)
+                    update_fields['hourlyRate'] = new_hourly_rate
+                    
+                    # Recalculate value: value = hours × new hourlyRate
+                    current_hours = entry.get('hours', 0)
+                    update_fields['value'] = round(current_hours * new_hourly_rate, 2)
                     
             if 'hourlyRate' in update_data:
                 # Allow manual hourlyRate updates
-                update_fields['hourlyRate'] = float(update_data['hourlyRate'])
+                new_hourly_rate = float(update_data['hourlyRate'])
+                update_fields['hourlyRate'] = new_hourly_rate
+                
+                # Recalculate value when hourlyRate changes manually: value = hours × hourlyRate
+                current_hours = entry.get('hours', 0)
+                update_fields['value'] = round(current_hours * new_hourly_rate, 2)
                 
             if 'aiCorrectionApplied' in update_data:
                 update_fields['aiCorrectionApplied'] = bool(update_data['aiCorrectionApplied'])
