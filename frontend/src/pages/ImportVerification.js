@@ -583,7 +583,8 @@ const ImportVerification = () => {
       hours: verificationData.rows[index].hours,
       customerId: verificationData.rows[index].customerId || '',
       customer: verificationData.rows[index].customer || '',
-      status: verificationData.rows[index].status || 'uninvoiced'
+      status: verificationData.rows[index].status || 'uninvoiced',
+      tariff: verificationData.rows[index].tariff || ''
     });
     setShowEditModal(true);
   };
