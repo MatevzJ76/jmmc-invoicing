@@ -863,6 +863,114 @@ const ArticleCodesSection = () => {
             Manage e-računi article codes and pricing
           </p>
 
+          {/* Add New Article Button */}
+          <div className="mb-4">
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              size="sm"
+              className="rounded-full bg-purple-600 hover:bg-purple-700"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add New Article
+            </Button>
+          </div>
+
+          {/* Add Article Form */}
+          {showAddForm && (
+            <div className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <h4 className="text-sm font-bold text-purple-800 mb-3">New Article</h4>
+              <div className="grid grid-cols-5 gap-3 mb-3">
+                <div>
+                  <Input
+                    placeholder="Code (e.g., 000046)"
+                    value={newArticle.code}
+                    onChange={(e) => setNewArticle({ ...newArticle, code: e.target.value })}
+                    className="text-sm font-mono"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Description"
+                    value={newArticle.description}
+                    onChange={(e) => setNewArticle({ ...newArticle, description: e.target.value })}
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Unit"
+                    value={newArticle.unitMeasure}
+                    onChange={(e) => setNewArticle({ ...newArticle, unitMeasure: e.target.value })}
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Price (€)"
+                    type="text"
+                    value={
+                      focusedField === 'new-article-price'
+                        ? (newArticle.priceWithoutVAT || 0)
+                        : formatEuro(newArticle.priceWithoutVAT)
+                    }
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/[^0-9,.]/g, '');
+                      setNewArticle({ ...newArticle, priceWithoutVAT: rawValue });
+                    }}
+                    onFocus={(e) => {
+                      setFocusedField('new-article-price');
+                      e.target.select();
+                    }}
+                    onBlur={(e) => {
+                      setFocusedField(null);
+                      const parsedValue = parseEuro(e.target.value);
+                      setNewArticle({ ...newArticle, priceWithoutVAT: parsedValue });
+                    }}
+                    className="text-sm text-right"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="VAT %"
+                    type="number"
+                    value={newArticle.vatPercentage}
+                    onChange={(e) => setNewArticle({ ...newArticle, vatPercentage: parseFloat(e.target.value) || 0 })}
+                    className="text-sm text-right"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleAddArticle}
+                  disabled={!newArticle.code.trim() || saving}
+                  size="sm"
+                  className="rounded-full bg-purple-600 hover:bg-purple-700"
+                >
+                  Add Article
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewArticle({ 
+                      code: '', 
+                      description: '', 
+                      unitMeasure: 'kos',
+                      priceWithoutVAT: 0,
+                      vatPercentage: 22
+                    });
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Article List */}
           <div className="space-y-2">
             {articles.map((article) => {
