@@ -807,6 +807,11 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
                 update_fields['aiCorrectionApplied'] = bool(update_data['aiCorrectionApplied'])
             if 'manuallyEdited' in update_data:
                 update_fields['manuallyEdited'] = bool(update_data['manuallyEdited'])
+            if 'status' in update_data:
+                # Allow changing status: uninvoiced, invoiced, internal, free
+                allowed_statuses = ['uninvoiced', 'invoiced', 'internal', 'free']
+                if update_data['status'] in allowed_statuses:
+                    update_fields['status'] = update_data['status']
             
             if update_fields:
                 await db.timeEntries.update_one(
