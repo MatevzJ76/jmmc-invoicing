@@ -321,7 +321,7 @@ const TariffCodesSection = () => {
           {showAddForm && (
             <div className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
               <h4 className="text-sm font-bold text-indigo-800 mb-3">New Tariff</h4>
-              <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="grid grid-cols-3 gap-3 mb-3">
                 <div>
                   <Input
                     placeholder="Code (e.g., 001 - Računovodstvo)"
@@ -336,6 +336,15 @@ const TariffCodesSection = () => {
                     value={newTariff.description}
                     onChange={(e) => setNewTariff({ ...newTariff, description: e.target.value })}
                     className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Value (€)"
+                    type="text"
+                    value={newTariff.value !== undefined ? formatEuro(newTariff.value) : '0,00'}
+                    onChange={(e) => setNewTariff({ ...newTariff, value: parseEuro(e.target.value) })}
+                    className="text-sm text-right"
                   />
                 </div>
               </div>
