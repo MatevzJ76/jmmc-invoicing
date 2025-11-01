@@ -2044,6 +2044,18 @@ class TestFilteredInvoiceComposition:
         print("=" * 80)
         
         passed = sum(1 for v in results.values() if v)
+        total = len(results)
+        
+        for test_name, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            print(f"{status} - {test_name}")
+        
+        print(f"\nTotal: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED!")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed")
 
 
 class TestEmployeeCostsCreate:
