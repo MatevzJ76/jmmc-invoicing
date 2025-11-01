@@ -4641,16 +4641,27 @@ class TestHourlyRatePersistence:
         """Fetch tariff codes from database to verify hourlyRate values"""
         print("\n=== Fetching Tariff Codes ===")
         try:
-            # We'll use the seed_tariffs.py data as reference
-            # Common tariff codes from the system
+            # Use actual tariff codes from seed_tariffs.py
             self.tariff_codes = {
-                "001 - Računovodstvo": 45.0,
-                "002 - Davčno svetovanje": 50.0,
-                "003 - Plače": 40.0,
-                "004 - Pravno svetovanje": 60.0,
-                "005 - Revizija": 55.0,
+                "001 - Računovodstvo": 0.0,
+                "0021 - GPT Opravila": 0.0,
+                "002 - 45 EUR/uro": 45.0,
+                "003 - 65 EUR/uro": 65.0,
+                "004 - 100 EUR/uro": 100.0,
+                "005 - Lokalne vožnje": 0.0,
+                "006 - Potni nalogi": 0.0,
+                "010 - Zaključni računi": 0.0,
+                "011 - Timebreak": 0.0,
+                "012 - Izobraževanje": 0.0,
+                "013 - Interventni ukrepi": 45.0,
+                "014 - Licenca e-računi": 5.0,
+                "020 - Drugo-Ne uporabljaj": 100.0,
+                "090 - Privat": 0.0,
+                "091 - Bolniška": 0.0,
+                "092 - Letni dopust": 0.0,
                 "999 - EXTRA": 0.0,
-                "N/A": 0.0
+                "001 - V pavšalu": 0.0,  # From actual data
+                "002 - Davčno svetovanje": 0.0  # From actual data
             }
             print(f"✅ Loaded {len(self.tariff_codes)} tariff codes for reference")
             for code, value in list(self.tariff_codes.items())[:3]:
