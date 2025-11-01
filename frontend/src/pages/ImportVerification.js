@@ -551,7 +551,9 @@ const ImportVerification = () => {
     setEditingRowIndex(index);
     setEditableSuggestions({
       description: verificationData.rows[index].comments,
-      hours: verificationData.rows[index].hours
+      hours: verificationData.rows[index].hours,
+      customerId: verificationData.rows[index].customerId || '',
+      customer: verificationData.rows[index].customer || ''
     });
     setShowEditModal(true);
   };
@@ -566,7 +568,9 @@ const ImportVerification = () => {
     if (!newOriginalValues[editingRowIndex]) {
       newOriginalValues[editingRowIndex] = {
         comments: updatedRows[editingRowIndex].comments,
-        hours: updatedRows[editingRowIndex].hours
+        hours: updatedRows[editingRowIndex].hours,
+        customerId: updatedRows[editingRowIndex].customerId,
+        customer: updatedRows[editingRowIndex].customer
       };
       setOriginalValues(newOriginalValues);
     }
