@@ -65,7 +65,7 @@ const ImportVerification = () => {
   const [saving, setSaving] = useState(false);
   const [aiCorrectedRows, setAiCorrectedRows] = useState(new Set()); // Track rows with AI corrections applied
   const [manuallyEditedRows, setManuallyEditedRows] = useState(new Set()); // Track rows with manual edits
-  const [originalValues, setOriginalValues] = useState({}); // Store original values before AI correction: { rowIndex: { comments: '', hours: 0, customer: '', customerId: '' } }
+  const [originalValues, setOriginalValues] = useState({}); // Store original values before AI correction: { rowIndex: { comments: '', hours: 0, customer: '', customerId: '', tariff: '' } }
   const [editableSuggestions, setEditableSuggestions] = useState({ description: '', hours: null, customerId: '', customer: '', status: 'uninvoiced', tariff: '' }); // Editable AI suggestions
   const [showEditModal, setShowEditModal] = useState(false); // Modal for editing already-corrected rows
   const [editingRowIndex, setEditingRowIndex] = useState(null); // Track which row is being edited
