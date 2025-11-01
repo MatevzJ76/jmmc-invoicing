@@ -1236,13 +1236,8 @@ const ImportVerification = () => {
               <tbody className="divide-y divide-slate-100">
                 {displayRows.length > 0 ? (
                   displayRows.map((row, displayIndex) => {
-                    // Find original index in verificationData.rows for AI results
-                    const originalIndex = verificationData.rows.findIndex(r => 
-                      r.customer === row.customer && 
-                      r.employee === row.employee && 
-                      r.comments === row.comments &&
-                      r.date === row.date
-                    );
+                    // Use stable original index from row object
+                    const originalIndex = row._originalIndex;
                     const isFlagged = aiResults[originalIndex];
                     const isAiCorrected = aiCorrectedRows.has(originalIndex);
                     const isManuallyEdited = manuallyEditedRows.has(originalIndex);
