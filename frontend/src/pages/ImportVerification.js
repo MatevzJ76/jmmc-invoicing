@@ -584,6 +584,12 @@ const ImportVerification = () => {
       updatedRows[editingRowIndex].hours = editableSuggestions.hours;
     }
     
+    // Apply customer change if provided
+    if (editableSuggestions.customerId && editableSuggestions.customerId !== updatedRows[editingRowIndex].customerId) {
+      updatedRows[editingRowIndex].customerId = editableSuggestions.customerId;
+      updatedRows[editingRowIndex].customer = editableSuggestions.customer;
+    }
+    
     // Mark this row as manually edited (add human icon)
     // If it was already AI-corrected, keep it as AI-corrected
     const newManuallyEditedRows = new Set(manuallyEditedRows);
