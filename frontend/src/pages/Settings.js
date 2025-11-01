@@ -1726,6 +1726,9 @@ ${randomFinal}`;
         {/* Article Codes Tile */}
         <ArticleCodesSection />
 
+        {/* Tariff Codes Tile */}
+        <TariffCodesSection />
+
         {/* Costs Tile */}
         <EmployeeCostsSection />
 
