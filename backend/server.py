@@ -594,9 +594,9 @@ async def import_xlsx(
                 "date": datum_val.isoformat() if hasattr(datum_val, 'isoformat') else str(datum_val),
                 "hours": hours,
                 "tariff": tariff_code,
-                "hourlyRate": hourly_rate,  # Hourly rate from tariff code
+                "hourlyRate": hourly_rate,  # Hourly rate from tariff code (Settings)
                 "notes": str(notes) if notes else "",
-                "value": value,
+                "value": calculated_value,  # Calculated from hours × tariff rate (NOT from Excel)
                 "aiCorrectionApplied": False,  # Track if AI corrections were applied
                 "manuallyEdited": False,  # Track if row was manually edited
                 "originalNotes": None,  # Store original notes before AI correction
