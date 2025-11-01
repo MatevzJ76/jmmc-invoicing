@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import os
 
 # Configuration
-BACKEND_URL = "https://invoice-ai-verify.preview.emergentagent.com/api"
+BACKEND_URL = "https://invoice-flow-38.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@local"
 ADMIN_PASSWORD = "Admin2025!"
 MONGO_URL = "mongodb://localhost:27017"
