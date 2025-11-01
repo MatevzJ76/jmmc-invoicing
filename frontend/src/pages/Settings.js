@@ -477,6 +477,7 @@ const EmployeeCostsSection = () => {
   const [editedEmployees, setEditedEmployees] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [focusedField, setFocusedField] = useState(null); // Track which field is being edited
 
   useEffect(() => {
     loadEmployees();
