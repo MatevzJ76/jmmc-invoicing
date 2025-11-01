@@ -654,8 +654,24 @@ const EmployeeCostsSection = () => {
                         <Label className="text-xs text-slate-600">Cost (€)</Label>
                         <Input
                           type="text"
-                          value={currentCost !== null ? formatEuro(currentCost) : ''}
-                          onChange={(e) => handleFieldChange(employee.employee_name, parseEuro(e.target.value))}
+                          value={
+                            focusedField === `${employee.employee_name}-cost`
+                              ? (editedEmployees[employee.employee_name] !== undefined ? editedEmployees[employee.employee_name] : employee.cost || 0)
+                              : (currentCost !== null ? formatEuro(currentCost) : '')
+                          }
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/[^0-9,.]/g, '');
+                            handleFieldChange(employee.employee_name, rawValue);
+                          }}
+                          onFocus={(e) => {
+                            setFocusedField(`${employee.employee_name}-cost`);
+                            e.target.select();
+                          }}
+                          onBlur={(e) => {
+                            setFocusedField(null);
+                            const parsedValue = parseEuro(e.target.value);
+                            handleFieldChange(employee.employee_name, parsedValue);
+                          }}
                           placeholder="0,00"
                           className="text-right"
                         />
