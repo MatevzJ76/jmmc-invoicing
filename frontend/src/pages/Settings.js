@@ -153,6 +153,7 @@ const TariffCodesSection = () => {
   const [saving, setSaving] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTariff, setNewTariff] = useState({ code: '', description: '', value: 0 });
+  const [focusedField, setFocusedField] = useState(null); // Track which field is being edited
 
   useEffect(() => {
     loadTariffs();
