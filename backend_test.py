@@ -5165,12 +5165,12 @@ class TestHourlyRatePersistence:
         print("=" * 80)
 
 if __name__ == "__main__":
-    # Run Employee Costs Create Endpoint tests
+    # Run hourlyRate Persistence tests
     print("\n" + "=" * 80)
-    print("RUNNING EMPLOYEE COSTS CREATE ENDPOINT TESTS")
+    print("RUNNING HOURLY RATE FIELD PERSISTENCE TESTS")
     print("=" * 80)
     
-    tester = TestEmployeeCostsCreate()
+    tester = TestHourlyRatePersistence()
     tester.run_all_tests()
 
 
