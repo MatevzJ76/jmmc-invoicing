@@ -1319,15 +1319,20 @@ const ImportVerification = () => {
                               : 'Click to edit this row'
                         }
                       >
-                        <td className="px-3 py-2 text-slate-600">
-                          {isInvoiced && <span className="mr-2 text-green-600 font-bold text-lg" title="Already invoiced">✓</span>}
-                          {!isInvoiced && <span className="mr-2 text-slate-300 text-sm" title="Not invoiced">○</span>}
-                          {displayIndex + 1}
-                          {isFlagged && <span className="ml-2 text-amber-600">⚠️</span>}
-                          {isAiCorrected && <span className="ml-2 text-purple-600" title="AI corrections applied">🤖</span>}
-                          {isManuallyEdited && !isAiCorrected && <span className="ml-2 text-blue-600" title="Manually edited">✍️</span>}
+                        <td className="px-3 py-2 text-slate-600 align-middle">
+                          <div className="flex items-center gap-2">
+                            <span>
+                              {isInvoiced && <span className="text-green-600 font-bold text-lg" title="Already invoiced">✓</span>}
+                              {!isInvoiced && <span className="text-slate-300 text-sm" title="Not invoiced">○</span>}
+                            </span>
+                            <span className="font-medium">{displayIndex + 1}</span>
+                            <span>
+                              {isFlagged && <span className="text-amber-600">⚠️</span>}
+                              {isAiCorrected && <span className="text-purple-600" title="AI corrections applied">🤖</span>}
+                              {isManuallyEdited && !isAiCorrected && <span className="text-blue-600" title="Manually edited">✍️</span>}
+                            </span>
+                          </div>
                         </td>
-                        <td className="px-3 py-2 text-slate-700">{row.project}</td>
                         <td className={`px-3 py-2 font-medium ${
                           originalValues[originalIndex] && 
                           originalValues[originalIndex].customerId && 
