@@ -408,6 +408,7 @@ const TariffCodesSection = () => {
                         type="text"
                         value={currentData.value !== null && currentData.value !== undefined ? formatEuro(currentData.value) : '0,00'}
                         onChange={(e) => handleFieldChange(tariff.code, 'value', parseEuro(e.target.value))}
+                        onFocus={(e) => e.target.select()}
                         placeholder="0,00"
                         className="text-right"
                       />
