@@ -556,13 +556,15 @@ async def import_xlsx(
             except:
                 hours = 0.0
             
-            # Parse value (handle comma as decimal separator)
-            try:
-                value_raw = float(str(value_str).replace(',', '.')) if value_str else 0.0
-                # Round to 2 decimal places for currency
-                value = round(value_raw, 2)
-            except:
-                value = 0.0
+            # IGNORE value from Excel file (column I - Vrednost is irrelevant)
+            # Instead, calculate value from tariff rate × hours
+            
+            # Get tariff code and look up hourly rate from Settings
+            tariff_code = str(tariff) if tariff else "N/A"
+            hourly_rate = tariff_rates.get(tariff_code, 0)
+            
+            # Calculate value: hours × tariff rate (from Settings)
+            calculated_value = round(hours * hourly_rate, 2)
             
             # Find or create customer (only if customer name is provided)
             customer_id = None
@@ -582,10 +584,6 @@ async def import_xlsx(
                 await db.projects.insert_one({"id": project_id, "name": current_project, "customerId": customer_id})
             else:
                 project_id = project["id"]
-            
-            # Calculate hourly rate from tariff code
-            tariff_code = str(tariff) if tariff else "N/A"
-            hourly_rate = tariff_rates.get(tariff_code, 0)
             
             entry = {
                 "id": str(uuid.uuid4()),
