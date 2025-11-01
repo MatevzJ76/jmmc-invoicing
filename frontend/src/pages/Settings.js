@@ -173,6 +173,24 @@ const TariffCodesSection = () => {
     }
   };
 
+  const formatEuro = (number) => {
+    if (number === null || number === undefined || number === '') return '0,00';
+    const num = parseFloat(number);
+    if (isNaN(num)) return '0,00';
+    const fixed = num.toFixed(2);
+    const [integer, decimal] = fixed.split('.');
+    const withThousands = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${withThousands},${decimal}`;
+  };
+
+  const parseEuro = (value) => {
+    if (!value) return 0;
+    // Remove thousand separators (.) and replace decimal comma (,) with dot
+    const normalized = value.toString().replace(/\./g, '').replace(',', '.');
+    const parsed = parseFloat(normalized);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
   const handleFieldChange = (code, field, value) => {
     setEditedTariffs({
       ...editedTariffs,
