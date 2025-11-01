@@ -1989,6 +1989,179 @@ const ImportVerification = () => {
                     />
                   </div>
                   
+                  {/* AI Processing Section */}
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                    <p className="text-xs font-semibold text-purple-800 mb-3">AI Processing:</p>
+                    <div className="flex gap-2 mb-4">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleRunAllAiPrompts}
+                        disabled={aiProcessing}
+                        className="flex-1 rounded-full bg-purple-600 hover:bg-purple-700"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        {aiProcessing ? 'Processing...' : 'Run All AI Prompts'}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleRun2xDTM}
+                        disabled={aiProcessing}
+                        className="flex-1 rounded-full bg-pink-600 hover:bg-pink-700"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        2xDTM
+                      </Button>
+                    </div>
+
+                    {/* AI Results */}
+                    {Object.keys(aiProcessResults).length > 0 && (
+                      <div className="space-y-2">
+                        {/* Grammar Result */}
+                        {aiProcessResults.grammar && (
+                          <div className="border border-green-200 rounded-lg overflow-hidden">
+                            <button
+                              onClick={() => toggleAiResultExpand('grammar')}
+                              className="w-full flex items-center justify-between p-3 bg-green-50 hover:bg-green-100 transition-colors"
+                            >
+                              <span className="text-sm font-semibold text-green-800">Grammar Correction</span>
+                              <svg 
+                                className={`w-4 h-4 text-green-700 transition-transform ${expandedAiResults.has('grammar') ? 'rotate-180' : ''}`}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {expandedAiResults.has('grammar') && (
+                              <div className="p-3 bg-white border-t border-green-200">
+                                <p className="text-sm text-slate-800 mb-2">{aiProcessResults.grammar}</p>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleAcceptAiSuggestion('grammar')}
+                                  className="rounded-full bg-green-600 hover:bg-green-700"
+                                >
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Accept
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 2xDTM Result */}
+                        {aiProcessResults.dtm && (
+                          <div className="border border-pink-200 rounded-lg overflow-hidden">
+                            <button
+                              onClick={() => toggleAiResultExpand('dtm')}
+                              className="w-full flex items-center justify-between p-3 bg-pink-50 hover:bg-pink-100 transition-colors"
+                            >
+                              <span className="text-sm font-semibold text-pink-800">2xDTM Enhancement</span>
+                              <svg 
+                                className={`w-4 h-4 text-pink-700 transition-transform ${expandedAiResults.has('dtm') ? 'rotate-180' : ''}`}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {expandedAiResults.has('dtm') && (
+                              <div className="p-3 bg-white border-t border-pink-200">
+                                <p className="text-sm text-slate-800 mb-2">{aiProcessResults.dtm}</p>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleAcceptAiSuggestion('dtm')}
+                                  className="rounded-full bg-pink-600 hover:bg-pink-700"
+                                >
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Accept
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Fraud Result */}
+                        {aiProcessResults.fraud && (
+                          <div className="border border-red-200 rounded-lg overflow-hidden">
+                            <button
+                              onClick={() => toggleAiResultExpand('fraud')}
+                              className="w-full flex items-center justify-between p-3 bg-red-50 hover:bg-red-100 transition-colors"
+                            >
+                              <span className="text-sm font-semibold text-red-800">Fraud Detection</span>
+                              <svg 
+                                className={`w-4 h-4 text-red-700 transition-transform ${expandedAiResults.has('fraud') ? 'rotate-180' : ''}`}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {expandedAiResults.has('fraud') && (
+                              <div className="p-3 bg-white border-t border-red-200">
+                                <p className="text-sm text-slate-800">{aiProcessResults.fraud}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* GDPR Result */}
+                        {aiProcessResults.gdpr && (
+                          <div className="border border-blue-200 rounded-lg overflow-hidden">
+                            <button
+                              onClick={() => toggleAiResultExpand('gdpr')}
+                              className="w-full flex items-center justify-between p-3 bg-blue-50 hover:bg-blue-100 transition-colors"
+                            >
+                              <span className="text-sm font-semibold text-blue-800">GDPR Masking</span>
+                              <svg 
+                                className={`w-4 h-4 text-blue-700 transition-transform ${expandedAiResults.has('gdpr') ? 'rotate-180' : ''}`}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {expandedAiResults.has('gdpr') && (
+                              <div className="p-3 bg-white border-t border-blue-200">
+                                <p className="text-sm text-slate-800">{aiProcessResults.gdpr}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Verification Result */}
+                        {aiProcessResults.verification && (
+                          <div className="border border-amber-200 rounded-lg overflow-hidden">
+                            <button
+                              onClick={() => toggleAiResultExpand('verification')}
+                              className="w-full flex items-center justify-between p-3 bg-amber-50 hover:bg-amber-100 transition-colors"
+                            >
+                              <span className="text-sm font-semibold text-amber-800">Verification Analysis</span>
+                              <svg 
+                                className={`w-4 h-4 text-amber-700 transition-transform ${expandedAiResults.has('verification') ? 'rotate-180' : ''}`}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {expandedAiResults.has('verification') && (
+                              <div className="p-3 bg-white border-t border-amber-200">
+                                <p className="text-sm text-slate-800">{aiProcessResults.verification}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
                   {/* Row Status Selection */}
                   <div className="bg-slate-50 rounded-lg p-4 border border-slate-300">
                     <p className="text-xs font-semibold text-slate-800 mb-3">Row Status:</p>
