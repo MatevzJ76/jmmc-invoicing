@@ -156,6 +156,7 @@ class Employee(BaseModel):
 class Tariff(BaseModel):
     code: str  # e.g., "001 - Računovodstvo"
     description: str  # Full description
+    value: Optional[float] = 0.0  # EUR value
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
