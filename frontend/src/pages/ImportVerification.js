@@ -641,23 +641,33 @@ const ImportVerification = () => {
       
       // If we have a batch, update the time entries
       if (verificationData.batchId) {
-        // Prepare updates: send all rows with their index and correction status
-        const updates = verificationData.rows.map((row, index) => ({
+        // PERFORMANCE FIX: Only send updates for rows that were actually modified
+        // Combine AI-corrected and manually-edited rows to get all modified rows
+        const modifiedRowIndices = new Set([...aiCorrectedRows, ...manuallyEditedRows]);
+        
+        // Only prepare updates for modified rows
+        const updates = Array.from(modifiedRowIndices).map(index => ({
           index,
-          comments: row.comments,
-          hours: row.hours,
-          customerId: row.customerId,
+          comments: verificationData.rows[index].comments,
+          hours: verificationData.rows[index].hours,
+          customerId: verificationData.rows[index].customerId,
           aiCorrectionApplied: aiCorrectedRows.has(index),
           manuallyEdited: manuallyEditedRows.has(index)
         }));
         
-        await axios.put(
-          `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries`,
-          updates,
-          { headers: { Authorization: `Bearer ${token}` }}
-        );
+        // Only make API call if there are actually rows to update
+        if (updates.length > 0) {
+          await axios.put(
+            `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries`,
+            updates,
+            { headers: { Authorization: `Bearer ${token}` }}
+          );
+          
+          toast.success(`Changes saved! Updated ${updates.length} row${updates.length > 1 ? 's' : ''}`);
+        } else {
+          toast.info('No modified rows to save');
+        }
         
-        toast.success('Changes saved to database!');
         setHasChanges(false);
       } else {
         toast.error('No batch found. Data only in memory.');
@@ -665,6 +675,7 @@ const ImportVerification = () => {
       
     } catch (error) {
       toast.error('Failed to save changes');
+      console.error('Save error:', error);
     } finally {
       setSaving(false);
     }
