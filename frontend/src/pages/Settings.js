@@ -152,7 +152,7 @@ const TariffCodesSection = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newTariff, setNewTariff] = useState({ code: '', description: '' });
+  const [newTariff, setNewTariff] = useState({ code: '', description: '', value: 0 });
 
   useEffect(() => {
     loadTariffs();
