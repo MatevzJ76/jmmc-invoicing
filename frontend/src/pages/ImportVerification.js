@@ -1290,27 +1290,27 @@ const ImportVerification = () => {
                           {isManuallyEdited && !isAiCorrected && <span className="ml-2 text-blue-600" title="Manually edited">✍️</span>}
                         </td>
                         <td className="px-3 py-2 text-slate-700">{row.project}</td>
-                        <td className={`px-3 py-2 text-slate-700 font-medium ${
+                        <td className={`px-3 py-2 font-medium ${
                           originalValues[originalIndex]?.customerId && originalValues[originalIndex]?.customerId !== row.customerId 
-                            ? 'bg-yellow-100 border-l-2 border-l-yellow-500' 
-                            : ''
+                            ? 'text-blue-600 font-bold' 
+                            : 'text-slate-700'
                         }`}>
                           {row.customer}
                         </td>
                         <td className="px-3 py-2 text-slate-600">{row.date}</td>
                         <td className="px-3 py-2 text-slate-600">{row.tariff}</td>
                         <td className="px-3 py-2 text-slate-700">{row.employee}</td>
-                        <td className={`px-3 py-2 text-slate-600 max-w-md truncate ${
+                        <td className={`px-3 py-2 max-w-md truncate ${
                           originalValues[originalIndex]?.comments && originalValues[originalIndex]?.comments !== row.comments 
-                            ? 'bg-yellow-100 border-l-2 border-l-yellow-500' 
-                            : ''
+                            ? 'text-blue-600 font-bold' 
+                            : 'text-slate-600'
                         }`} title={row.comments}>
                           {row.comments}
                         </td>
-                        <td className={`px-3 py-2 text-right text-slate-700 font-medium ${
+                        <td className={`px-3 py-2 text-right font-medium ${
                           originalValues[originalIndex]?.hours !== undefined && originalValues[originalIndex]?.hours !== row.hours 
-                            ? 'bg-yellow-100 border-l-2 border-l-yellow-500' 
-                            : ''
+                            ? 'text-blue-600 font-bold' 
+                            : 'text-slate-700'
                         }`}>
                           {row.hours}
                         </td>
