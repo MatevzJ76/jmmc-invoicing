@@ -408,9 +408,25 @@ const TariffCodesSection = () => {
                       <label className="text-xs text-slate-600 block mb-1">Value (€)</label>
                       <Input
                         type="text"
-                        value={currentData.value !== null && currentData.value !== undefined ? formatEuro(currentData.value) : '0,00'}
-                        onChange={(e) => handleFieldChange(tariff.code, 'value', parseEuro(e.target.value))}
-                        onFocus={(e) => e.target.select()}
+                        value={
+                          focusedField === `${tariff.code}-value`
+                            ? (editedTariffs[tariff.code]?.value !== undefined ? editedTariffs[tariff.code].value : tariff.value || 0)
+                            : formatEuro(currentData.value)
+                        }
+                        onChange={(e) => {
+                          const rawValue = e.target.value.replace(/[^0-9,.]/g, '');
+                          handleFieldChange(tariff.code, 'value', rawValue);
+                        }}
+                        onFocus={(e) => {
+                          setFocusedField(`${tariff.code}-value`);
+                          e.target.select();
+                        }}
+                        onBlur={(e) => {
+                          setFocusedField(null);
+                          // Parse and normalize the value on blur
+                          const parsedValue = parseEuro(e.target.value);
+                          handleFieldChange(tariff.code, 'value', parsedValue);
+                        }}
                         placeholder="0,00"
                         className="text-right"
                       />
