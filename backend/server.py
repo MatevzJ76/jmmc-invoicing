@@ -3323,7 +3323,7 @@ async def create_tariff(tariff_data: dict, current_user: User = Depends(get_curr
 @api_router.put("/tariffs/{tariff_code}")
 async def update_tariff(tariff_code: str, tariff_data: dict, current_user: User = Depends(get_current_user)):
     """Update tariff code data"""
-    allowed_fields = ['description']
+    allowed_fields = ['description', 'value']
     update_data = {k: v for k, v in tariff_data.items() if k in allowed_fields}
     
     if not update_data:
