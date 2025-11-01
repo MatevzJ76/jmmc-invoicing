@@ -1,6 +1,7 @@
 import requests
 import json
 from typing import Dict, Any, Optional
+import io
 
 # Configuration
 BACKEND_URL = "https://invoice-flow-38.preview.emergentagent.com/api"
