@@ -1648,6 +1648,10 @@ const ImportVerification = () => {
                   <h4 className="text-sm font-bold text-slate-800 mb-3">Original Values</h4>
                   <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-3">
                     <div>
+                      <p className="text-xs font-semibold text-slate-600 mb-1">Original Customer:</p>
+                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].customer || 'N/A'}</p>
+                    </div>
+                    <div>
                       <p className="text-xs font-semibold text-slate-600 mb-1">Original Description:</p>
                       <p className="text-sm text-slate-800">{originalValues[editingRowIndex].comments || 'N/A'}</p>
                     </div>
@@ -1665,6 +1669,32 @@ const ImportVerification = () => {
                   {originalValues[editingRowIndex] ? 'Corrected Values (Editable)' : 'Current Values (Editable)'}
                 </h4>
                 <div className="space-y-3">
+                  <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                    <p className="text-xs font-semibold text-orange-800 mb-2">Customer:</p>
+                    <Select 
+                      value={editableSuggestions.customerId} 
+                      onValueChange={(value) => {
+                        const selectedCustomer = allCustomers.find(c => c.id === value);
+                        setEditableSuggestions({ 
+                          ...editableSuggestions, 
+                          customerId: value,
+                          customer: selectedCustomer?.name || ''
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="bg-white border-orange-300 focus:border-orange-500">
+                        <SelectValue placeholder="Select customer" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {allCustomers.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
                   <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                     <p className="text-xs font-semibold text-blue-800 mb-2">Description:</p>
                     <Textarea
