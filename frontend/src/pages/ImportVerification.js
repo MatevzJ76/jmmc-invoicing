@@ -254,7 +254,7 @@ const ImportVerification = () => {
           hours: entry.hours || 0,
           value: entry.value || 0,
           invoiceNumber: entry.invoiceNumber || '',
-          invoiced: entry.invoiced || false
+          status: entry.status || 'uninvoiced'  // Row status: uninvoiced, invoiced, internal, free
         };
       });
       
