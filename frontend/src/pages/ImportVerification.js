@@ -1778,6 +1778,7 @@ const ImportVerification = () => {
                     setShowEditModal(false);
                     setEditingRowIndex(null);
                     setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '' });
+                    setCustomerSearchTerm(''); // Reset search
                   }}
                   className="flex-1 rounded-full"
                 >
