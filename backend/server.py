@@ -3174,6 +3174,35 @@ async def get_articles(current_user: User = Depends(get_current_user)):
     articles = await db.articles.find({}, {"_id": 0}).to_list(1000)
     return articles
 
+@api_router.post("/articles")
+async def create_article(article_data: dict, current_user: User = Depends(get_current_user)):
+    """Create a new article code"""
+    code = article_data.get("code")
+    
+    if not code:
+        raise HTTPException(status_code=400, detail="Article code is required")
+    
+    # Check if article already exists
+    existing = await db.articles.find_one({"code": code})
+    if existing:
+        raise HTTPException(status_code=400, detail="Article code already exists")
+    
+    # Create article
+    now = datetime.now(timezone.utc).isoformat()
+    new_article = {
+        "code": code,
+        "description": article_data.get("description", ""),
+        "unitMeasure": article_data.get("unitMeasure", "kos"),
+        "priceWithoutVAT": float(article_data.get("priceWithoutVAT", 0)),
+        "vatPercentage": float(article_data.get("vatPercentage", 22)),
+        "tariffCode": article_data.get("tariffCode", ""),
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.articles.insert_one(new_article)
+    return {"message": "Article created successfully"}
+
 @api_router.put("/articles/{article_code}")
 async def update_article(article_code: str, article_data: dict, current_user: User = Depends(get_current_user)):
     """Update article code data"""
