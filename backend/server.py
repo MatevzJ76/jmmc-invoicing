@@ -679,7 +679,8 @@ async def import_from_verification(
                 "aiCorrectionApplied": row.get('aiCorrectionApplied', False),
                 "manuallyEdited": row.get('manuallyEdited', False),
                 "originalNotes": row.get('originalNotes'),
-                "originalHours": row.get('originalHours')
+                "originalHours": row.get('originalHours'),
+                "originalCustomerId": row.get('originalCustomerId')
             }
             entries.append(entry)
         
