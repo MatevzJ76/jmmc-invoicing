@@ -1569,15 +1569,33 @@ ${randomFinal}`;
                 </div>
               )}
             </div>
+          )}
           </div>
         </div>
 
         {/* AI Agent Prompts Tile */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Sparkles className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-bold text-slate-800">AI Agent Prompts</h2>
-          </div>
+          <button
+            onClick={() => setAiPromptsExpanded(!aiPromptsExpanded)}
+            className="w-full flex items-center justify-between cursor-pointer group"
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-6 h-6 text-blue-600" />
+              <h2 className="text-xl font-bold text-slate-800">AI Agent Prompts</h2>
+            </div>
+            
+            <svg 
+              className={`w-5 h-5 text-slate-600 transition-transform ${aiPromptsExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {aiPromptsExpanded && (
+          <div className="mt-6">
           <p className="text-sm text-slate-600 mb-6">
             Customize the prompts that control how the AI Agent processes your invoice data.
           </p>
