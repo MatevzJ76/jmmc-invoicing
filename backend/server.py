@@ -503,6 +503,10 @@ async def import_xlsx(
         }
         await db.importBatches.insert_one(batch_doc)
         
+        # Fetch tariff codes to calculate hourly rates
+        tariff_codes = await db.tariffs.find({}, {"_id": 0}).to_list(1000)
+        tariff_rates = {t["code"]: t.get("value", 0) for t in tariff_codes}
+        
         # Parse rows - Stranka (customer) appears on each data row, not as section headers
         entries = []
         current_project = "General"
