@@ -2226,6 +2226,8 @@ const ImportVerification = () => {
                     setEditingRowIndex(null);
                     setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '', status: 'uninvoiced', tariff: '' });
                     setCustomerSearchTerm(''); // Reset search
+                    setAiProcessResults({}); // Clear AI results
+                    setExpandedAiResults(new Set()); // Clear expanded state
                   }}
                   className="flex-1 rounded-full"
                 >
