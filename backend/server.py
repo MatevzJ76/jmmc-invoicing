@@ -3286,6 +3286,61 @@ async def archive_employee(employee_name: str, current_user: User = Depends(get_
     
     return {"message": "Employee archived successfully"}
 
+# ============ TARIFF CODES ENDPOINTS ============
+@api_router.get("/tariffs")
+async def get_tariffs(current_user: User = Depends(get_current_user)):
+    """Get all tariff codes"""
+    tariffs = await db.tariffs.find({}, {"_id": 0}).to_list(1000)
+    return tariffs
+
+@api_router.post("/tariffs")
+async def create_tariff(tariff_data: dict, current_user: User = Depends(get_current_user)):
+    """Create a new tariff code"""
+    code = tariff_data.get("code")
+    description = tariff_data.get("description")
+    
+    if not code:
+        raise HTTPException(status_code=400, detail="Tariff code is required")
+    
+    # Check if tariff already exists
+    existing = await db.tariffs.find_one({"code": code})
+    if existing:
+        raise HTTPException(status_code=400, detail="Tariff code already exists")
+    
+    # Create tariff
+    now = datetime.now(timezone.utc).isoformat()
+    new_tariff = {
+        "code": code,
+        "description": description or "",
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.tariffs.insert_one(new_tariff)
+    return {"message": "Tariff created successfully"}
+
+@api_router.put("/tariffs/{tariff_code}")
+async def update_tariff(tariff_code: str, tariff_data: dict, current_user: User = Depends(get_current_user)):
+    """Update tariff code data"""
+    allowed_fields = ['description']
+    update_data = {k: v for k, v in tariff_data.items() if k in allowed_fields}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    update_data['updated_at'] = now
+    
+    result = await db.tariffs.update_one(
+        {"code": tariff_code},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Tariff not found")
+    
+    return {"message": "Tariff updated successfully"}
+
 # Include router
 app.include_router(api_router)
 
