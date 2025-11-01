@@ -217,6 +217,7 @@ const ImportVerification = () => {
               customerId: entry.originalCustomerId || '',
               customer: customersMap[entry.originalCustomerId] || '' // Resolve customer name from ID
             };
+            console.log(`AI-corrected row ${index} has original values:`, originalValuesObj[index]);
           }
         }
         
@@ -230,6 +231,7 @@ const ImportVerification = () => {
               customerId: entry.originalCustomerId || '',
               customer: customersMap[entry.originalCustomerId] || '' // Resolve customer name from ID
             };
+            console.log(`Manually-edited row ${index} has original values:`, originalValuesObj[index]);
           }
         }
         
