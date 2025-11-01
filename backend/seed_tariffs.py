@@ -14,13 +14,13 @@ DB_NAME = os.environ['DB_NAME']
 
 # Tariff codes data
 TARIFFS = [
-    {"code": "001 - Računovodstvo", "description": "Računovodstvo"},
-    {"code": "002 - 45 EUR/uro", "description": "45 EUR/uro"},
-    {"code": "0021 - GPT Opravila", "description": "GPT Opravila"},
-    {"code": "012 - Izobraževanje", "description": "Izobraževanje"},
-    {"code": "090 - Privat", "description": "Privat"},
-    {"code": "092 - Letni dopust", "description": "Letni dopust"},
-    {"code": "999 - EXTRA", "description": "EXTRA"}
+    {"code": "001 - Računovodstvo", "description": "Računovodstvo", "value": 0.0},
+    {"code": "002 - 45 EUR/uro", "description": "45 EUR/uro", "value": 45.0},
+    {"code": "0021 - GPT Opravila", "description": "GPT Opravila", "value": 0.0},
+    {"code": "012 - Izobraževanje", "description": "Izobraževanje", "value": 0.0},
+    {"code": "090 - Privat", "description": "Privat", "value": 0.0},
+    {"code": "092 - Letni dopust", "description": "Letni dopust", "value": 0.0},
+    {"code": "999 - EXTRA", "description": "EXTRA", "value": 0.0}
 ]
 
 async def seed_tariffs():
