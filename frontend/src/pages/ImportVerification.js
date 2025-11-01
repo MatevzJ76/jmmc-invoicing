@@ -1751,6 +1751,10 @@ const ImportVerification = () => {
                       <span className="text-slate-800">{originalValues[editingRowIndex].customer || 'N/A'}</span>
                     </div>
                     <div>
+                      <span className="font-semibold text-slate-600">Original Tariff:</span>{' '}
+                      <span className="text-slate-800">{originalValues[editingRowIndex].tariff || 'N/A'}</span>
+                    </div>
+                    <div>
                       <span className="font-semibold text-slate-600">Original Description:</span>{' '}
                       <span className="text-slate-800">{originalValues[editingRowIndex].comments || 'N/A'}</span>
                     </div>
