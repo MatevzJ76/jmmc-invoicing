@@ -804,6 +804,11 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
                 if 'originalCustomerId' not in entry or entry.get('originalCustomerId') is None:
                     update_fields['originalCustomerId'] = entry.get('customerId', '')
                 update_fields['customerId'] = update_data['customerId']
+            if 'tariff' in update_data:
+                # If this is the first tariff change, save original
+                if 'originalTariff' not in entry or entry.get('originalTariff') is None:
+                    update_fields['originalTariff'] = entry.get('tariff', '')
+                update_fields['tariff'] = update_data['tariff']
             if 'aiCorrectionApplied' in update_data:
                 update_fields['aiCorrectionApplied'] = bool(update_data['aiCorrectionApplied'])
             if 'manuallyEdited' in update_data:
