@@ -1622,7 +1622,7 @@ const ImportVerification = () => {
                   onClick={() => {
                     setShowEditModal(false);
                     setEditingRowIndex(null);
-                    setEditableSuggestions({ description: '', hours: null });
+                    setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '' });
                   }}
                   className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
                 >
