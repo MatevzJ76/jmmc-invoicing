@@ -200,10 +200,12 @@ const ImportVerification = () => {
         // Track AI corrections
         if (entry.aiCorrectionApplied) {
           aiCorrectedRowsArray.push(index);
-          if (entry.originalNotes !== null || entry.originalHours !== null) {
+          if (entry.originalNotes !== null || entry.originalHours !== null || entry.originalCustomerId !== null) {
             originalValuesObj[index] = {
               comments: entry.originalNotes || '',
-              hours: entry.originalHours || 0
+              hours: entry.originalHours || 0,
+              customerId: entry.originalCustomerId || '',
+              customer: '' // Will be resolved from customerId
             };
           }
         }
@@ -211,10 +213,12 @@ const ImportVerification = () => {
         // Track manual edits
         if (entry.manuallyEdited) {
           manuallyEditedRowsArray.push(index);
-          if (!originalValuesObj[index] && (entry.originalNotes !== null || entry.originalHours !== null)) {
+          if (!originalValuesObj[index] && (entry.originalNotes !== null || entry.originalHours !== null || entry.originalCustomerId !== null)) {
             originalValuesObj[index] = {
               comments: entry.originalNotes || '',
-              hours: entry.originalHours || 0
+              hours: entry.originalHours || 0,
+              customerId: entry.originalCustomerId || '',
+              customer: '' // Will be resolved from customerId
             };
           }
         }
@@ -222,6 +226,7 @@ const ImportVerification = () => {
         return {
           project: entry.projectName || entry.tariff || '',
           customer: entry.customerName || '',
+          customerId: entry.customerId || '',
           date: entry.date || '',
           tariff: entry.tariff || '',
           employee: entry.employeeName || '',
