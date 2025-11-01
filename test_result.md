@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix hourly rate (tariff value) persistence issue in Import Verification page + rename column from 'Hourly Rate (€)' to 'Value (€)'"
+user_problem_statement: "Enhance Import XLSX function - NEVER populate 'Vrednost' (Value) column from Excel file (column I is irrelevant). Instead, CALCULATE value as: hours × tariff.value from Settings. This ensures tariff values from Settings are the single source of truth."
 
 backend:
   - task: "POST /api/imports - Add hourlyRate field to time entry schema"
