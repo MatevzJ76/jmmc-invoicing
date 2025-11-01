@@ -582,7 +582,8 @@ const ImportVerification = () => {
       description: verificationData.rows[index].comments,
       hours: verificationData.rows[index].hours,
       customerId: verificationData.rows[index].customerId || '',
-      customer: verificationData.rows[index].customer || ''
+      customer: verificationData.rows[index].customer || '',
+      status: verificationData.rows[index].status || 'uninvoiced'
     });
     setShowEditModal(true);
   };
