@@ -4587,12 +4587,12 @@ class TestEmployeeCostsAPI:
             print("  4. Verify POST and PUT endpoints accept correct parameters")
             print("  5. Check backend logs for any errors")
 if __name__ == "__main__":
-    # Run Employee Costs API tests
+    # Run Employee Costs Create Endpoint tests
     print("\n" + "=" * 80)
-    print("RUNNING EMPLOYEE COSTS API TESTS")
+    print("RUNNING EMPLOYEE COSTS CREATE ENDPOINT TESTS")
     print("=" * 80)
     
-    tester = TestEmployeeCostsAPI()
+    tester = TestEmployeeCostsCreate()
     tester.run_all_tests()
 
 
