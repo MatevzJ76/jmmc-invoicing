@@ -1443,12 +1443,27 @@ ${randomFinal}`;
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* AI Provider Settings Tile */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Zap className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl font-bold text-slate-800">AI Provider Configuration</h2>
-          </div>
+          <button
+            onClick={() => setAiProviderExpanded(!aiProviderExpanded)}
+            className="w-full flex items-center justify-between cursor-pointer group"
+          >
+            <div className="flex items-center gap-3">
+              <Zap className="w-6 h-6 text-purple-600" />
+              <h2 className="text-xl font-bold text-slate-800">AI Provider Configuration</h2>
+            </div>
+            
+            <svg 
+              className={`w-5 h-5 text-slate-600 transition-transform ${aiProviderExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
           
-          <div className="space-y-6">
+          {aiProviderExpanded && (
+          <div className="space-y-6 mt-6">
             <div className="space-y-2">
               <Label htmlFor="provider">AI Provider</Label>
               <Select value={settings.aiProvider} onValueChange={(value) => updateSetting('aiProvider', value)}>
