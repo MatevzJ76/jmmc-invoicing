@@ -3295,6 +3295,32 @@ async def update_employee_cost(employee_data: dict, current_user: User = Depends
     
     return {"message": "Employee cost updated successfully"}
 
+@api_router.post("/employee-costs/create")
+async def create_employee(employee_data: dict, current_user: User = Depends(get_current_user)):
+    """Create a new employee manually"""
+    employee_name = employee_data.get("employee_name")
+    
+    if not employee_name or not employee_name.strip():
+        raise HTTPException(status_code=400, detail="Employee name is required")
+    
+    # Check if employee already exists
+    existing = await db.employee_costs.find_one({"employee_name": employee_name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Employee already exists")
+    
+    # Create employee
+    now = datetime.now(timezone.utc).isoformat()
+    new_employee = {
+        "employee_name": employee_name.strip(),
+        "cost": employee_data.get("cost", 0),
+        "archived": False,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.employee_costs.insert_one(new_employee)
+    return {"message": "Employee created successfully"}
+
 @api_router.put("/employee-costs/{employee_name}/archive")
 async def archive_employee(employee_name: str, current_user: User = Depends(get_current_user)):
     """Archive an employee (soft delete)"""
