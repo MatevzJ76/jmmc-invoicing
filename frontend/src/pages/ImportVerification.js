@@ -1278,14 +1278,30 @@ const ImportVerification = () => {
                           {isManuallyEdited && !isAiCorrected && <span className="ml-2 text-blue-600" title="Manually edited">✍️</span>}
                         </td>
                         <td className="px-3 py-2 text-slate-700">{row.project}</td>
-                        <td className="px-3 py-2 text-slate-700 font-medium">{row.customer}</td>
+                        <td className={`px-3 py-2 text-slate-700 font-medium ${
+                          originalValues[originalIndex]?.customerId && originalValues[originalIndex]?.customerId !== row.customerId 
+                            ? 'bg-yellow-100 border-l-2 border-l-yellow-500' 
+                            : ''
+                        }`}>
+                          {row.customer}
+                        </td>
                         <td className="px-3 py-2 text-slate-600">{row.date}</td>
                         <td className="px-3 py-2 text-slate-600">{row.tariff}</td>
                         <td className="px-3 py-2 text-slate-700">{row.employee}</td>
-                        <td className="px-3 py-2 text-slate-600 max-w-md truncate" title={row.comments}>
+                        <td className={`px-3 py-2 text-slate-600 max-w-md truncate ${
+                          originalValues[originalIndex]?.comments && originalValues[originalIndex]?.comments !== row.comments 
+                            ? 'bg-yellow-100 border-l-2 border-l-yellow-500' 
+                            : ''
+                        }`} title={row.comments}>
                           {row.comments}
                         </td>
-                        <td className="px-3 py-2 text-right text-slate-700 font-medium">{row.hours}</td>
+                        <td className={`px-3 py-2 text-right text-slate-700 font-medium ${
+                          originalValues[originalIndex]?.hours !== undefined && originalValues[originalIndex]?.hours !== row.hours 
+                            ? 'bg-yellow-100 border-l-2 border-l-yellow-500' 
+                            : ''
+                        }`}>
+                          {row.hours}
+                        </td>
                         <td className="px-3 py-2 text-right text-blue-600 font-medium">€{formatEuro(row.hourlyRate || 0)}</td>
                         <td className="px-3 py-2 text-right text-slate-700">€{formatEuro(row.value || 0)}</td>
                         <td className="px-3 py-2 text-slate-600">{row.invoiceNumber || '-'}</td>
