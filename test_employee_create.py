@@ -88,52 +88,46 @@ class TestEmployeeCostsCreate:
         print("\n=== Test 2: Verify Employee in Database ===")
         
         try:
-            response = requests.get(
-                f"{BACKEND_URL}/employee-costs",
-                headers=self.get_headers()
-            )
+            # Check database directly since GET endpoint only returns employees with time entries
+            import asyncio
+            from motor.motor_asyncio import AsyncIOMotorClient
             
-            print(f"Status: {response.status_code}")
+            async def check_db():
+                client = AsyncIOMotorClient("mongodb://localhost:27017")
+                db = client["test_database"]
+                employee = await db.employee_costs.find_one({"employee_name": self.test_employee_name})
+                client.close()
+                return employee
             
-            if response.status_code == 200:
-                employees = response.json()
-                print(f"✅ Retrieved {len(employees)} employees")
+            test_employee = asyncio.run(check_db())
+            
+            if test_employee:
+                print(f"✅ Test employee found in database")
+                print(f"  Name: {test_employee.get('employee_name')}")
+                print(f"  Cost: {test_employee.get('cost')}")
+                print(f"  Archived: {test_employee.get('archived')}")
+                print(f"  Created At: {test_employee.get('created_at')}")
+                print(f"  Updated At: {test_employee.get('updated_at')}")
                 
-                # Find our test employee
-                test_employee = None
-                for emp in employees:
-                    if emp.get("employee_name") == self.test_employee_name:
-                        test_employee = emp
-                        break
-                
-                if test_employee:
-                    print(f"✅ Test employee found in database")
-                    print(f"  Name: {test_employee.get('employee_name')}")
-                    print(f"  Cost: {test_employee.get('cost')}")
-                    print(f"  Archived: {test_employee.get('archived')}")
-                    print(f"  Created At: {test_employee.get('created_at')}")
-                    print(f"  Updated At: {test_employee.get('updated_at')}")
-                    
-                    # Verify fields
-                    if test_employee.get('cost') != 50.0:
-                        print(f"❌ Cost mismatch: expected 50.0, got {test_employee.get('cost')}")
-                        return False
-                    
-                    if test_employee.get('archived') != False:
-                        print(f"❌ Archived mismatch: expected False, got {test_employee.get('archived')}")
-                        return False
-                    
-                    print("✅ All fields match expected values")
-                    return True
-                else:
-                    print(f"❌ Test employee '{self.test_employee_name}' not found in database")
+                # Verify fields
+                if test_employee.get('cost') != 50.0:
+                    print(f"❌ Cost mismatch: expected 50.0, got {test_employee.get('cost')}")
                     return False
+                
+                if test_employee.get('archived') != False:
+                    print(f"❌ Archived mismatch: expected False, got {test_employee.get('archived')}")
+                    return False
+                
+                print("✅ All fields match expected values")
+                return True
             else:
-                print(f"❌ Failed to get employees: {response.text}")
+                print(f"❌ Test employee '{self.test_employee_name}' not found in database")
                 return False
                 
         except Exception as e:
             print(f"❌ Error verifying employee: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def test_employee_in_get_list(self) -> bool:
