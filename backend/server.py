@@ -826,6 +826,17 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
                 if 'originalTariff' not in entry or entry.get('originalTariff') is None:
                     update_fields['originalTariff'] = entry.get('tariff', '')
                 update_fields['tariff'] = update_data['tariff']
+                
+                # When tariff changes, update hourlyRate from tariff codes
+                tariff_code = update_data['tariff']
+                tariff_doc = await db.tariffs.find_one({"code": tariff_code})
+                if tariff_doc:
+                    update_fields['hourlyRate'] = tariff_doc.get('value', 0)
+                    
+            if 'hourlyRate' in update_data:
+                # Allow manual hourlyRate updates
+                update_fields['hourlyRate'] = float(update_data['hourlyRate'])
+                
             if 'aiCorrectionApplied' in update_data:
                 update_fields['aiCorrectionApplied'] = bool(update_data['aiCorrectionApplied'])
             if 'manuallyEdited' in update_data:
