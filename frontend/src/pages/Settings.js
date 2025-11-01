@@ -344,6 +344,7 @@ const TariffCodesSection = () => {
                     type="text"
                     value={newTariff.value !== undefined ? formatEuro(newTariff.value) : '0,00'}
                     onChange={(e) => setNewTariff({ ...newTariff, value: parseEuro(e.target.value) })}
+                    onFocus={(e) => e.target.select()}
                     className="text-sm text-right"
                   />
                 </div>
