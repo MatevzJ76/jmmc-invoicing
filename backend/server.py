@@ -3227,30 +3227,20 @@ async def update_article(article_code: str, article_data: dict, current_user: Us
 # ============ EMPLOYEE COSTS ENDPOINTS ============
 @api_router.get("/employee-costs")
 async def get_employee_costs(archived: Optional[bool] = None, current_user: User = Depends(get_current_user)):
-    """Get all employees with their cost data. Auto-extracts unique employee names from time entries."""
+    """Get all employees with their cost data. Auto-extracts unique employee names from time entries and returns all manually created employees."""
     
     # Get unique employee names from time_entries collection
-    employee_names = await db.timeEntries.distinct("employeeName")
+    employee_names_from_time_entries = await db.timeEntries.distinct("employeeName")
     
-    # For each employee name, check if they exist in employee_costs collection
-    employees_data = []
-    for name in employee_names:
+    # Auto-create employee entries for employees from time entries if they don't exist
+    for name in employee_names_from_time_entries:
         if not name:  # Skip empty names
             continue
             
         # Check if employee exists in employee_costs collection
         existing = await db.employee_costs.find_one({"employee_name": name})
         
-        if existing:
-            # Employee exists in collection
-            employee_data = {
-                "employee_name": existing.get("employee_name"),
-                "cost": existing.get("cost"),
-                "archived": existing.get("archived", False),
-                "created_at": existing.get("created_at"),
-                "updated_at": existing.get("updated_at")
-            }
-        else:
+        if not existing:
             # Auto-create employee entry
             now = datetime.now(timezone.utc).isoformat()
             employee_data = {
@@ -3261,12 +3251,15 @@ async def get_employee_costs(archived: Optional[bool] = None, current_user: User
                 "updated_at": now
             }
             await db.employee_costs.insert_one(employee_data.copy())
-        
-        # Filter by archived status if specified
-        if archived is None or employee_data["archived"] == archived:
-            employees_data.append(employee_data)
     
-    return employees_data
+    # Now get ALL employees from employee_costs collection (including manually created ones)
+    query = {}
+    if archived is not None:
+        query["archived"] = archived
+    
+    employees = await db.employee_costs.find(query, {"_id": 0}).to_list(1000)
+    
+    return employees
 
 @api_router.post("/employee-costs")
 async def update_employee_cost(employee_data: dict, current_user: User = Depends(get_current_user)):
