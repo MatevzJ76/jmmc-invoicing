@@ -1084,13 +1084,15 @@ const Settings = () => {
     grammar: '',
     fraud: '',
     gdpr: '',
-    verification: ''
+    verification: '',
+    dtm: ''
   });
   const [testResults, setTestResults] = useState({
     grammar: null,
     fraud: null,
     gdpr: null,
-    verification: null
+    verification: null,
+    dtm: null
   });
   const [testingPrompt, setTestingPrompt] = useState(null);
   
