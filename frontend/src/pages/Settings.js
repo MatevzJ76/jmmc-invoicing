@@ -144,6 +144,259 @@ const AddCustomerForm = () => {
   );
 };
 
+// TariffCodesSection Component
+const TariffCodesSection = () => {
+  const [tariffs, setTariffs] = useState([]);
+  const [expanded, setExpanded] = useState(false);
+  const [editedTariffs, setEditedTariffs] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newTariff, setNewTariff] = useState({ code: '', description: '' });
+
+  useEffect(() => {
+    loadTariffs();
+  }, []);
+
+  const loadTariffs = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/tariffs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTariffs(response.data);
+    } catch (error) {
+      toast.error('Failed to load tariffs');
+      console.error('Tariff load error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFieldChange = (code, field, value) => {
+    setEditedTariffs({
+      ...editedTariffs,
+      [code]: {
+        ...(editedTariffs[code] || {}),
+        [field]: value
+      }
+    });
+  };
+
+  const handleSaveTariff = async (tariff) => {
+    if (!editedTariffs[tariff.code]) return;
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(
+        `${BACKEND_URL}/api/tariffs/${encodeURIComponent(tariff.code)}`,
+        editedTariffs[tariff.code],
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Tariff updated');
+      
+      // Update local state
+      setTariffs(tariffs.map(t => 
+        t.code === tariff.code 
+          ? { ...t, ...editedTariffs[tariff.code] }
+          : t
+      ));
+      
+      // Clear edited state
+      const newEdited = { ...editedTariffs };
+      delete newEdited[tariff.code];
+      setEditedTariffs(newEdited);
+      
+    } catch (error) {
+      toast.error('Failed to update tariff');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddTariff = async () => {
+    if (!newTariff.code.trim()) {
+      toast.error('Tariff code is required');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(
+        `${BACKEND_URL}/api/tariffs`,
+        newTariff,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Tariff added successfully');
+      setNewTariff({ code: '', description: '' });
+      setShowAddForm(false);
+      loadTariffs(); // Reload list
+      
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to add tariff');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const hasChanges = (code) => {
+    return editedTariffs[code] && Object.keys(editedTariffs[code]).length > 0;
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+        <p className="text-slate-600">Loading tariffs...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-slate-200 mb-6">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between cursor-pointer group"
+      >
+        <div className="flex items-center gap-3">
+          <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <h2 className="text-xl font-bold text-slate-800">Tariff Codes</h2>
+          <span className="text-xs text-slate-500">({tariffs.length} tariffs)</span>
+        </div>
+        
+        <svg 
+          className={`w-5 h-5 text-slate-600 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {expanded && (
+        <div className="mt-6">
+          <p className="text-sm text-slate-600 mb-4">
+            Manage tariff codes used in XLSX imports
+          </p>
+
+          {/* Add New Tariff Button */}
+          <div className="mb-4">
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              size="sm"
+              className="rounded-full bg-indigo-600 hover:bg-indigo-700"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add New Tariff
+            </Button>
+          </div>
+
+          {/* Add Tariff Form */}
+          {showAddForm && (
+            <div className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+              <h4 className="text-sm font-bold text-indigo-800 mb-3">New Tariff</h4>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <Input
+                    placeholder="Code (e.g., 001 - Računovodstvo)"
+                    value={newTariff.code}
+                    onChange={(e) => setNewTariff({ ...newTariff, code: e.target.value })}
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Description"
+                    value={newTariff.description}
+                    onChange={(e) => setNewTariff({ ...newTariff, description: e.target.value })}
+                    className="text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleAddTariff}
+                  disabled={!newTariff.code.trim() || saving}
+                  size="sm"
+                  className="rounded-full bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Add Tariff
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewTariff({ code: '', description: '' });
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Tariff List */}
+          <div className="space-y-2">
+            {tariffs.map((tariff) => {
+              const edited = editedTariffs[tariff.code] || {};
+              const currentData = { ...tariff, ...edited };
+              
+              return (
+                <div key={tariff.code} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    {/* Tariff Code (Read-only) */}
+                    <div>
+                      <label className="text-xs text-slate-600 block mb-1">Tariff Code</label>
+                      <Input
+                        value={tariff.code}
+                        disabled
+                        className="bg-white font-mono font-semibold text-indigo-700"
+                      />
+                    </div>
+
+                    {/* Description (Editable) */}
+                    <div>
+                      <label className="text-xs text-slate-600 block mb-1">Description</label>
+                      <Input
+                        value={currentData.description}
+                        onChange={(e) => handleFieldChange(tariff.code, 'description', e.target.value)}
+                        placeholder="Tariff description"
+                      />
+                    </div>
+
+                    {/* Save Button */}
+                    <div>
+                      <Button
+                        onClick={() => handleSaveTariff(tariff)}
+                        disabled={!hasChanges(tariff.code) || saving}
+                        className="rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                        size="sm"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // EmployeeCostsSection Component
 const EmployeeCostsSection = () => {
   const [employees, setEmployees] = useState([]);
