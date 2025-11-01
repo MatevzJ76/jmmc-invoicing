@@ -583,6 +583,7 @@ async def import_xlsx(
                 "manuallyEdited": False,  # Track if row was manually edited
                 "originalNotes": None,  # Store original notes before AI correction
                 "originalHours": None,  # Store original hours before AI correction
+                "originalCustomerId": None,  # Store original customer ID before edit
                 "invoiced": False  # Track if row has been included in an invoice
             }
             entries.append(entry)
