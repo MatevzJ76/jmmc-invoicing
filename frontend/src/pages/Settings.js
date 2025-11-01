@@ -772,6 +772,39 @@ const ArticleCodesSection = () => {
     }
   };
 
+  const handleAddArticle = async () => {
+    if (!newArticle.code.trim()) {
+      toast.error('Article code is required');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(
+        `${BACKEND_URL}/api/articles`,
+        newArticle,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success('Article added successfully');
+      setNewArticle({ 
+        code: '', 
+        description: '', 
+        unitMeasure: 'kos',
+        priceWithoutVAT: 0,
+        vatPercentage: 22
+      });
+      setShowAddForm(false);
+      loadArticles(); // Reload list
+      
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to add article');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const formatEuro = (number) => {
     const num = parseFloat(number);
     if (isNaN(num)) return '0,00';
