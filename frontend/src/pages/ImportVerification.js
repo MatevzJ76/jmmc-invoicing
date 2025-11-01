@@ -192,6 +192,12 @@ const ImportVerification = () => {
       });
       const timeEntries = entriesResponse.data;
       
+      console.log('Fetched time entries from backend:', {
+        count: timeEntries.length,
+        firstEntry: timeEntries[0],
+        fieldsInFirstEntry: timeEntries[0] ? Object.keys(timeEntries[0]) : []
+      });
+      
       // Fetch all customers to resolve customer names from IDs
       const customersResponse = await axios.get(`${BACKEND_URL}/api/customers`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -200,6 +206,8 @@ const ImportVerification = () => {
       customersResponse.data.forEach(c => {
         customersMap[c.id] = c.name;
       });
+      
+      console.log('Customers map created:', Object.keys(customersMap).length, 'customers');
       
       // Convert time entries to verification format and track corrections
       const aiCorrectedRowsArray = [];
