@@ -1786,6 +1786,52 @@ ${randomFinal}`;
                 )}
               </div>
             </div>
+
+            {/* 2xDTM Prompt */}
+            <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <Label htmlFor="dtm" className="text-base font-semibold">2xDTM (Do The Magic, Do The Magic)</Label>
+              <Textarea
+                id="dtm"
+                value={settings.dtmPrompt}
+                onChange={(e) => updateSetting('dtmPrompt', e.target.value)}
+                rows={3}
+                className="font-mono text-sm"
+                data-testid="dtm-prompt-input"
+              />
+              <p className="text-xs text-slate-500">Special AI enhancement prompt for future use</p>
+              
+              {/* Test Section */}
+              <div className="mt-4 pt-4 border-t border-slate-300">
+                <Label htmlFor="dtm-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
+                <Textarea
+                  id="dtm-test"
+                  value={testInputs.dtm}
+                  onChange={(e) => updateTestInput('dtm', e.target.value)}
+                  rows={2}
+                  placeholder="Enter text to test 2xDTM prompt..."
+                  className="text-sm mb-2"
+                />
+                <Button
+                  onClick={() => handleTestPrompt('dtm')}
+                  disabled={testingPrompt === 'dtm' || !testInputs.dtm}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  <Sparkles className="w-3 h-3 mr-2" />
+                  {testingPrompt === 'dtm' ? 'Testing...' : 'Test Prompt'}
+                </Button>
+                
+                {testResults.dtm && (
+                  <div className={`mt-3 p-3 rounded-lg border ${
+                    testResults.dtm.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  }`}>
+                    <p className="text-xs font-semibold mb-1">Result:</p>
+                    <p className="text-sm whitespace-pre-wrap">{testResults.dtm.result}</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           )}
         </div>
