@@ -1268,33 +1268,41 @@ const ImportVerification = () => {
                     const isFlagged = aiResults[originalIndex];
                     const isAiCorrected = aiCorrectedRows.has(originalIndex);
                     const isManuallyEdited = manuallyEditedRows.has(originalIndex);
-                    const isInvoiced = row.invoiced === true;
+                    const rowStatus = row.status || 'uninvoiced';
                     
-                    // Debug logging for highlighting
-                    if (displayIndex < 5 && originalValues[originalIndex]) {
-                      console.log(`Row ${displayIndex} (originalIndex ${originalIndex}):`, {
-                        customer: row.customer,
-                        customerId: row.customerId,
-                        originalCustomer: originalValues[originalIndex]?.customer,
-                        originalCustomerId: originalValues[originalIndex]?.customerId,
-                        shouldHighlightCustomer: originalValues[originalIndex]?.customerId && originalValues[originalIndex]?.customerId !== row.customerId,
-                        isManuallyEdited,
-                        isAiCorrected
-                      });
-                    }
-                    
-                    // Determine row background color based on edit status
+                    // Determine row background color based on status
                     let rowBgClass = '';
-                    if (isInvoiced) {
+                    let statusIcon = '';
+                    let statusTitle = '';
+                    
+                    if (rowStatus === 'invoiced') {
                       rowBgClass = 'bg-gradient-to-r from-green-100 to-emerald-100 border-l-4 border-green-500 opacity-85';
+                      statusIcon = '✓';
+                      statusTitle = 'Already invoiced';
+                    } else if (rowStatus === 'internal') {
+                      rowBgClass = 'bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-400';
+                      statusIcon = '🏢';
+                      statusTitle = 'Internal - not for invoicing';
+                    } else if (rowStatus === 'free') {
+                      rowBgClass = 'bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400';
+                      statusIcon = '🎁';
+                      statusTitle = 'Free - will not be charged';
                     } else if (isFlagged) {
                       rowBgClass = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500';
+                      statusIcon = '○';
+                      statusTitle = 'Not invoiced';
                     } else if (isAiCorrected) {
                       rowBgClass = 'bg-purple-100/60 hover:bg-purple-100';
+                      statusIcon = '○';
+                      statusTitle = 'Not invoiced';
                     } else if (isManuallyEdited) {
                       rowBgClass = 'bg-blue-100/60 hover:bg-blue-100';
+                      statusIcon = '○';
+                      statusTitle = 'Not invoiced';
                     } else {
                       rowBgClass = 'hover:bg-blue-50';
+                      statusIcon = '○';
+                      statusTitle = 'Not invoiced';
                     }
                     
                     return (
@@ -1302,10 +1310,7 @@ const ImportVerification = () => {
                         key={displayIndex} 
                         className={`transition-colors cursor-pointer ${rowBgClass}`}
                         onClick={() => {
-                          if (isInvoiced) {
-                            toast.info('This row has already been invoiced');
-                            return;
-                          }
+                          // Allow editing all rows (user can change status of invoiced rows back to uninvoiced/internal/free)
                           if (isFlagged) {
                             // Open AI Evaluation modal for flagged rows
                             handleRowClick(originalIndex);
