@@ -2429,8 +2429,8 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
     
-    # Get all time entries
-    entries = await db.timeEntries.find({"batchId": batchId}).to_list(10000)
+    # Get only UNINVOICED time entries (exclude internal, free, and already invoiced)
+    entries = await db.timeEntries.find({"batchId": batchId, "status": "uninvoiced"}).to_list(10000)
     
     # Group by customer
     customer_groups = defaultdict(list)
