@@ -1375,7 +1375,7 @@ const ImportVerification = () => {
               </tbody>
               <tfoot className="bg-slate-100 border-t-2 border-slate-300">
                 <tr>
-                  <td colSpan="7" className="px-3 py-3 text-right text-sm font-bold text-slate-800">
+                  <td colSpan="6" className="px-3 py-3 text-right text-sm font-bold text-slate-800">
                     Total {displayRows.length > 0 && displayRows.length !== verificationData.rows.length && `(${displayRows.length} rows)`}:
                   </td>
                   <td className="px-3 py-3 text-right text-sm font-bold text-blue-700">
