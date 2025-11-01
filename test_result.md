@@ -339,6 +339,18 @@ backend:
           comment: "Auto-population logic for invoicing settings is FULLY WORKING. Tested with real customer history XLSX file (report-20251031-080554-537-ZlHlmEdc.xlsx). The system correctly analyzes Article 000001 entries from the latest period (most recent month) and auto-populates invoicing settings. TEST RESULTS: (1) ✅ Article 000001 Detection - Found 2 Article 000001 entries in latest period (September 2025). (2) ✅ Case B - Hybrid Detection - Correctly identified hybrid invoicing type (2+ Article 000001 entries). (3) ✅ Fixed Forfait Value - Correctly set to €180.0 from 1st Article 000001 entry (Računovodstvo). (4) ✅ Hourly Rate - Correctly set to €45.0 from 2nd Article 000001 entry (Računovodstvo - dodatna dela). (5) ✅ GET /api/customers/{customer_id} - Returns all auto-populated fields correctly. LOGIC VERIFICATION: Case A (Fixed Forfait): Single Article 000001 with empty/simple description → invoicingType='fixed-forfait', fixedForfaitValue=unitPrice. Case B (Hybrid): 2+ Article 000001 entries → invoicingType='hybrid', fixedForfaitValue=1st unitPrice, unitPrice=2nd unitPrice. Case C (By Hours): Single Article 000001 with work list (dates like '2024-10-17' or '17.10.24') → invoicingType='by-hours', unitPrice=unitPrice. All three cases implemented correctly in server.py lines 1657-1743. Feature is PRODUCTION-READY and working as designed."
 
 frontend:
+  - task: "Import Verification - Rename column from 'Hourly Rate (€)' to 'Value (€)'"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ImportVerification.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "COLUMN RENAME: Changed table header from 'Hourly Rate (€)' to 'Value (€)' on line 1360. This better reflects that the column shows the tariff value/hourly rate for each time entry. Frontend was already displaying hourlyRate field correctly, the issue was that backend wasn't persisting this data."
+
   - task: "Import Verification - AI corrections marking with robot icon"
     implemented: true
     working: "NA"
