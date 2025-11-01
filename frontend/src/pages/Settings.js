@@ -662,9 +662,86 @@ const EmployeeCostsSection = () => {
 
       {expanded && (
         <div className="mt-6">
-          <p className="text-sm text-slate-600 mb-6">
+          <p className="text-sm text-slate-600 mb-4">
             Manage employee cost settings. Employees are automatically extracted from XLSX imports.
           </p>
+
+          {/* Add New Employee Button */}
+          <div className="mb-4">
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              size="sm"
+              className="rounded-full bg-orange-600 hover:bg-orange-700"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add New Employee
+            </Button>
+          </div>
+
+          {/* Add Employee Form */}
+          {showAddForm && (
+            <div className="mb-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+              <h4 className="text-sm font-bold text-orange-800 mb-3">New Employee</h4>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <Input
+                    placeholder="Employee Name"
+                    value={newEmployee.employee_name}
+                    onChange={(e) => setNewEmployee({ ...newEmployee, employee_name: e.target.value })}
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Cost (€)"
+                    type="text"
+                    value={
+                      focusedField === 'new-employee-cost'
+                        ? (newEmployee.cost || 0)
+                        : formatEuro(newEmployee.cost)
+                    }
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/[^0-9,.]/g, '');
+                      setNewEmployee({ ...newEmployee, cost: rawValue });
+                    }}
+                    onFocus={(e) => {
+                      setFocusedField('new-employee-cost');
+                      e.target.select();
+                    }}
+                    onBlur={(e) => {
+                      setFocusedField(null);
+                      const parsedValue = parseEuro(e.target.value);
+                      setNewEmployee({ ...newEmployee, cost: parsedValue });
+                    }}
+                    className="text-sm text-right"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleAddEmployee}
+                  disabled={!newEmployee.employee_name.trim() || saving}
+                  size="sm"
+                  className="rounded-full bg-orange-600 hover:bg-orange-700"
+                >
+                  Add Employee
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewEmployee({ employee_name: '', cost: 0 });
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             {employees.length === 0 ? (
