@@ -1825,6 +1825,30 @@ const ImportVerification = () => {
                     </Select>
                   </div>
                   
+                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <p className="text-xs font-semibold text-purple-800 mb-2">Tariff:</p>
+                    <Select 
+                      value={editableSuggestions.tariff} 
+                      onValueChange={(value) => {
+                        setEditableSuggestions({ 
+                          ...editableSuggestions, 
+                          tariff: value
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="bg-white border-purple-300 focus:border-purple-500">
+                        <SelectValue placeholder="Select tariff" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {uniqueTariffs.map((tariff) => (
+                          <SelectItem key={tariff} value={tariff}>
+                            {tariff}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
                   <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                     <p className="text-xs font-semibold text-blue-800 mb-2">Description:</p>
                     <Textarea
