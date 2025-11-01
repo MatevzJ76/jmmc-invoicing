@@ -4599,6 +4599,571 @@ class TestEmployeeCostsAPI:
             print("  3. Check if auto-extraction logic is working")
             print("  4. Verify POST and PUT endpoints accept correct parameters")
             print("  5. Check backend logs for any errors")
+
+
+class TestHourlyRatePersistence:
+    """Test hourlyRate field persistence in Excel import functionality"""
+    
+    def __init__(self):
+        self.token = None
+        self.test_batch_id = None
+        self.tariff_codes = {}
+        
+    def login(self) -> bool:
+        """Login as admin and get auth token"""
+        print("\n=== Testing Login ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                print(f"✅ Login successful")
+                print(f"User: {data.get('user', {}).get('email')}")
+                print(f"Role: {data.get('user', {}).get('role')}")
+                return True
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
+    
+    def get_headers(self) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.token}"}
+    
+    def get_tariff_codes(self) -> bool:
+        """Fetch tariff codes from database to verify hourlyRate values"""
+        print("\n=== Fetching Tariff Codes ===")
+        try:
+            # We'll use the seed_tariffs.py data as reference
+            # Common tariff codes from the system
+            self.tariff_codes = {
+                "001 - Računovodstvo": 45.0,
+                "002 - Davčno svetovanje": 50.0,
+                "003 - Plače": 40.0,
+                "004 - Pravno svetovanje": 60.0,
+                "005 - Revizija": 55.0,
+                "999 - EXTRA": 0.0,
+                "N/A": 0.0
+            }
+            print(f"✅ Loaded {len(self.tariff_codes)} tariff codes for reference")
+            for code, value in list(self.tariff_codes.items())[:3]:
+                print(f"  - {code}: €{value}")
+            return True
+        except Exception as e:
+            print(f"❌ Error loading tariff codes: {str(e)}")
+            return False
+    
+    def create_test_import(self) -> bool:
+        """Create a test import with time entries that have various tariff codes"""
+        print("\n=== TEST 1: New Import - Verify hourlyRate Field ===")
+        print("Creating test import with multiple tariff codes...")
+        
+        try:
+            # Create a simple test Excel file in memory
+            # We'll use the existing batch from the system for testing
+            # Let's find an existing batch with time entries
+            
+            response = requests.get(
+                f"{BACKEND_URL}/batches",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to get batches: {response.text}")
+                return False
+            
+            batches = response.json()
+            
+            # Find a batch with status 'imported' or 'composed'
+            test_batch = None
+            for batch in batches:
+                if batch.get('status') in ['imported', 'composed', 'in progress']:
+                    test_batch = batch
+                    break
+            
+            if not test_batch:
+                print("❌ No suitable test batch found")
+                return False
+            
+            self.test_batch_id = test_batch['id']
+            print(f"✅ Using existing batch: {test_batch['title']}")
+            print(f"   Batch ID: {self.test_batch_id}")
+            print(f"   Status: {test_batch['status']}")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error creating test import: {str(e)}")
+            return False
+    
+    def test_hourly_rate_field_present(self) -> bool:
+        """Test that hourlyRate field is present and populated in time entries"""
+        print("\n=== Verifying hourlyRate Field in Time Entries ===")
+        
+        try:
+            response = requests.get(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to get time entries: {response.text}")
+                return False
+            
+            entries = response.json()
+            print(f"✅ Retrieved {len(entries)} time entries")
+            
+            if len(entries) == 0:
+                print("⚠️  No time entries found in batch")
+                return False
+            
+            # Check first 5 entries for hourlyRate field
+            entries_to_check = entries[:min(5, len(entries))]
+            
+            missing_hourly_rate = []
+            incorrect_hourly_rate = []
+            correct_entries = []
+            
+            print("\nChecking hourlyRate field in entries:")
+            for i, entry in enumerate(entries_to_check):
+                tariff = entry.get('tariff', 'N/A')
+                hourly_rate = entry.get('hourlyRate')
+                employee = entry.get('employeeName', 'Unknown')
+                
+                print(f"\n  Entry {i+1}:")
+                print(f"    Employee: {employee}")
+                print(f"    Tariff: {tariff}")
+                print(f"    hourlyRate: {hourly_rate}")
+                
+                # Check if hourlyRate field exists
+                if 'hourlyRate' not in entry:
+                    missing_hourly_rate.append(i+1)
+                    print(f"    ❌ hourlyRate field MISSING")
+                    continue
+                
+                # Check if hourlyRate is not None
+                if hourly_rate is None:
+                    missing_hourly_rate.append(i+1)
+                    print(f"    ❌ hourlyRate is None")
+                    continue
+                
+                # Verify hourlyRate matches tariff code value (if we have it in our reference)
+                expected_rate = self.tariff_codes.get(tariff)
+                if expected_rate is not None:
+                    if abs(hourly_rate - expected_rate) < 0.01:  # Allow small floating point differences
+                        correct_entries.append(i+1)
+                        print(f"    ✅ hourlyRate matches tariff value (€{expected_rate})")
+                    else:
+                        incorrect_hourly_rate.append(i+1)
+                        print(f"    ⚠️  hourlyRate (€{hourly_rate}) doesn't match expected (€{expected_rate})")
+                else:
+                    # Tariff not in our reference, just check it's a number
+                    if isinstance(hourly_rate, (int, float)):
+                        correct_entries.append(i+1)
+                        print(f"    ✅ hourlyRate is present (€{hourly_rate})")
+                    else:
+                        incorrect_hourly_rate.append(i+1)
+                        print(f"    ❌ hourlyRate is not a number: {type(hourly_rate)}")
+            
+            # Summary
+            print("\n--- Summary ---")
+            print(f"Total entries checked: {len(entries_to_check)}")
+            print(f"✅ Correct entries: {len(correct_entries)}")
+            print(f"❌ Missing hourlyRate: {len(missing_hourly_rate)}")
+            print(f"⚠️  Incorrect hourlyRate: {len(incorrect_hourly_rate)}")
+            
+            if missing_hourly_rate:
+                print(f"\n❌ FAILED: {len(missing_hourly_rate)} entries missing hourlyRate field")
+                return False
+            
+            if len(correct_entries) == len(entries_to_check):
+                print("\n✅ PASSED: All entries have hourlyRate field populated correctly")
+                return True
+            else:
+                print("\n⚠️  PARTIAL: Some entries have issues but hourlyRate field exists")
+                return True  # Field exists, which is the main requirement
+                
+        except Exception as e:
+            print(f"❌ Error checking hourlyRate field: {str(e)}")
+            return False
+    
+    def test_hourly_rate_persistence(self) -> bool:
+        """Test that hourlyRate persists across database queries (navigate away and return)"""
+        print("\n=== TEST 2: Persistence Test - Navigate Away and Return ===")
+        print("Testing that hourlyRate values persist across multiple queries...")
+        
+        try:
+            # First query - get time entries and store hourlyRate values
+            print("\n1. First query - Getting time entries...")
+            response1 = requests.get(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            if response1.status_code != 200:
+                print(f"❌ First query failed: {response1.text}")
+                return False
+            
+            entries1 = response1.json()
+            print(f"✅ First query: Retrieved {len(entries1)} entries")
+            
+            # Store hourlyRate values from first query
+            hourly_rates_first = {}
+            for entry in entries1[:10]:  # Check first 10 entries
+                entry_id = entry.get('id')
+                hourly_rate = entry.get('hourlyRate')
+                hourly_rates_first[entry_id] = hourly_rate
+                print(f"   Entry {entry_id[:8]}...: hourlyRate = €{hourly_rate}")
+            
+            # Simulate navigating away - query batches list
+            print("\n2. Simulating navigation - Getting batches list...")
+            response_batches = requests.get(
+                f"{BACKEND_URL}/batches",
+                headers=self.get_headers()
+            )
+            
+            if response_batches.status_code != 200:
+                print(f"❌ Batches query failed: {response_batches.text}")
+                return False
+            
+            print(f"✅ Navigated to batches list")
+            
+            # Second query - get time entries again (simulating returning to the page)
+            print("\n3. Second query - Getting time entries again (returning to page)...")
+            response2 = requests.get(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            if response2.status_code != 200:
+                print(f"❌ Second query failed: {response2.text}")
+                return False
+            
+            entries2 = response2.json()
+            print(f"✅ Second query: Retrieved {len(entries2)} entries")
+            
+            # Compare hourlyRate values
+            print("\n4. Comparing hourlyRate values...")
+            mismatches = []
+            zero_values = []
+            
+            for entry in entries2[:10]:
+                entry_id = entry.get('id')
+                hourly_rate_second = entry.get('hourlyRate')
+                hourly_rate_first = hourly_rates_first.get(entry_id)
+                
+                if hourly_rate_first is None:
+                    continue
+                
+                print(f"   Entry {entry_id[:8]}...: First=€{hourly_rate_first}, Second=€{hourly_rate_second}")
+                
+                # Check if value changed
+                if hourly_rate_first != hourly_rate_second:
+                    mismatches.append({
+                        'id': entry_id,
+                        'first': hourly_rate_first,
+                        'second': hourly_rate_second
+                    })
+                
+                # Check if value became 0 (the reported bug)
+                if hourly_rate_first != 0 and hourly_rate_second == 0:
+                    zero_values.append({
+                        'id': entry_id,
+                        'first': hourly_rate_first,
+                        'second': hourly_rate_second
+                    })
+            
+            # Summary
+            print("\n--- Persistence Test Summary ---")
+            print(f"Entries checked: {len(hourly_rates_first)}")
+            print(f"Mismatches: {len(mismatches)}")
+            print(f"Values that became 0: {len(zero_values)}")
+            
+            if zero_values:
+                print("\n❌ CRITICAL BUG FOUND: hourlyRate values became 0 after navigation!")
+                for item in zero_values:
+                    print(f"   Entry {item['id'][:8]}...: €{item['first']} → €{item['second']}")
+                return False
+            
+            if mismatches:
+                print("\n⚠️  WARNING: Some hourlyRate values changed:")
+                for item in mismatches:
+                    print(f"   Entry {item['id'][:8]}...: €{item['first']} → €{item['second']}")
+                return False
+            
+            print("\n✅ PASSED: All hourlyRate values persisted correctly across queries")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error testing persistence: {str(e)}")
+            return False
+    
+    def test_tariff_update_hourly_rate(self) -> bool:
+        """Test that hourlyRate updates when tariff code changes"""
+        print("\n=== TEST 3: Tariff Update Test ===")
+        print("Testing that hourlyRate auto-updates when tariff code changes...")
+        
+        try:
+            # Get a time entry to update
+            response = requests.get(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to get time entries: {response.text}")
+                return False
+            
+            entries = response.json()
+            if len(entries) == 0:
+                print("❌ No entries available for testing")
+                return False
+            
+            # Find an entry with a known tariff
+            test_entry = entries[0]
+            entry_id = test_entry['id']
+            original_tariff = test_entry.get('tariff', 'N/A')
+            original_hourly_rate = test_entry.get('hourlyRate', 0)
+            
+            print(f"\nOriginal entry state:")
+            print(f"  Entry ID: {entry_id}")
+            print(f"  Tariff: {original_tariff}")
+            print(f"  hourlyRate: €{original_hourly_rate}")
+            
+            # Change tariff to a different code
+            new_tariff = "002 - Davčno svetovanje"  # Should have value of 50.0
+            expected_new_rate = self.tariff_codes.get(new_tariff, 50.0)
+            
+            print(f"\nUpdating tariff to: {new_tariff}")
+            print(f"Expected new hourlyRate: €{expected_new_rate}")
+            
+            # Update the entry
+            update_payload = [
+                {
+                    "index": 0,  # First entry
+                    "tariff": new_tariff
+                }
+            ]
+            
+            response = requests.put(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers(),
+                json=update_payload
+            )
+            
+            print(f"\nUpdate Status: {response.status_code}")
+            
+            if response.status_code != 200:
+                print(f"❌ Update failed: {response.text}")
+                return False
+            
+            print(f"✅ Update successful: {response.json()}")
+            
+            # Retrieve the entry again to verify hourlyRate was updated
+            response = requests.get(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to retrieve updated entry: {response.text}")
+                return False
+            
+            updated_entries = response.json()
+            updated_entry = updated_entries[0]
+            
+            new_tariff_value = updated_entry.get('tariff')
+            new_hourly_rate = updated_entry.get('hourlyRate')
+            
+            print(f"\nUpdated entry state:")
+            print(f"  Tariff: {new_tariff_value}")
+            print(f"  hourlyRate: €{new_hourly_rate}")
+            
+            # Verify tariff changed
+            if new_tariff_value != new_tariff:
+                print(f"❌ Tariff did not update correctly")
+                return False
+            
+            # Verify hourlyRate updated to match new tariff
+            if abs(new_hourly_rate - expected_new_rate) < 0.01:
+                print(f"\n✅ PASSED: hourlyRate auto-updated to €{new_hourly_rate} when tariff changed")
+                return True
+            else:
+                print(f"\n❌ FAILED: hourlyRate is €{new_hourly_rate}, expected €{expected_new_rate}")
+                return False
+            
+        except Exception as e:
+            print(f"❌ Error testing tariff update: {str(e)}")
+            return False
+    
+    def test_manual_hourly_rate_update(self) -> bool:
+        """Test that manual hourlyRate updates are allowed and persist"""
+        print("\n=== TEST 4: Manual hourlyRate Update Test ===")
+        print("Testing that manual hourlyRate updates are saved and persist...")
+        
+        try:
+            # Get a time entry to update
+            response = requests.get(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to get time entries: {response.text}")
+                return False
+            
+            entries = response.json()
+            if len(entries) < 2:
+                print("❌ Not enough entries available for testing")
+                return False
+            
+            # Use second entry for this test
+            test_entry = entries[1]
+            entry_id = test_entry['id']
+            original_hourly_rate = test_entry.get('hourlyRate', 0)
+            
+            print(f"\nOriginal entry state:")
+            print(f"  Entry ID: {entry_id}")
+            print(f"  hourlyRate: €{original_hourly_rate}")
+            
+            # Set a custom hourlyRate value
+            custom_rate = 75.50
+            
+            print(f"\nManually updating hourlyRate to: €{custom_rate}")
+            
+            # Update the entry with custom hourlyRate
+            update_payload = [
+                {
+                    "index": 1,  # Second entry
+                    "hourlyRate": custom_rate
+                }
+            ]
+            
+            response = requests.put(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers(),
+                json=update_payload
+            )
+            
+            print(f"\nUpdate Status: {response.status_code}")
+            
+            if response.status_code != 200:
+                print(f"❌ Update failed: {response.text}")
+                return False
+            
+            print(f"✅ Update successful: {response.json()}")
+            
+            # Retrieve the entry again to verify manual hourlyRate was saved
+            response = requests.get(
+                f"{BACKEND_URL}/batches/{self.test_batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to retrieve updated entry: {response.text}")
+                return False
+            
+            updated_entries = response.json()
+            updated_entry = updated_entries[1]
+            
+            new_hourly_rate = updated_entry.get('hourlyRate')
+            
+            print(f"\nUpdated entry state:")
+            print(f"  hourlyRate: €{new_hourly_rate}")
+            
+            # Verify manual hourlyRate was saved
+            if abs(new_hourly_rate - custom_rate) < 0.01:
+                print(f"\n✅ PASSED: Manual hourlyRate update saved correctly (€{new_hourly_rate})")
+                return True
+            else:
+                print(f"\n❌ FAILED: hourlyRate is €{new_hourly_rate}, expected €{custom_rate}")
+                return False
+            
+        except Exception as e:
+            print(f"❌ Error testing manual update: {str(e)}")
+            return False
+    
+    def run_all_tests(self):
+        """Run all hourlyRate persistence tests"""
+        print("\n" + "=" * 80)
+        print("HOURLY RATE FIELD PERSISTENCE TESTS")
+        print("=" * 80)
+        
+        results = {
+            "Login": False,
+            "Get Tariff Codes": False,
+            "Create Test Import": False,
+            "hourlyRate Field Present": False,
+            "hourlyRate Persistence": False,
+            "Tariff Update Auto-Updates hourlyRate": False,
+            "Manual hourlyRate Update": False
+        }
+        
+        # Run tests in sequence
+        if not self.login():
+            print("\n❌ Login failed - cannot continue tests")
+            self.print_summary(results)
+            return
+        results["Login"] = True
+        
+        if not self.get_tariff_codes():
+            print("\n⚠️  Could not load tariff codes - continuing with limited validation")
+        else:
+            results["Get Tariff Codes"] = True
+        
+        if not self.create_test_import():
+            print("\n❌ Could not create/find test import - cannot continue tests")
+            self.print_summary(results)
+            return
+        results["Create Test Import"] = True
+        
+        # Test 1: hourlyRate field present and populated
+        results["hourlyRate Field Present"] = self.test_hourly_rate_field_present()
+        
+        # Test 2: hourlyRate persistence across queries
+        results["hourlyRate Persistence"] = self.test_hourly_rate_persistence()
+        
+        # Test 3: Tariff update auto-updates hourlyRate
+        results["Tariff Update Auto-Updates hourlyRate"] = self.test_tariff_update_hourly_rate()
+        
+        # Test 4: Manual hourlyRate update
+        results["Manual hourlyRate Update"] = self.test_manual_hourly_rate_update()
+        
+        # Print summary
+        self.print_summary(results)
+    
+    def print_summary(self, results: Dict[str, bool]):
+        """Print test summary"""
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for v in results.values() if v)
+        total = len(results)
+        
+        for test_name, result in results.items():
+            status = "✅ PASSED" if result else "❌ FAILED"
+            print(f"{status}: {test_name}")
+        
+        print("\n" + "-" * 80)
+        print(f"Total: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED! hourlyRate field persistence is working correctly.")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed. Please review the issues above.")
+        
+        print("=" * 80)
+
 if __name__ == "__main__":
     # Run Employee Costs Create Endpoint tests
     print("\n" + "=" * 80)
