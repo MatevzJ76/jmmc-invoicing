@@ -768,8 +768,7 @@ metadata:
   test_sequence: 11
 
 test_plan:
-  current_focus:
-    - "POST /api/imports - Calculate value from tariff rates (ignore Excel Vrednost column)"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -777,6 +776,8 @@ test_plan:
 agent_communication:
     - agent: "main"
       message: "IMPORT FUNCTION ENHANCED: Vrednost (Value) column from Excel is now IGNORED during import. System now CALCULATES value as: hours × tariff.value from Settings/Tariff Codes. This makes Settings the single source of truth. Changes: (1) Backend import function no longer reads 'Vrednost' from Excel file (column I). (2) Instead, looks up tariff code in Settings, gets hourly rate, and calculates: value = hours × hourly_rate. (3) Stores calculated value as original data in database. (4) PUT endpoint enhanced to recalculate value automatically when: hours change, tariff changes, or hourlyRate changes manually. This ensures consistency - all values are always calculated from Settings tariff rates, not from potentially outdated Excel data. Ready for comprehensive backend testing with real Excel imports."
+    - agent: "testing"
+      message: "✅ VALUE CALCULATION FROM TARIFF RATES - COMPREHENSIVE TESTING COMPLETE! ALL 5 TESTS PASSED (5/5). Test Summary: (1) ✅ New Import - Value Calculation from Tariffs: Created test Excel with INCORRECT 'Vrednost' values (999.99, 888.88, etc.). Imported 5 entries. ALL values correctly calculated from tariff rates (hours × hourlyRate). Excel column COMPLETELY IGNORED. Examples: 8h × €45 = €360 (NOT €999.99), 4.5h × €45 = €202.5 (NOT €888.88). (2) ✅ Value Recalculation on Hours Change: Updated hours 8.0 → 10.0. Value auto-recalculated €360 → €450. Formula working: new_hours × hourlyRate. (3) ✅ Value Recalculation on Tariff Change: Changed tariff code. HourlyRate auto-updated to new tariff value. Value auto-recalculated with new rate. Both fields updated correctly. (4) ✅ Value Recalculation on Manual hourlyRate Change: Manually changed hourlyRate €0 → €75.5. Value auto-recalculated €0 → €226.5 (3h × €75.5). Manual override working. (5) ✅ Excel 'Vrednost' Column Ignored: Verified all 5 entries have calculated values that DO NOT match Excel values. All calculations use Settings > Tariff Codes. CONCLUSION: Feature is PRODUCTION-READY and FULLY FUNCTIONAL. Excel 'Vrednost' column (column I) is completely ignored. Settings > Tariff Codes are the single source of truth. Value automatically recalculates on hours/tariff/hourlyRate changes. NO ISSUES FOUND. Main agent should summarize and finish."
     - agent: "main"
       message: "CRITICAL BUG FIXED: Hourly Rate (Value) not persisting to database. USER REPORTED: Column 'Hourly Rate (€)' needs to be renamed to 'Value (€)'. Values display correctly after import but show 0,00 after navigating back to monthly batches and re-entering. ROOT CAUSE: Backend time entry schema was missing 'hourlyRate' field - it was never saved to database during import. FIXES IMPLEMENTED: (1) Backend - Added tariff_codes fetch during import to create tariff_rates mapping (server.py lines 507-509). (2) Backend - Added hourlyRate calculation from tariff code value during import (lines 584-585, 591). (3) Backend - Updated PUT endpoint to auto-update hourlyRate when tariff changes (lines 833-837) and allow manual hourlyRate updates (lines 839-841). (4) Frontend - Renamed column header from 'Hourly Rate (€)' to 'Value (€)' (ImportVerification.js line 1360). Now hourlyRate is calculated from tariff codes during import, saved to database, and persists across navigation. Ready for comprehensive backend testing."
     - agent: "testing"
