@@ -15,10 +15,20 @@ DB_NAME = os.environ['DB_NAME']
 # Tariff codes data
 TARIFFS = [
     {"code": "001 - Računovodstvo", "description": "Računovodstvo", "value": 0.0},
-    {"code": "002 - 45 EUR/uro", "description": "45 EUR/uro", "value": 45.0},
     {"code": "0021 - GPT Opravila", "description": "GPT Opravila", "value": 0.0},
+    {"code": "002 - 45 EUR/uro", "description": "45 EUR/uro", "value": 45.0},
+    {"code": "003 - 65 EUR/uro", "description": "65 EUR/uro", "value": 65.0},
+    {"code": "004 - 100 EUR/uro", "description": "100 EUR/uro", "value": 100.0},
+    {"code": "005 - Lokalne vožnje", "description": "Lokalne vožnje", "value": 0.0},
+    {"code": "006 - Potni nalogi", "description": "Nalogi za službena potovanja", "value": 0.0},
+    {"code": "010 - Zaključni računi", "description": "Delo na zaključnih letnih poročilih, oddaja, komunikacija s stranko.", "value": 0.0},
+    {"code": "011 - Timebreak", "description": "Timebreak", "value": 0.0},
     {"code": "012 - Izobraževanje", "description": "Izobraževanje", "value": 0.0},
+    {"code": "013 - Interventni ukrepi", "description": "Interventni ukrepi", "value": 45.0},
+    {"code": "014 - Licenca e-računi", "description": "Licenca e-računi", "value": 5.0},
+    {"code": "020 - Drugo-Ne uporabljaj", "description": "Drugo-Ne uporabljaj", "value": 100.0},
     {"code": "090 - Privat", "description": "Privat", "value": 0.0},
+    {"code": "091 - Bolniška", "description": "Bolniška", "value": 0.0},
     {"code": "092 - Letni dopust", "description": "Letni dopust", "value": 0.0},
     {"code": "999 - EXTRA", "description": "EXTRA", "value": 0.0}
 ]
