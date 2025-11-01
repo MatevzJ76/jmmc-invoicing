@@ -198,10 +198,12 @@ const Batches = () => {
             aiCorrectedRows.push(index);
             
             // Store original values if they exist
-            if (entry.originalNotes !== null || entry.originalHours !== null) {
+            if (entry.originalNotes !== null || entry.originalHours !== null || entry.originalCustomerId !== null) {
               originalValues[index] = {
                 comments: entry.originalNotes || '',
-                hours: entry.originalHours || 0
+                hours: entry.originalHours || 0,
+                customerId: entry.originalCustomerId || '',
+                customer: entry.originalCustomerName || '' // Backend should populate this
               };
             }
           }
@@ -211,10 +213,12 @@ const Batches = () => {
             manuallyEditedRows.push(index);
             
             // Store original values if they exist and not already stored
-            if (!originalValues[index] && (entry.originalNotes !== null || entry.originalHours !== null)) {
+            if (!originalValues[index] && (entry.originalNotes !== null || entry.originalHours !== null || entry.originalCustomerId !== null)) {
               originalValues[index] = {
                 comments: entry.originalNotes || '',
-                hours: entry.originalHours || 0
+                hours: entry.originalHours || 0,
+                customerId: entry.originalCustomerId || '',
+                customer: entry.originalCustomerName || '' // Backend should populate this
               };
             }
           }
@@ -222,6 +226,7 @@ const Batches = () => {
           return {
             project: entry.projectName || entry.tariff || '',  // Use projectName from backend
             customer: entry.customerName || '',
+            customerId: entry.customerId || '',  // Add customerId to row data
             date: entry.date || '',
             tariff: entry.tariff || '',
             employee: entry.employeeName || '',  // Fixed: was entry.employee
