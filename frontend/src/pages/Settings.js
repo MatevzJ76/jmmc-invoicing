@@ -1570,7 +1570,6 @@ ${randomFinal}`;
               )}
             </div>
           )}
-          </div>
         </div>
 
         {/* AI Agent Prompts Tile */}
