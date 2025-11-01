@@ -4693,7 +4693,7 @@ class TestHourlyRatePersistence:
                 return False
             
             self.test_batch_id = test_batch['id']
-            print(f"✅ Using existing batch: {test_batch['title']}")
+            print(f"✅ Using existing batch: {test_batch.get('filename', 'Unknown')}")
             print(f"   Batch ID: {self.test_batch_id}")
             print(f"   Status: {test_batch['status']}")
             
