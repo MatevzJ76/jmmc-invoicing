@@ -255,10 +255,16 @@ const Import = () => {
       });
       const customers = customersResponse.data;
       
-      // Create a map of customer name to hourly rate (unitPrice)
-      const customerRates = {};
-      customers.forEach(cust => {
-        customerRates[cust.name] = cust.unitPrice || 0;
+      // Fetch tariff codes to get hourly rates
+      const tariffsResponse = await axios.get(`${BACKEND_URL}/api/tariffs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const tariffs = tariffsResponse.data;
+      
+      // Create a map of tariff code to hourly rate (value)
+      const tariffRates = {};
+      tariffs.forEach(tariff => {
+        tariffRates[tariff.code] = tariff.value || 0;
       });
       
       // Extract rows (skip header row)
@@ -267,10 +273,11 @@ const Import = () => {
         const row = jsonData[i];
         if (row && row.length > 0) {
           const customerName = colIndices.customer >= 0 ? (row[colIndices.customer] || '') : '';
+          const tariffCode = colIndices.tariff >= 0 ? (row[colIndices.tariff] || '') : '';
           const hours = colIndices.hours >= 0 ? (parseFloat(row[colIndices.hours]) || 0) : 0;
           
-          // Calculate value based on customer's hourly rate
-          const hourlyRate = customerRates[customerName] || 0;
+          // Get hourly rate from tariff code value (not from customer)
+          const hourlyRate = tariffRates[tariffCode] || 0;
           const calculatedValue = hours * hourlyRate;
           
           // Map using correct column indices
