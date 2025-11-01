@@ -560,9 +560,10 @@ async def import_xlsx(
                     customer_id = str(uuid.uuid4())
                     await db.customers.insert_one({"id": customer_id, "name": current_customer})
                 else:
-                customer_id = customer["id"]
+                    customer_id = customer["id"]
+            # If no customer, customer_id remains None
             
-            # Find or create project
+            # Find or create project (link to customer if available)
             project = await db.projects.find_one({"name": current_project, "customerId": customer_id})
             if not project:
                 project_id = str(uuid.uuid4())
