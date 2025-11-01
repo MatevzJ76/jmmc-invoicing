@@ -1256,6 +1256,19 @@ const ImportVerification = () => {
                     const isManuallyEdited = manuallyEditedRows.has(originalIndex);
                     const isInvoiced = row.invoiced === true;
                     
+                    // Debug logging for highlighting
+                    if (displayIndex < 5 && originalValues[originalIndex]) {
+                      console.log(`Row ${displayIndex} (originalIndex ${originalIndex}):`, {
+                        customer: row.customer,
+                        customerId: row.customerId,
+                        originalCustomer: originalValues[originalIndex]?.customer,
+                        originalCustomerId: originalValues[originalIndex]?.customerId,
+                        shouldHighlightCustomer: originalValues[originalIndex]?.customerId && originalValues[originalIndex]?.customerId !== row.customerId,
+                        isManuallyEdited,
+                        isAiCorrected
+                      });
+                    }
+                    
                     // Determine row background color based on edit status
                     let rowBgClass = '';
                     if (isInvoiced) {
