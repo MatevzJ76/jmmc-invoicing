@@ -343,9 +343,24 @@ const TariffCodesSection = () => {
                   <Input
                     placeholder="Value (€)"
                     type="text"
-                    value={newTariff.value !== undefined ? formatEuro(newTariff.value) : '0,00'}
-                    onChange={(e) => setNewTariff({ ...newTariff, value: parseEuro(e.target.value) })}
-                    onFocus={(e) => e.target.select()}
+                    value={
+                      focusedField === 'new-tariff-value'
+                        ? (newTariff.value || 0)
+                        : formatEuro(newTariff.value)
+                    }
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/[^0-9,.]/g, '');
+                      setNewTariff({ ...newTariff, value: rawValue });
+                    }}
+                    onFocus={(e) => {
+                      setFocusedField('new-tariff-value');
+                      e.target.select();
+                    }}
+                    onBlur={(e) => {
+                      setFocusedField(null);
+                      const parsedValue = parseEuro(e.target.value);
+                      setNewTariff({ ...newTariff, value: parsedValue });
+                    }}
                     className="text-sm text-right"
                   />
                 </div>
