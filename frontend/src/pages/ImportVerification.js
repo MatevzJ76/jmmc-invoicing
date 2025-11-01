@@ -1675,18 +1675,18 @@ const ImportVerification = () => {
               {originalValues[editingRowIndex] && (
                 <div className="mb-6">
                   <h4 className="text-sm font-bold text-slate-800 mb-3">Original Values</h4>
-                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-3">
+                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-2 text-sm">
                     <div>
-                      <p className="text-xs font-semibold text-slate-600 mb-1">Original Customer:</p>
-                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].customer || 'N/A'}</p>
+                      <span className="font-semibold text-slate-600">Original Customer:</span>{' '}
+                      <span className="text-slate-800">{originalValues[editingRowIndex].customer || 'N/A'}</span>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-600 mb-1">Original Description:</p>
-                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].comments || 'N/A'}</p>
+                      <span className="font-semibold text-slate-600">Original Description:</span>{' '}
+                      <span className="text-slate-800">{originalValues[editingRowIndex].comments || 'N/A'}</span>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-600 mb-1">Original Hours:</p>
-                      <p className="text-sm text-slate-800">{originalValues[editingRowIndex].hours || 0}</p>
+                      <span className="font-semibold text-slate-600">Original Hours:</span>{' '}
+                      <span className="text-slate-800">{originalValues[editingRowIndex].hours || 0}</span>
                     </div>
                   </div>
                 </div>
