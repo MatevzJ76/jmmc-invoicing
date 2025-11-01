@@ -192,6 +192,15 @@ const ImportVerification = () => {
       });
       const timeEntries = entriesResponse.data;
       
+      // Fetch all customers to resolve customer names from IDs
+      const customersResponse = await axios.get(`${BACKEND_URL}/api/customers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const customersMap = {};
+      customersResponse.data.forEach(c => {
+        customersMap[c.id] = c.name;
+      });
+      
       // Convert time entries to verification format and track corrections
       const aiCorrectedRowsArray = [];
       const manuallyEditedRowsArray = [];
