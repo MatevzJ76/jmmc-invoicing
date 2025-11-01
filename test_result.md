@@ -780,12 +780,15 @@ metadata:
   test_sequence: 11
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "ImportVerification.js & Batches.js - Add hourlyRate to row mapping"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+    - agent: "main"
+      message: "CRITICAL BUG FIXED: Value column €0,00 issue after navigation. USER SCREENSHOTS show: (IMG_1423) Values populated correctly after import (€45,00, €37,35, etc.), (IMG_1424) ALL values became €0,00 after going back to monthly batches and re-entering. ROOT CAUSE: Frontend was displaying row.hourlyRate in table (line 1501) but NOT mapping hourlyRate field when loading batch data from backend. Two places affected: (1) ImportVerification.js loadBatchDataForVerification() was missing hourlyRate in row mapping (line 260). (2) Batches.js was missing hourlyRate when resuming batch (line 237). FIXES: Added 'hourlyRate: entry.hourlyRate || 0' to both locations. Now hourlyRate persists across navigation and Value column displays correctly. Ready for end-to-end testing with real batch data."
     - agent: "main"
       message: "IMPORT FUNCTION ENHANCED: Vrednost (Value) column from Excel is now IGNORED during import. System now CALCULATES value as: hours × tariff.value from Settings/Tariff Codes. This makes Settings the single source of truth. Changes: (1) Backend import function no longer reads 'Vrednost' from Excel file (column I). (2) Instead, looks up tariff code in Settings, gets hourly rate, and calculates: value = hours × hourly_rate. (3) Stores calculated value as original data in database. (4) PUT endpoint enhanced to recalculate value automatically when: hours change, tariff changes, or hourlyRate changes manually. This ensures consistency - all values are always calculated from Settings tariff rates, not from potentially outdated Excel data. Ready for comprehensive backend testing with real Excel imports."
     - agent: "testing"
