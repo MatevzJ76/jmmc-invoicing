@@ -353,7 +353,7 @@ const TariffCodesSection = () => {
               
               return (
                 <div key={tariff.code} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     {/* Tariff Code (Read-only) */}
                     <div>
                       <label className="text-xs text-slate-600 block mb-1">Tariff Code</label>
@@ -371,6 +371,18 @@ const TariffCodesSection = () => {
                         value={currentData.description}
                         onChange={(e) => handleFieldChange(tariff.code, 'description', e.target.value)}
                         placeholder="Tariff description"
+                      />
+                    </div>
+
+                    {/* Value (Editable) */}
+                    <div>
+                      <label className="text-xs text-slate-600 block mb-1">Value (€)</label>
+                      <Input
+                        type="text"
+                        value={currentData.value !== null && currentData.value !== undefined ? formatEuro(currentData.value) : '0,00'}
+                        onChange={(e) => handleFieldChange(tariff.code, 'value', parseEuro(e.target.value))}
+                        placeholder="0,00"
+                        className="text-right"
                       />
                     </div>
 
