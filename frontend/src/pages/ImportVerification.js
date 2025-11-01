@@ -645,6 +645,7 @@ const ImportVerification = () => {
           index,
           comments: row.comments,
           hours: row.hours,
+          customerId: row.customerId,
           aiCorrectionApplied: aiCorrectedRows.has(index),
           manuallyEdited: manuallyEditedRows.has(index)
         }));
