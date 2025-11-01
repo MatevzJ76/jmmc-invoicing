@@ -218,7 +218,7 @@ const ImportVerification = () => {
         // Track AI corrections
         if (entry.aiCorrectionApplied) {
           aiCorrectedRowsArray.push(index);
-          if (entry.originalNotes !== null || entry.originalHours !== null || entry.originalCustomerId !== null) {
+          if (entry.originalNotes !== undefined || entry.originalHours !== undefined || entry.originalCustomerId !== undefined) {
             originalValuesObj[index] = {
               comments: entry.originalNotes || '',
               hours: entry.originalHours || 0,
@@ -232,7 +232,7 @@ const ImportVerification = () => {
         // Track manual edits
         if (entry.manuallyEdited) {
           manuallyEditedRowsArray.push(index);
-          if (!originalValuesObj[index] && (entry.originalNotes !== null || entry.originalHours !== null || entry.originalCustomerId !== null)) {
+          if (!originalValuesObj[index] && (entry.originalNotes !== undefined || entry.originalHours !== undefined || entry.originalCustomerId !== undefined)) {
             originalValuesObj[index] = {
               comments: entry.originalNotes || '',
               hours: entry.originalHours || 0,
