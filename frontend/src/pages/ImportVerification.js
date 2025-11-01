@@ -675,6 +675,9 @@ const ImportVerification = () => {
           manuallyEdited: manuallyEditedRows.has(index)
         }));
         
+        console.log('Saving progress - updates:', updates);
+        console.log('Original values being saved:', originalValues);
+        
         // Only make API call if there are actually rows to update
         if (updates.length > 0) {
           await axios.put(
