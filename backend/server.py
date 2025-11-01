@@ -153,6 +153,12 @@ class Employee(BaseModel):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
+class Tariff(BaseModel):
+    code: str  # e.g., "001 - Računovodstvo"
+    description: str  # Full description
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
 # ============ AUTH HELPERS ============
 def create_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
