@@ -203,7 +203,8 @@ const Batches = () => {
                 comments: entry.originalNotes || '',
                 hours: entry.originalHours || 0,
                 customerId: entry.originalCustomerId || '',
-                customer: entry.originalCustomerName || '' // Backend should populate this
+                customer: entry.originalCustomerName || '', // Backend should populate this
+                tariff: entry.originalTariff || ''
               };
             }
           }
@@ -218,7 +219,8 @@ const Batches = () => {
                 comments: entry.originalNotes || '',
                 hours: entry.originalHours || 0,
                 customerId: entry.originalCustomerId || '',
-                customer: entry.originalCustomerName || '' // Backend should populate this
+                customer: entry.originalCustomerName || '', // Backend should populate this
+                tariff: entry.originalTariff || ''
               };
             }
           }
