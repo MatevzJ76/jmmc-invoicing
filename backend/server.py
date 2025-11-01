@@ -526,11 +526,11 @@ async def import_xlsx(
             if not datum_val:
                 continue
             
-            # Determine customer name - use Stranka if available, otherwise use current/general
+            # Determine customer name - use Stranka if available, otherwise leave empty (No Client)
             if stranka_val and str(stranka_val).strip():
                 current_customer = str(stranka_val).strip()
             else:
-                current_customer = "General"
+                current_customer = None  # No client - leave empty
             
             # Update project if specified
             if projekt_val and str(projekt_val).strip():
@@ -552,12 +552,14 @@ async def import_xlsx(
             except:
                 value = 0.0
             
-            # Find or create customer
-            customer = await db.customers.find_one({"name": current_customer})
-            if not customer:
-                customer_id = str(uuid.uuid4())
-                await db.customers.insert_one({"id": customer_id, "name": current_customer})
-            else:
+            # Find or create customer (only if customer name is provided)
+            customer_id = None
+            if current_customer:
+                customer = await db.customers.find_one({"name": current_customer})
+                if not customer:
+                    customer_id = str(uuid.uuid4())
+                    await db.customers.insert_one({"id": customer_id, "name": current_customer})
+                else:
                 customer_id = customer["id"]
             
             # Find or create project
