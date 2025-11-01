@@ -1367,7 +1367,7 @@ const ImportVerification = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="10" className="px-3 py-8 text-center text-slate-500">
+                    <td colSpan="9" className="px-3 py-8 text-center text-slate-500">
                       No rows match the current filters
                     </td>
                   </tr>
