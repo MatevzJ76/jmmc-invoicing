@@ -587,6 +587,7 @@ async def import_xlsx(
                 "originalNotes": None,  # Store original notes before AI correction
                 "originalHours": None,  # Store original hours before AI correction
                 "originalCustomerId": None,  # Store original customer ID before edit
+                "originalTariff": None,  # Store original tariff before edit
                 "status": "uninvoiced"  # Row status: uninvoiced, invoiced, internal, free
             }
             entries.append(entry)
