@@ -5005,6 +5005,11 @@ class TestHourlyRatePersistence:
                 return False
             
             # Verify hourlyRate updated to match new tariff
+            if new_hourly_rate is None:
+                print(f"\n❌ FAILED: hourlyRate is None after tariff update (tariff not found in database)")
+                print(f"   This means the tariff '{new_tariff}' doesn't exist in the tariffs collection")
+                return False
+            
             if abs(new_hourly_rate - expected_new_rate) < 0.01:
                 print(f"\n✅ PASSED: hourlyRate auto-updated to €{new_hourly_rate} when tariff changed")
                 return True
