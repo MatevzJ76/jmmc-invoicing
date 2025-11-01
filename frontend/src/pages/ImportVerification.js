@@ -1371,7 +1371,13 @@ const ImportVerification = () => {
                           {row.customer || <span className="italic text-slate-400">No Client</span>}
                         </td>
                         <td className="px-3 py-2 text-slate-600">{row.date}</td>
-                        <td className="px-3 py-2 text-slate-600">{row.tariff}</td>
+                        <td className={`px-3 py-2 ${
+                          originalValues[originalIndex]?.tariff && originalValues[originalIndex]?.tariff !== row.tariff 
+                            ? 'text-blue-600 font-bold' 
+                            : 'text-slate-600'
+                        }`}>
+                          {row.tariff}
+                        </td>
                         <td className="px-3 py-2 text-slate-700">{row.employee}</td>
                         <td className={`px-3 py-2 max-w-md truncate ${
                           originalValues[originalIndex]?.comments && originalValues[originalIndex]?.comments !== row.comments 
