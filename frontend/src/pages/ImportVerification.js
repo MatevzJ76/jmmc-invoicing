@@ -270,6 +270,14 @@ const ImportVerification = () => {
         originalValues: originalValuesObj
       };
       
+      console.log('Loaded batch data:', {
+        totalRows: rows.length,
+        aiCorrectedCount: aiCorrectedRowsArray.length,
+        manuallyEditedCount: manuallyEditedRowsArray.length,
+        originalValuesCount: Object.keys(originalValuesObj).length,
+        originalValues: originalValuesObj
+      });
+      
       setVerificationData(fullData);
       setAiCorrectedRows(new Set(aiCorrectedRowsArray));
       setManuallyEditedRows(new Set(manuallyEditedRowsArray));
