@@ -72,6 +72,7 @@ const ImportVerification = () => {
   const [importComplete, setImportComplete] = useState(false); // Track if import is complete
   const [importReport, setImportReport] = useState(null); // Store import results
   const [allCustomers, setAllCustomers] = useState([]); // Store all customers for dropdown
+  const [customerSearchTerm, setCustomerSearchTerm] = useState(''); // Search term for customer dropdown
 
   useEffect(() => {
     // Get data from navigation state or sessionStorage
