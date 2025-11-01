@@ -4951,8 +4951,8 @@ class TestHourlyRatePersistence:
             print(f"  hourlyRate: €{original_hourly_rate}")
             
             # Change tariff to a different code
-            new_tariff = "002 - Davčno svetovanje"  # Should have value of 50.0
-            expected_new_rate = self.tariff_codes.get(new_tariff, 50.0)
+            new_tariff = "002 - 45 EUR/uro"  # Should have value of 45.0
+            expected_new_rate = self.tariff_codes.get(new_tariff, 45.0)
             
             print(f"\nUpdating tariff to: {new_tariff}")
             print(f"Expected new hourlyRate: €{expected_new_rate}")
