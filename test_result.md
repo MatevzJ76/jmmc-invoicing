@@ -765,10 +765,15 @@ metadata:
   test_sequence: 11
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "POST /api/imports - Calculate value from tariff rates (ignore Excel Vrednost column)"
   stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
 
 agent_communication:
+    - agent: "main"
+      message: "IMPORT FUNCTION ENHANCED: Vrednost (Value) column from Excel is now IGNORED during import. System now CALCULATES value as: hours × tariff.value from Settings/Tariff Codes. This makes Settings the single source of truth. Changes: (1) Backend import function no longer reads 'Vrednost' from Excel file (column I). (2) Instead, looks up tariff code in Settings, gets hourly rate, and calculates: value = hours × hourly_rate. (3) Stores calculated value as original data in database. (4) PUT endpoint enhanced to recalculate value automatically when: hours change, tariff changes, or hourlyRate changes manually. This ensures consistency - all values are always calculated from Settings tariff rates, not from potentially outdated Excel data. Ready for comprehensive backend testing with real Excel imports."
     - agent: "main"
       message: "CRITICAL BUG FIXED: Hourly Rate (Value) not persisting to database. USER REPORTED: Column 'Hourly Rate (€)' needs to be renamed to 'Value (€)'. Values display correctly after import but show 0,00 after navigating back to monthly batches and re-entering. ROOT CAUSE: Backend time entry schema was missing 'hourlyRate' field - it was never saved to database during import. FIXES IMPLEMENTED: (1) Backend - Added tariff_codes fetch during import to create tariff_rates mapping (server.py lines 507-509). (2) Backend - Added hourlyRate calculation from tariff code value during import (lines 584-585, 591). (3) Backend - Updated PUT endpoint to auto-update hourlyRate when tariff changes (lines 833-837) and allow manual hourlyRate updates (lines 839-841). (4) Frontend - Renamed column header from 'Hourly Rate (€)' to 'Value (€)' (ImportVerification.js line 1360). Now hourlyRate is calculated from tariff codes during import, saved to database, and persists across navigation. Ready for comprehensive backend testing."
     - agent: "testing"
