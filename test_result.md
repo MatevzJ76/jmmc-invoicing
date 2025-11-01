@@ -105,6 +105,18 @@
 user_problem_statement: "Enhance Import XLSX function - NEVER populate 'Vrednost' (Value) column from Excel file (column I is irrelevant). Instead, CALCULATE value as: hours × tariff.value from Settings. This ensures tariff values from Settings are the single source of truth."
 
 backend:
+  - task: "POST /api/imports - Calculate value from tariff rates (ignore Excel Vrednost column)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "MAJOR ENHANCEMENT: Import function now IGNORES the 'Vrednost' (Value) column from Excel file (column I) as it's irrelevant. Instead, the system CALCULATES value as: hours × tariff.value from Settings. Changes: (1) Removed parsing of value_str from Excel (old lines 559-565). (2) Added tariff code lookup and hourly rate retrieval (lines 563-564). (3) Calculate value = hours × hourly_rate before creating time entry (line 566). (4) Store calculated_value in time entry document (line 601). (5) Updated PUT endpoint to recalculate value when hours change (lines 817-819), when tariff changes (lines 836-838), and when hourlyRate changes manually (lines 844-847). This ensures Settings > Tariff Codes are the single source of truth for all value calculations, making imports consistent and removing dependency on potentially outdated Excel values."
+
   - task: "POST /api/imports - Add hourlyRate field to time entry schema"
     implemented: true
     working: true
