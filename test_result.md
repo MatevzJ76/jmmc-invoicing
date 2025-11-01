@@ -511,7 +511,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Import Verification - AI corrections marking with robot icon"
+    - "POST /api/imports - Add hourlyRate field to time entry schema"
+    - "Import Verification - Rename column from 'Hourly Rate (€)' to 'Value (€)'"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
