@@ -1359,7 +1359,7 @@ const ImportVerification = () => {
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Opombe</th>
                   <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Porabljene ure</th>
                   <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Value (€)</th>
-                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Vrednost</th>
+                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Total</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Št.računa</th>
                 </tr>
               </thead>
