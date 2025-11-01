@@ -723,10 +723,11 @@ async def list_batches(current_user: User = Depends(get_current_user)):
         invoice_count = await db.invoices.count_documents({"batchId": batch.get("id")})
         batch["invoiceCount"] = invoice_count
         
-        # Calculate total amount from all invoices in this batch
-        invoices = await db.invoices.find({"batchId": batch.get("id")}, {"total": 1}).to_list(1000)
-        total_amount = sum(inv.get("total", 0) for inv in invoices)
-        batch["totalAmount"] = total_amount
+        # Calculate total amount from time entries (not invoices)
+        # This ensures totals are shown even for 'in progress' or 'imported' batches
+        time_entries = await db.timeEntries.find({"batchId": batch.get("id")}, {"value": 1}).to_list(10000)
+        total_amount = sum(entry.get("value", 0) for entry in time_entries)
+        batch["totalAmount"] = round(total_amount, 2)
     
     return batches
 
