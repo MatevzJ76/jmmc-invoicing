@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Enhance Import XLSX function - NEVER populate 'Vrednost' (Value) column from Excel file (column I is irrelevant). Instead, CALCULATE value as: hours × tariff.value from Settings. This ensures tariff values from Settings are the single source of truth."
+user_problem_statement: "DEBUG & FIX: Value column shows correct values after import but becomes €0,00 after navigating back to monthly batches and re-entering. Frontend not mapping hourlyRate field when loading batch data."
 
 backend:
   - task: "POST /api/imports - Calculate value from tariff rates (ignore Excel Vrednost column)"
