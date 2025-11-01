@@ -671,7 +671,96 @@ const ImportVerification = () => {
     toast.success(`Changes saved - row marked with ${iconEmoji}`);
     setShowEditModal(false);
     setEditingRowIndex(null);
-    setEditableSuggestions({ description: '', hours: null });
+    setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '', status: 'uninvoiced', tariff: '' });
+  };
+
+  const handleRunAllAiPrompts = async () => {
+    if (editingRowIndex === null) return;
+    
+    setAiProcessing(true);
+    const rowData = verificationData.rows[editingRowIndex];
+    const textToAnalyze = rowData.comments || '';
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const results = {};
+      
+      // Run all AI prompts in parallel
+      const prompts = ['grammar', 'fraud', 'gdpr', 'verification'];
+      const promises = prompts.map(async (promptType) => {
+        try {
+          const response = await axios.post(
+            `${BACKEND_URL}/api/ai/suggest`,
+            { text: textToAnalyze, feature: promptType },
+            { headers: { Authorization: `Bearer ${token}` }}
+          );
+          return { type: promptType, result: response.data.suggestion, success: true };
+        } catch (error) {
+          return { type: promptType, result: error.response?.data?.detail || 'Error', success: false };
+        }
+      });
+      
+      const responses = await Promise.all(promises);
+      responses.forEach(({ type, result }) => {
+        results[type] = result;
+      });
+      
+      setAiProcessResults(results);
+      // Auto-expand all result tiles
+      setExpandedAiResults(new Set(prompts));
+      toast.success('AI processing complete!');
+      
+    } catch (error) {
+      toast.error('AI processing failed');
+    } finally {
+      setAiProcessing(false);
+    }
+  };
+
+  const handleRun2xDTM = async () => {
+    if (editingRowIndex === null) return;
+    
+    setAiProcessing(true);
+    const rowData = verificationData.rows[editingRowIndex];
+    const textToAnalyze = rowData.comments || '';
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(
+        `${BACKEND_URL}/api/ai/suggest`,
+        { text: textToAnalyze, feature: 'dtm' },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      setAiProcessResults({ ...aiProcessResults, dtm: response.data.suggestion });
+      setExpandedAiResults(new Set([...expandedAiResults, 'dtm']));
+      toast.success('2xDTM processing complete!');
+      
+    } catch (error) {
+      toast.error('2xDTM processing failed');
+    } finally {
+      setAiProcessing(false);
+    }
+  };
+
+  const handleAcceptAiSuggestion = (suggestionType) => {
+    if (!aiProcessResults[suggestionType]) return;
+    
+    // Apply the AI suggestion to editable fields
+    if (suggestionType === 'grammar' || suggestionType === 'dtm') {
+      setEditableSuggestions({ ...editableSuggestions, description: aiProcessResults[suggestionType] });
+      toast.success(`${suggestionType === 'dtm' ? '2xDTM' : 'Grammar'} suggestion applied`);
+    }
+  };
+
+  const toggleAiResultExpand = (type) => {
+    const newExpanded = new Set(expandedAiResults);
+    if (newExpanded.has(type)) {
+      newExpanded.delete(type);
+    } else {
+      newExpanded.add(type);
+    }
+    setExpandedAiResults(newExpanded);
   };
 
   const handleSaveProgress = async () => {
