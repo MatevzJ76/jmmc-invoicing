@@ -1713,7 +1713,7 @@ const ImportVerification = () => {
                   onClick={() => {
                     setShowEditModal(false);
                     setEditingRowIndex(null);
-                    setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '' });
+                    setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '', status: 'uninvoiced' });
                     setCustomerSearchTerm(''); // Reset search
                   }}
                   className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
@@ -1900,7 +1900,7 @@ const ImportVerification = () => {
                   onClick={() => {
                     setShowEditModal(false);
                     setEditingRowIndex(null);
-                    setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '' });
+                    setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '', status: 'uninvoiced' });
                     setCustomerSearchTerm(''); // Reset search
                   }}
                   className="flex-1 rounded-full"
