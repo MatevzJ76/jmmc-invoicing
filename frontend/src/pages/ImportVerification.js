@@ -1340,7 +1340,7 @@ const ImportVerification = () => {
                             ? 'text-blue-600 font-bold' 
                             : 'text-slate-700'
                         }`}>
-                          {row.customer}
+                          {row.customer || <span className="italic text-slate-400">No Client</span>}
                         </td>
                         <td className="px-3 py-2 text-slate-600">{row.date}</td>
                         <td className="px-3 py-2 text-slate-600">{row.tariff}</td>
