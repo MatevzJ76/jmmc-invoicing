@@ -1280,6 +1280,16 @@ const ImportVerification = () => {
                     const isManuallyEdited = manuallyEditedRows.has(originalIndex);
                     const rowStatus = row.status || 'uninvoiced';
                     
+                    // Debug tariff highlighting
+                    if (displayIndex < 3 && originalValues[originalIndex]) {
+                      console.log(`Row ${displayIndex} tariff check:`, {
+                        currentTariff: row.tariff,
+                        originalTariff: originalValues[originalIndex]?.tariff,
+                        hasTariffInOriginal: originalValues[originalIndex].tariff !== undefined,
+                        shouldHighlight: originalValues[originalIndex].tariff !== undefined && originalValues[originalIndex].tariff !== row.tariff
+                      });
+                    }
+                    
                     // Determine row background color based on status
                     let rowBgClass = '';
                     let statusIcon = '';
