@@ -215,7 +215,7 @@ const ImportVerification = () => {
               comments: entry.originalNotes || '',
               hours: entry.originalHours || 0,
               customerId: entry.originalCustomerId || '',
-              customer: '' // Will be resolved from customerId
+              customer: customersMap[entry.originalCustomerId] || '' // Resolve customer name from ID
             };
           }
         }
@@ -228,7 +228,7 @@ const ImportVerification = () => {
               comments: entry.originalNotes || '',
               hours: entry.originalHours || 0,
               customerId: entry.originalCustomerId || '',
-              customer: '' // Will be resolved from customerId
+              customer: customersMap[entry.originalCustomerId] || '' // Resolve customer name from ID
             };
           }
         }
