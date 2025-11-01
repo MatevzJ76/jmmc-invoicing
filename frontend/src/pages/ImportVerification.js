@@ -1320,8 +1320,12 @@ const ImportVerification = () => {
                           }
                         }}
                         title={
-                          isInvoiced 
-                            ? 'Already invoiced - cannot edit'
+                          rowStatus === 'invoiced'
+                            ? 'Invoiced - click to change status'
+                            : rowStatus === 'internal'
+                            ? 'Internal job - click to edit or change status'
+                            : rowStatus === 'free'
+                            ? 'Free job - click to edit or change status'
                             : isFlagged 
                             ? 'Click to see AI evaluation and suggestions' 
                             : isAiCorrected
@@ -1334,8 +1338,10 @@ const ImportVerification = () => {
                         <td className="px-3 py-2 text-slate-600 align-middle">
                           <div className="flex items-center gap-2">
                             <span>
-                              {isInvoiced && <span className="text-green-600 font-bold text-lg" title="Already invoiced">✓</span>}
-                              {!isInvoiced && <span className="text-slate-300 text-sm" title="Not invoiced">○</span>}
+                              {rowStatus === 'invoiced' && <span className="text-green-600 font-bold text-lg" title={statusTitle}>✓</span>}
+                              {rowStatus === 'internal' && <span className="text-blue-600 text-lg" title={statusTitle}>🏢</span>}
+                              {rowStatus === 'free' && <span className="text-yellow-600 text-lg" title={statusTitle}>🎁</span>}
+                              {rowStatus === 'uninvoiced' && <span className="text-slate-300 text-sm" title={statusTitle}>○</span>}
                             </span>
                             <span className="font-medium">{displayIndex + 1}</span>
                             <span>
