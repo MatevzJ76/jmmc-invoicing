@@ -234,6 +234,7 @@ const Batches = () => {
             employee: entry.employeeName || '',  // Fixed: was entry.employee
             comments: entry.notes || '',
             hours: entry.hours || 0,
+            hourlyRate: entry.hourlyRate || 0,  // Add hourlyRate from backend
             value: entry.value || 0,
             invoiceNumber: entry.invoiceNumber || '',
             status: entry.status || 'uninvoiced'  // Row status
