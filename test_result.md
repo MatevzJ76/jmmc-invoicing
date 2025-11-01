@@ -672,3 +672,29 @@ frontend:
           agent: "testing"
           comment: "CRITICAL BUG FOUND: Customer field highlighting is NOT working. Test results: (1) ✅ Customer dropdown with search - WORKING: Search input found, filters customers correctly, selection works. (2) ✅ Original Values display - WORKING: Modal shows 'Original Customer: 123 HIŠKA d.o.o.' in correct format (label and value on same line). (3) ✅ Save Progress performance - WORKING: Completed in 4.83 seconds with toast 'Updated 2 rows' (not all 1622 rows). (4) ❌ Customer cell highlighting - NOT WORKING: After changing customer from '123 HIŠKA d.o.o.' to 'JMMC Finance d.o.o.', the customer cell does NOT have 'text-blue-600 font-bold' classes. Actual classes: 'px-3 py-2 font-medium text-slate-700'. ROOT CAUSE: The originalIndex calculation uses findIndex() with comparison 'r.customer === row.customer', but after editing, row.customer has changed, so findIndex() returns -1 or wrong index. This causes originalValues[originalIndex] to be undefined, so the highlighting condition fails. ATTEMPTED FIX: Added _originalIndex property to rows in filter useEffect (line 290) and updated table rendering to use row._originalIndex instead of findIndex() (line 1239). However, fix did not work because: (a) customerId field is null in the data (not populated when batch was loaded), (b) originalValues object is empty {} in sessionStorage. The backend IS returning customerId and saving originalCustomerId correctly, but the frontend rows don't have customerId populated. CONCLUSION: Feature is partially working (dropdown, search, original values display, save performance), but the main highlighting feature is broken due to missing customerId in row data."
 
+
+frontend:
+  - task: "Customer field editing and highlighting in Import Verification"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/ImportVerification.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "CRITICAL BUG: Customer highlighting NOT working. Test results - WORKING: (1) Customer dropdown with search works, (2) Original Values display correct, (3) Save Progress fast (4.83s), (4) Manual edit icon appears. BROKEN: Customer cell does NOT have text-blue-600 font-bold classes after edit. ROOT CAUSE: originalIndex uses findIndex() with r.customer === row.customer, but after edit row.customer changes so findIndex() fails. Also customerId is null in data. ATTEMPTED FIX: Added _originalIndex property but didn't work because customerId is null. RECOMMENDATION: Fix originalIndex tracking and ensure customerId is populated."
+
+metadata:
+  test_sequence: 10
+
+test_plan:
+  current_focus:
+    - "Customer field editing and highlighting in Import Verification"
+  stuck_tasks:
+    - "Customer field editing and highlighting in Import Verification"
+
+agent_communication:
+    - agent: "testing"
+      message: "CRITICAL BUG FOUND: Customer field highlighting NOT WORKING in Import Verification page. Tested editable customer field feature. WORKING FEATURES: (1) Customer dropdown with search - works perfectly, filters by 'JMMC', selection works. (2) Original Values display - shows 'Original Customer: 123 HIŠKA d.o.o.' correctly. (3) Save Progress performance - 4.83s with 'Updated 2 rows' toast (not all 1622 rows). (4) Manual edit icon (✍️) appears. BROKEN FEATURE: Customer cell highlighting - After changing customer, cell does NOT have 'text-blue-600 font-bold' classes. Actual: 'px-3 py-2 font-medium text-slate-700'. ROOT CAUSE: (1) originalIndex calculation uses findIndex() with 'r.customer === row.customer', but after edit row.customer changes so findIndex() returns wrong index. (2) customerId is null in row data. (3) originalValues is empty {} in sessionStorage. ATTEMPTED FIX: Added _originalIndex property to rows and updated table rendering, but fix didn't work because customerId is null in existing data. RECOMMENDATION: Main agent must fix originalIndex tracking to use stable row index and ensure customerId is populated when loading batch data."
