@@ -1790,16 +1790,36 @@ ${randomFinal}`;
 
             {/* 2xDTM Prompt */}
             <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <Label htmlFor="dtm" className="text-base font-semibold">2xDTM (Do The Magic, Do The Magic)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="dtm" className="text-base font-semibold">2xDTM (Do The Magic, Do The Magic)</Label>
+                <button
+                  onClick={() => setShowDtmPrompt(!showDtmPrompt)}
+                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                  type="button"
+                >
+                  {showDtmPrompt ? (
+                    <>
+                      <EyeOff className="w-4 h-4" />
+                      <span>Hide</span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4" />
+                      <span>Show</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <Textarea
                 id="dtm"
-                value={settings.dtmPrompt}
+                value={showDtmPrompt ? settings.dtmPrompt : '••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••'}
                 onChange={(e) => updateSetting('dtmPrompt', e.target.value)}
                 rows={3}
                 className="font-mono text-sm"
                 data-testid="dtm-prompt-input"
+                disabled={!showDtmPrompt}
               />
-              <p className="text-xs text-slate-500">Special AI enhancement prompt for future use</p>
+              <p className="text-xs text-slate-500">Special AI enhancement prompt for future use (hidden by default)</p>
               
               {/* Test Section */}
               <div className="mt-4 pt-4 border-t border-slate-300">
