@@ -1300,7 +1300,9 @@ const ImportVerification = () => {
                         </td>
                         <td className="px-3 py-2 text-slate-700">{row.project}</td>
                         <td className={`px-3 py-2 font-medium ${
-                          originalValues[originalIndex]?.customerId && originalValues[originalIndex]?.customerId !== row.customerId 
+                          originalValues[originalIndex] && 
+                          originalValues[originalIndex].customerId && 
+                          originalValues[originalIndex].customerId !== row.customerId 
                             ? 'text-blue-600 font-bold' 
                             : 'text-slate-700'
                         }`}>
