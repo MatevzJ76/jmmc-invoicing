@@ -620,6 +620,11 @@ const ImportVerification = () => {
       updatedRows[editingRowIndex].customer = editableSuggestions.customer;
     }
     
+    // Apply status change
+    if (editableSuggestions.status) {
+      updatedRows[editingRowIndex].status = editableSuggestions.status;
+    }
+    
     // Mark this row as manually edited (add human icon)
     // If it was already AI-corrected, keep it as AI-corrected
     const newManuallyEditedRows = new Set(manuallyEditedRows);
