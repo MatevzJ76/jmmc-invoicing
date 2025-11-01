@@ -233,7 +233,8 @@ const Batches = () => {
             comments: entry.notes || '',
             hours: entry.hours || 0,
             value: entry.value || 0,
-            invoiceNumber: entry.invoiceNumber || ''
+            invoiceNumber: entry.invoiceNumber || '',
+            status: entry.status || 'uninvoiced'  // Row status
           };
         });
         
