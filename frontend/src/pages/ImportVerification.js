@@ -601,7 +601,8 @@ const ImportVerification = () => {
         comments: updatedRows[editingRowIndex].comments,
         hours: updatedRows[editingRowIndex].hours,
         customerId: updatedRows[editingRowIndex].customerId,
-        customer: updatedRows[editingRowIndex].customer
+        customer: updatedRows[editingRowIndex].customer,
+        tariff: updatedRows[editingRowIndex].tariff
       };
       setOriginalValues(newOriginalValues);
     }
@@ -619,6 +620,11 @@ const ImportVerification = () => {
     if (editableSuggestions.customerId && editableSuggestions.customerId !== updatedRows[editingRowIndex].customerId) {
       updatedRows[editingRowIndex].customerId = editableSuggestions.customerId;
       updatedRows[editingRowIndex].customer = editableSuggestions.customer;
+    }
+    
+    // Apply tariff change if provided
+    if (editableSuggestions.tariff && editableSuggestions.tariff !== updatedRows[editingRowIndex].tariff) {
+      updatedRows[editingRowIndex].tariff = editableSuggestions.tariff;
     }
     
     // Apply status change
