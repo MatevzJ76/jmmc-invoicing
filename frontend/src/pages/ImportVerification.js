@@ -1411,6 +1411,22 @@ const ImportVerification = () => {
               </SelectContent>
             </Select>
             
+            {/* Rows Per Page Selector */}
+            <Select value={rowsPerPage.toString()} onValueChange={(value) => handleRowsPerPageChange(value === 'all' ? -1 : parseInt(value))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Rows per page" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10 rows</SelectItem>
+                <SelectItem value="25">25 rows</SelectItem>
+                <SelectItem value="50">50 rows</SelectItem>
+                <SelectItem value="100">100 rows</SelectItem>
+                <SelectItem value="250">250 rows</SelectItem>
+                <SelectItem value="500">500 rows</SelectItem>
+                <SelectItem value="all">All rows</SelectItem>
+              </SelectContent>
+            </Select>
+            
             {/* Reset Filters Icon Button */}
             <div className="flex items-center justify-center">
               <Button
