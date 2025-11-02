@@ -742,13 +742,37 @@ const ImportVerification = () => {
       
     } catch (error) {
       console.error('AI processing error:', error);
-      const errorMsg = error.response?.data?.detail || error.message;
+      
+      // Extract error message properly
+      let errorMsg = 'Unknown error';
+      
+      if (error.response?.data) {
+        // Check if it's a string or object
+        if (typeof error.response.data === 'string') {
+          errorMsg = error.response.data;
+        } else if (error.response.data.detail) {
+          errorMsg = error.response.data.detail;
+        } else if (error.response.data.message) {
+          errorMsg = error.response.data.message;
+        } else {
+          // Try to stringify the object
+          try {
+            errorMsg = JSON.stringify(error.response.data);
+          } catch {
+            errorMsg = 'Server error occurred';
+          }
+        }
+      } else if (error.message) {
+        errorMsg = error.message;
+      }
+      
+      console.error('Extracted error message:', errorMsg);
       
       // Check for budget errors
-      if (errorMsg && (errorMsg.includes('Budget') || errorMsg.includes('budget') || errorMsg.includes('exceeded'))) {
+      if (errorMsg.includes('Budget') || errorMsg.includes('budget') || errorMsg.includes('exceeded')) {
         toast.error('AI Budget Exceeded! Please top up your Emergent LLM balance or use a custom API key in Settings.');
       } else {
-        toast.error(`AI processing failed: ${errorMsg || 'Unknown error'}`);
+        toast.error(`AI processing failed: ${errorMsg}`);
       }
     } finally {
       setAiProcessing(false);
