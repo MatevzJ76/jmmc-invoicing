@@ -177,6 +177,55 @@ const Batches = () => {
       toast.error('Failed to archive batch');
     }
   };
+
+  const handleDeleteClick = (batch, e) => {
+    e.stopPropagation(); // Prevent row click
+    
+    // Check if batch has invoices
+    const invoiceCount = batch.invoiceCount || 0;
+    
+    if (invoiceCount > 0) {
+      // Show info why delete is not possible
+      toast.info(
+        `Cannot delete batch with ${invoiceCount} invoice(s). To delete this batch, first delete all its invoices or use the Archive option instead.`,
+        { duration: 6000 }
+      );
+      return;
+    }
+    
+    // Show delete confirmation modal
+    setBatchToDelete(batch);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!batchToDelete) return;
+    
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.delete(
+        `${BACKEND_URL}/api/batches/${batchToDelete.id}`,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      toast.success(
+        `Batch deleted: ${response.data.batchTitle}. Removed ${response.data.timeEntriesDeleted} time entries.`,
+        { duration: 5000 }
+      );
+      
+      setShowDeleteModal(false);
+      setBatchToDelete(null);
+      loadBatches(); // Reload to reflect changes
+      
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || 'Failed to delete batch';
+      toast.error(errorMsg, { duration: 6000 });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   
   const handleBatchClick = async (batch) => {
     // ALWAYS load Import Verification page first (user can navigate to Invoices & Verification manually)
