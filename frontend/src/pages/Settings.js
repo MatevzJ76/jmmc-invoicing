@@ -2138,7 +2138,7 @@ ${randomFinal}`;
           >
             <div className="flex items-center gap-3">
               <Sparkles className="w-6 h-6 text-pink-600" />
-              <h2 className="text-xl font-bold text-slate-800">2xDTM (Do The Magic)</h2>
+              <h2 className="text-xl font-bold text-slate-800">2xDTM</h2>
             </div>
             
             <svg 
