@@ -1532,7 +1532,6 @@ const ImportVerification = () => {
                   
                   // Clear all filter states
                   setSearchTerm('');
-                  setProjectFilter('all');
                   setCustomerFilter('all');
                   setEmployeeFilter('all');
                   setTariffFilter('all');
@@ -1545,7 +1544,7 @@ const ImportVerification = () => {
                 }}
                 className="rounded-full h-10 w-10 bg-red-50 hover:bg-red-100 border-red-300 text-red-600"
                 title="Clear All Filters"
-                disabled={searchTerm === '' && projectFilter === 'all' && customerFilter === 'all' && employeeFilter === 'all' && tariffFilter === 'all' && statusFilter === 'all'}
+                disabled={searchTerm === '' && customerFilter === 'all' && employeeFilter === 'all' && tariffFilter === 'all' && statusFilter === 'all'}
               >
                 <X className="w-5 h-5" />
               </Button>
