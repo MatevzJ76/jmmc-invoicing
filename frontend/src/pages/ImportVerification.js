@@ -1293,29 +1293,47 @@ const ImportVerification = () => {
         </div>
 
         {/* Hours by Employee Breakdown */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-slate-200 mb-6">
-          <h3 className="text-sm font-semibold text-slate-800 mb-3">Hours by Employee</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-            {(() => {
-              // Calculate hours per employee
-              const hoursByEmployee = {};
-              verificationData.rows.forEach(row => {
-                const employee = row.employee || 'Unknown';
-                const hours = parseFloat(row.hours) || 0;
-                hoursByEmployee[employee] = (hoursByEmployee[employee] || 0) + hours;
-              });
-              
-              // Sort by hours (descending)
-              const sorted = Object.entries(hoursByEmployee).sort((a, b) => b[1] - a[1]);
-              
-              return sorted.map(([employee, hours]) => (
-                <div key={employee} className="bg-slate-50 rounded-lg p-2 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-0.5 truncate">{employee}</p>
-                  <p className="text-base font-bold text-blue-600">{hours.toFixed(2)} h</p>
-                </div>
-              ));
-            })()}
-          </div>
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 mb-6">
+          <button
+            onClick={() => setHoursBreakdownExpanded(!hoursBreakdownExpanded)}
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors rounded-t-2xl"
+          >
+            <h3 className="text-sm font-semibold text-slate-800">Hours by Employee</h3>
+            <svg 
+              className={`w-5 h-5 text-slate-600 transition-transform ${hoursBreakdownExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {hoursBreakdownExpanded && (
+            <div className="px-4 pb-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {(() => {
+                  // Calculate hours per employee ONLY when expanded
+                  const hoursByEmployee = {};
+                  verificationData.rows.forEach(row => {
+                    const employee = row.employee || 'Unknown';
+                    const hours = parseFloat(row.hours) || 0;
+                    hoursByEmployee[employee] = (hoursByEmployee[employee] || 0) + hours;
+                  });
+                  
+                  // Sort by hours (descending)
+                  const sorted = Object.entries(hoursByEmployee).sort((a, b) => b[1] - a[1]);
+                  
+                  return sorted.map(([employee, hours]) => (
+                    <div key={employee} className="bg-slate-50 rounded-lg p-2 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-0.5 truncate">{employee}</p>
+                      <p className="text-base font-bold text-blue-600">{hours.toFixed(2)} h</p>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Filters */}
