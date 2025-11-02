@@ -215,101 +215,51 @@ const Import = () => {
     setLoading(true);
     
     try {
-      // Parse XLSX/XLS file to extract raw data for verification
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+      // Upload file to backend
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', title);
+      formData.append('invoiceDate', invoiceDate);
+      formData.append('periodFrom', periodFrom);
+      formData.append('periodTo', periodTo);
+      formData.append('dueDate', dueDate);
+      formData.append('saveAsProgress', 'true');  // Save as "in progress"
       
-      // Get header row to find column indices
-      const headerRow = jsonData[0] || [];
-      console.log('Header row:', headerRow);
-      
-      // Find column indices (handle optional # column)
-      const findColumnIndex = (possibleNames) => {
-        for (let i = 0; i < headerRow.length; i++) {
-          const header = String(headerRow[i] || '').trim();
-          if (possibleNames.some(name => header === name)) {
-            return i;
-          }
-        }
-        return -1;
-      };
-      
-      const colIndices = {
-        project: findColumnIndex(['Projekt']),
-        customer: findColumnIndex(['Stranka']),
-        date: findColumnIndex(['Datum']),
-        tariff: findColumnIndex(['Tarifa']),
-        employee: findColumnIndex(['Delavec']),
-        comments: findColumnIndex(['Opombe']),
-        hours: findColumnIndex(['Porabljene ure']),
-        value: findColumnIndex(['Vrednost']),
-        invoiceNumber: findColumnIndex(['Št. računa', 'Št.računa'])
-      };
-      
-      console.log('Column indices:', colIndices);
-      
-      // Fetch all customers to get their hourly rates
       const token = localStorage.getItem('access_token');
-      const customersResponse = await axios.get(`${BACKEND_URL}/api/customers`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const customers = customersResponse.data;
-      
-      // Fetch tariff codes to get hourly rates
-      const tariffsResponse = await axios.get(`${BACKEND_URL}/api/tariffs`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const tariffs = tariffsResponse.data;
-      
-      // Create a map of tariff code to hourly rate (value)
-      const tariffRates = {};
-      tariffs.forEach(tariff => {
-        tariffRates[tariff.code] = tariff.value || 0;
+      const response = await axios.post(`${BACKEND_URL}/api/imports`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
       
-      // Extract rows (skip header row)
-      const rows = [];
-      for (let i = 1; i < jsonData.length; i++) {
-        const row = jsonData[i];
-        if (row && row.length > 0) {
-          const customerName = colIndices.customer >= 0 ? (row[colIndices.customer] || '') : '';
-          const tariffCode = colIndices.tariff >= 0 ? (row[colIndices.tariff] || '') : '';
-          const hours = colIndices.hours >= 0 ? (parseFloat(row[colIndices.hours]) || 0) : 0;
-          
-          // Get hourly rate from tariff code value (not from customer)
-          const hourlyRate = tariffRates[tariffCode] || 0;
-          const calculatedValue = hours * hourlyRate;
-          
-          // Map using correct column indices
-          rows.push({
-            project: colIndices.project >= 0 ? (row[colIndices.project] || '') : '',
-            customer: customerName,
-            date: colIndices.date >= 0 ? (row[colIndices.date] || '') : '',
-            tariff: colIndices.tariff >= 0 ? (row[colIndices.tariff] || '') : '',
-            employee: colIndices.employee >= 0 ? (row[colIndices.employee] || '') : '',
-            comments: colIndices.comments >= 0 ? (row[colIndices.comments] || '') : '',
-            hours: hours,
-            hourlyRate: hourlyRate,  // Add hourly rate to row data
-            value: calculatedValue,  // Calculated from hours × customer hourly rate
-            invoiceNumber: colIndices.invoiceNumber >= 0 ? (row[colIndices.invoiceNumber] || '') : ''
-          });
+      // Store import summary and show modal
+      setImportSummary(response.data);
+      setShowSummaryModal(true);
+      
+      toast.success('Import processed successfully!');
+      
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to import file');
+      setLoading(false);
+    }
+  };
+  
+  const handleProceedToVerification = () => {
+    setShowSummaryModal(false);
+    setLoading(false);
+    
+    // Navigate to verification page
+    navigate('/import/verify', {
+      state: {
+        verificationData: {
+          batchId: importSummary.batchId,
+          resuming: true
         }
       }
-      
-      // Read file as binary data for later upload
-      const fileData = await file.arrayBuffer();
-      
-      // Navigate to verification page with data
-      navigate('/import/verify', {
-        state: {
-          verificationData: {
-            fileName: file.name,
-            fileType: file.type,
-            fileData: Array.from(new Uint8Array(fileData)),
-            metadata: {
-              title,
+    });
+  };
               invoiceDate,
               periodFrom,
               periodTo,
