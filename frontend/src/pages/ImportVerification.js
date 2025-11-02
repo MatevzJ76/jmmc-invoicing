@@ -1668,10 +1668,10 @@ const ImportVerification = () => {
                                     {invoice.individualRows && invoice.individualRows.map((row, rowIdx) => (
                                       <tr key={`${invIdx}-${rowIdx}`} className="border-t border-slate-100 hover:bg-slate-50">
                                         <td className="p-2 text-slate-700">{row.date}</td>
-                                        <td className="p-2 text-slate-700">{row.articleNo}</td>
-                                        <td className="p-2 text-slate-700">{row.article}</td>
-                                        <td className="p-2 text-slate-700">{row.description || '-'}</td>
-                                        <td className="p-2 text-slate-700 text-right">{row.qty}</td>
+                                        <td className="p-2 text-slate-700">{row.articleCode || row.articleNo || '-'}</td>
+                                        <td className="p-2 text-slate-700">{row.article || row.description || '-'}</td>
+                                        <td className="p-2 text-slate-700">{row.detailedDescription || row.description || '-'}</td>
+                                        <td className="p-2 text-slate-700 text-right">{row.quantity || row.qty || '-'}</td>
                                         <td className="p-2 text-slate-700">{row.unit}</td>
                                         <td className="p-2 text-slate-700 text-right">€{formatEuro(row.unitPrice)}</td>
                                         <td className="p-2 text-slate-900 font-semibold text-right">€{formatEuro(row.amount)}</td>
