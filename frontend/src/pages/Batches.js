@@ -37,6 +37,9 @@ const Batches = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortColumn, setSortColumn] = useState('createdAt');
   const [sortDirection, setSortDirection] = useState('desc');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [batchToDelete, setBatchToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
