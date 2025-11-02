@@ -1574,7 +1574,46 @@ async def delete_batch(batch_id: str, current_user: User = Depends(get_current_u
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
     
-    # Check if batch has any invoices
+    # Check if batch has any invoices (count fresh from database)
+    invoice_count = await db.invoices.count_documents({"batchId": batch_id})
+    
+    if invoice_count > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot delete batch with {invoice_count} invoice(s). Please delete all invoices first or use Archive instead."
+        )
+    
+    # Count time entries before deletion (for confirmation message)
+    time_entry_count = await db.timeEntries.count_documents({"batchId": batch_id})
+    
+    # Delete all time entries for this batch (Import Verification rows - but only if no invoices)
+    delete_entries_result = await db.timeEntries.delete_many({"batchId": batch_id})
+    
+    # Delete the batch itself
+    delete_batch_result = await db.importBatches.delete_one({"id": batch_id})
+    
+    # Audit event
+    await db.auditEvents.insert_one({
+        "id": str(uuid.uuid4()),
+        "actorId": current_user.email,
+        "action": "delete_batch",
+        "entity": "Batch",
+        "entityId": batch_id,
+        "metadata": {
+            "batchTitle": batch.get("title", "Unknown"),
+            "timeEntriesDeleted": delete_entries_result.deleted_count,
+            "status": batch.get("status", "Unknown")
+        },
+        "at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "message": "Batch deleted successfully",
+        "batchTitle": batch.get("title", "Unknown"),
+        "timeEntriesDeleted": time_entry_count,
+        "invoicesDeleted": 0
+    }
+
 
 @api_router.delete("/admin/batches/{batch_id}/force")
 async def force_delete_batch(batch_id: str, current_user: User = Depends(get_current_user)):
