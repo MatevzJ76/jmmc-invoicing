@@ -533,7 +533,7 @@ const ImportVerification = () => {
       setSelectedCustomerForAnalytics(firstCustomer.id);
       loadCustomerData(firstCustomer.id);
     }
-  }, [allCustomers]);
+  }, [allCustomers, selectedCustomerForAnalytics, loadCustomerData]);
 
   const handleProceedClick = () => {
     // Show confirmation dialog
