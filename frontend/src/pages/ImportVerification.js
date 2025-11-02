@@ -2540,6 +2540,8 @@ const ImportVerification = () => {
                                 currentRowStatus === 'invoiced' ? 'bg-green-100 text-green-800' :
                                 currentRowStatus === 'internal' ? 'bg-blue-100 text-blue-800' :
                                 currentRowStatus === 'free' ? 'bg-yellow-100 text-yellow-800' :
+                                currentRowStatus === 'forfait' ? 'bg-purple-100 text-purple-800' :
+                                currentRowStatus === 'ready' ? 'bg-green-100 text-green-800' :
                                 'bg-slate-100 text-slate-800'
                               }`}>
                                 {currentRowStatus.charAt(0).toUpperCase() + currentRowStatus.slice(1)}
