@@ -2075,6 +2075,23 @@ ${randomFinal}`;
               />
               <p className="text-xs text-slate-500">User-defined prompt for custom verification checks on time entry data</p>
               
+              {/* Model Selection */}
+              <div className="space-y-2 mt-3">
+                <Label htmlFor="verification-model" className="text-sm font-medium">Model</Label>
+                <Select value={settings.verificationModel} onValueChange={(value) => updateSetting('verificationModel', value)}>
+                  <SelectTrigger id="verification-model">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gpt-5-nano">gpt-5-nano</SelectItem>
+                    <SelectItem value="gpt-5-mini">gpt-5-mini</SelectItem>
+                    <SelectItem value="gpt-5">gpt-5</SelectItem>
+                    <SelectItem value="gpt-4o-mini">gpt-4o-mini</SelectItem>
+                  </SelectContent>
+                </Select>
+                {renderModelInfo(settings.verificationModel)}
+              </div>
+              
               {/* Test Section */}
               <div className="mt-4 pt-4 border-t border-slate-300">
                 <Label htmlFor="verification-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
