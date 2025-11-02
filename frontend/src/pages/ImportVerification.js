@@ -1640,59 +1640,57 @@ const ImportVerification = () => {
                     </button>
 
                     {historicalInvoicesExpanded && (
-                      <div className="mt-3 border border-slate-200 rounded-lg overflow-hidden">
+                      <div className="mt-3 border border-slate-200 rounded-lg overflow-hidden bg-white">
                         {historicalInvoices.length === 0 ? (
                           <div className="p-4 text-center text-slate-500 text-sm">
                             No historical invoices in the last 12 months
                           </div>
                         ) : (
-                          <div className="max-h-[400px] overflow-y-auto">
-                            {historicalInvoices.map((invoice, idx) => (
-                              <div key={idx} className="border-b border-slate-200 last:border-b-0">
-                                {/* Main Invoice Row */}
-                                <div className="bg-slate-50 p-3 flex items-center justify-between hover:bg-slate-100 transition-colors">
-                                  <div className="flex items-center gap-3 flex-1">
-                                    <span className="text-sm font-medium text-slate-700">{invoice.date}</span>
-                                    <span className="text-sm text-slate-600 truncate flex-1">{invoice.description}</span>
-                                  </div>
-                                  <span className="text-sm font-bold text-slate-900 ml-4">€{formatEuro(invoice.amount)}</span>
-                                </div>
-                                
-                                {/* Individual Transaction Rows */}
-                                {invoice.individualRows && invoice.individualRows.length > 0 && (
-                                  <div className="bg-white">
-                                    <table className="w-full text-xs">
-                                      <thead className="bg-slate-100">
-                                        <tr>
-                                          <th className="text-left p-2 text-slate-600 font-semibold">Date</th>
-                                          <th className="text-left p-2 text-slate-600 font-semibold">Article No</th>
-                                          <th className="text-left p-2 text-slate-600 font-semibold">Article</th>
-                                          <th className="text-left p-2 text-slate-600 font-semibold">Description</th>
-                                          <th className="text-right p-2 text-slate-600 font-semibold">Qty</th>
-                                          <th className="text-left p-2 text-slate-600 font-semibold">Unit</th>
-                                          <th className="text-right p-2 text-slate-600 font-semibold">Unit Price</th>
-                                          <th className="text-right p-2 text-slate-600 font-semibold">Amount</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {invoice.individualRows.map((row, rowIdx) => (
-                                          <tr key={rowIdx} className="border-t border-slate-100">
-                                            <td className="p-2 text-slate-700">{row.date}</td>
-                                            <td className="p-2 text-slate-700">{row.articleNo}</td>
-                                            <td className="p-2 text-slate-700">{row.article}</td>
-                                            <td className="p-2 text-slate-700">{row.description || '-'}</td>
-                                            <td className="p-2 text-slate-700 text-right">{row.qty}</td>
-                                            <td className="p-2 text-slate-700">{row.unit}</td>
-                                            <td className="p-2 text-slate-700 text-right">€{formatEuro(row.unitPrice)}</td>
-                                            <td className="p-2 text-slate-900 font-semibold text-right">€{formatEuro(row.amount)}</td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                          <div className="max-h-[500px] overflow-y-auto">
+                            {/* Single continuous table with all transactions */}
+                            <table className="w-full text-xs">
+                              <thead className="bg-slate-100 sticky top-0 z-10">
+                                <tr>
+                                  <th className="text-left p-2 text-slate-600 font-semibold">Date</th>
+                                  <th className="text-left p-2 text-slate-600 font-semibold">Article No</th>
+                                  <th className="text-left p-2 text-slate-600 font-semibold">Article</th>
+                                  <th className="text-left p-2 text-slate-600 font-semibold">Description</th>
+                                  <th className="text-right p-2 text-slate-600 font-semibold">Qty</th>
+                                  <th className="text-left p-2 text-slate-600 font-semibold">Unit</th>
+                                  <th className="text-right p-2 text-slate-600 font-semibold">Unit Price</th>
+                                  <th className="text-right p-2 text-slate-600 font-semibold">Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {historicalInvoices.map((invoice, invIdx) => (
+                                  <React.Fragment key={invIdx}>
+                                    {/* Individual Transaction Rows for this invoice/month */}
+                                    {invoice.individualRows && invoice.individualRows.map((row, rowIdx) => (
+                                      <tr key={`${invIdx}-${rowIdx}`} className="border-t border-slate-100 hover:bg-slate-50">
+                                        <td className="p-2 text-slate-700">{row.date}</td>
+                                        <td className="p-2 text-slate-700">{row.articleNo}</td>
+                                        <td className="p-2 text-slate-700">{row.article}</td>
+                                        <td className="p-2 text-slate-700">{row.description || '-'}</td>
+                                        <td className="p-2 text-slate-700 text-right">{row.qty}</td>
+                                        <td className="p-2 text-slate-700">{row.unit}</td>
+                                        <td className="p-2 text-slate-700 text-right">€{formatEuro(row.unitPrice)}</td>
+                                        <td className="p-2 text-slate-900 font-semibold text-right">€{formatEuro(row.amount)}</td>
+                                      </tr>
+                                    ))}
+                                    
+                                    {/* Month Total Row */}
+                                    <tr className="bg-blue-50 border-t-2 border-blue-300">
+                                      <td colSpan="7" className="p-2 text-right font-bold text-blue-900">
+                                        {invoice.date} Total:
+                                      </td>
+                                      <td className="p-2 text-right font-bold text-blue-900">
+                                        €{formatEuro(invoice.amount)}
+                                      </td>
+                                    </tr>
+                                  </React.Fragment>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         )}
                       </div>
