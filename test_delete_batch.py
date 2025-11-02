@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional
 import io
 
 # Configuration
-BACKEND_URL = "https://invoice-enhance-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://invoice-ai-12.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@local"
 ADMIN_PASSWORD = "Admin2025!"
 
