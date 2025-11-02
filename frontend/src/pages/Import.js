@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Upload, ArrowLeft } from 'lucide-react';
+import { Upload, ArrowLeft, X, AlertCircle, CheckCircle, Users } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -20,6 +20,8 @@ const Import = () => {
   const [dueDate, setDueDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [importSummary, setImportSummary] = useState(null);
 
   // Auto-suggest title based on period
   useEffect(() => {
