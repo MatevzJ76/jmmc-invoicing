@@ -405,6 +405,18 @@ const ImportVerification = () => {
     setFilteredRows(filtered);
   }, [verificationData, searchTerm, projectFilter, customerFilter, employeeFilter, tariffFilter, statusFilter]);
 
+  // Save filter preferences whenever they change (debounced)
+  useEffect(() => {
+    if (!verificationData?.batchId) return;
+    
+    // Debounce the save to avoid too many API calls
+    const timeoutId = setTimeout(() => {
+      saveFilterPreferences();
+    }, 500); // Wait 500ms after last change before saving
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, projectFilter, customerFilter, employeeFilter, tariffFilter, statusFilter, rowsPerPage, verificationData?.batchId]);
+
   const handleProceedClick = () => {
     // Show confirmation dialog
     setShowConfirmation(true);
