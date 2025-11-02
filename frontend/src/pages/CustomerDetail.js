@@ -588,13 +588,8 @@ const CustomerDetail = () => {
             </h3>
             
             <div className="grid grid-cols-3 gap-6">
-              {/* Customer Status - Highlighted as Important */}
-              <div className="relative">
-                <div className="absolute -top-2 -right-2 z-10">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-orange-500 text-white shadow-lg">
-                    IMPORTANT
-                  </span>
-                </div>
+              {/* Customer Status */}
+              <div>
                 <Label className="text-slate-900 mb-2 block font-bold text-base">Customer Status</Label>
                 <Select 
                   value={customer?.status || 'active'}
