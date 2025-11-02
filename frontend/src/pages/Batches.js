@@ -550,6 +550,80 @@ const Batches = () => {
           Showing {filteredBatches.length} of {batches.length} batches
         </div>
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && batchToDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-red-600 to-rose-600 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-3 rounded-full">
+                  <Trash2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Delete Monthly Batch</h3>
+                  <p className="text-sm text-red-100">This action cannot be undone</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-red-800 mb-2">⚠️ Warning</p>
+                <p className="text-sm text-red-700">
+                  You are about to permanently delete this batch and all its time entries. 
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2">
+                <p className="text-sm font-semibold text-slate-800">Batch Details:</p>
+                <div className="text-sm text-slate-600 space-y-1">
+                  <p><span className="font-medium">Title:</span> {batchToDelete.title}</p>
+                  <p><span className="font-medium">Period:</span> {batchToDelete.periodFrom} to {batchToDelete.periodTo}</p>
+                  <p><span className="font-medium">Total Amount:</span> €{formatEuro(batchToDelete.totalAmount)}</p>
+                  <p><span className="font-medium">Status:</span> {batchToDelete.status}</p>
+                  <p className="text-red-600 font-semibold">
+                    <span className="font-medium text-slate-600">Time Entries to Delete:</span> All entries in this batch will be permanently removed
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-yellow-800 mb-1">Double Confirmation Required</p>
+                <p className="text-sm text-yellow-700">
+                  Please confirm that you understand this will delete the batch and all its time entries permanently.
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="p-6 bg-slate-50 border-t border-slate-200 flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setBatchToDelete(null);
+                }}
+                variant="outline"
+                className="flex-1 rounded-full"
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="flex-1 rounded-full bg-red-600 hover:bg-red-700"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {deleting ? 'Deleting...' : 'Yes, Delete Permanently'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
