@@ -347,6 +347,7 @@ const ImportVerification = () => {
         if (prefs.statusFilter !== undefined) setStatusFilter(prefs.statusFilter);
         if (prefs.rowsPerPage !== undefined) setRowsPerPage(prefs.rowsPerPage);
         if (prefs.hoursBreakdownExpanded !== undefined) setHoursBreakdownExpanded(prefs.hoursBreakdownExpanded);
+        if (prefs.importDetailsExpanded !== undefined) setImportDetailsExpanded(prefs.importDetailsExpanded);
       }
       // Legacy support: load old rowsPerPage field
       else if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
