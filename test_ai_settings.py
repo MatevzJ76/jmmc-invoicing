@@ -238,11 +238,11 @@ class TestAISettings:
             print(f"\n📤 Running AI prompts on batch: {self.test_batch_id}")
             print(f"Entry IDs: {self.test_entry_ids}")
             
-            # Call the endpoint
+            # Call the endpoint - send entry_ids as a JSON array directly
             response = requests.post(
                 f"{BACKEND_URL}/batches/{self.test_batch_id}/run-ai-prompts",
                 headers=self.get_headers(),
-                json={"entry_ids": self.test_entry_ids}
+                json=self.test_entry_ids
             )
             
             print(f"Status: {response.status_code}")
