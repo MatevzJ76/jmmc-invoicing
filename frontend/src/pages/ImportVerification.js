@@ -2297,7 +2297,8 @@ const ImportVerification = () => {
                         size="sm"
                         variant={editableSuggestions.status === 'uninvoiced' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'uninvoiced' })}
-                        className={`flex-1 rounded-full ${
+                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        className={`flex-1 rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'uninvoiced' 
                             ? 'bg-slate-600 hover:bg-slate-700' 
                             : 'border-slate-300 hover:bg-slate-50'
@@ -2310,7 +2311,8 @@ const ImportVerification = () => {
                         size="sm"
                         variant={editableSuggestions.status === 'internal' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'internal' })}
-                        className={`flex-1 rounded-full ${
+                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        className={`flex-1 rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'internal' 
                             ? 'bg-blue-600 hover:bg-blue-700' 
                             : 'border-blue-300 hover:bg-blue-50'
@@ -2323,7 +2325,8 @@ const ImportVerification = () => {
                         size="sm"
                         variant={editableSuggestions.status === 'free' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'free' })}
-                        className={`flex-1 rounded-full ${
+                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        className={`flex-1 rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'free' 
                             ? 'bg-yellow-600 hover:bg-yellow-700' 
                             : 'border-yellow-300 hover:bg-yellow-50'
@@ -2333,7 +2336,10 @@ const ImportVerification = () => {
                       </Button>
                     </div>
                     <p className="text-xs text-slate-500 mt-2">
-                      Internal and Free rows will not be included in invoices
+                      {verificationData.rows[editingRowIndex]?.status === 'invoiced' 
+                        ? 'This entry is already invoiced. Status cannot be changed.'
+                        : 'Internal and Free rows will not be included in invoices'
+                      }
                     </p>
                   </div>
                 </div>
