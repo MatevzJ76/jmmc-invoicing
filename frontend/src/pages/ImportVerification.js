@@ -2094,15 +2094,20 @@ const ImportVerification = () => {
                     />
                   </div>
                   
-                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <div className={`rounded-lg p-4 border ${
+                    (verificationData.rows[editingRowIndex]?.status === 'invoiced') 
+                      ? 'bg-slate-100 border-slate-300 opacity-60' 
+                      : 'bg-green-50 border-green-200'
+                  }`}>
                     <p className="text-xs font-semibold text-green-800 mb-2">Hours:</p>
                     <Input
                       type="number"
                       step="0.01"
                       value={editableSuggestions.hours}
                       onChange={(e) => setEditableSuggestions({ ...editableSuggestions, hours: parseFloat(e.target.value) })}
-                      className="text-sm bg-white border-green-300 focus:border-green-500 w-32"
+                      className="text-sm bg-white border-green-300 focus:border-green-500 w-32 disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="Hours"
+                      disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                     />
                   </div>
                   
