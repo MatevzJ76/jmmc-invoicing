@@ -361,7 +361,7 @@ class TestAISettings:
                 response = requests.post(
                     f"{BACKEND_URL}/batches/{self.test_batch_id}/run-ai-prompts",
                     headers=self.get_headers(),
-                    json={"entry_ids": ["invalid-entry-1", "invalid-entry-2"]}
+                    json=["invalid-entry-1", "invalid-entry-2"]
                 )
                 
                 if response.status_code == 404:
