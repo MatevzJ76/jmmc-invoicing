@@ -546,16 +546,27 @@ const ImportVerification = () => {
     console.log('Customer initialization check:', {
       hasCustomers: allCustomers && allCustomers.length > 0,
       customersCount: allCustomers?.length,
-      selectedCustomer: selectedCustomerForAnalytics
+      selectedCustomer: selectedCustomerForAnalytics,
+      firstCustomerName: allCustomers?.[0]?.name
     });
     
-    if (allCustomers && allCustomers.length > 0 && !selectedCustomerForAnalytics) {
-      const firstCustomer = allCustomers[0];
-      console.log('Auto-selecting first customer:', firstCustomer.name, firstCustomer.id);
-      setSelectedCustomerForAnalytics(firstCustomer.id);
-      loadCustomerData(firstCustomer.id);
+    if (allCustomers && allCustomers.length > 0) {
+      // Check if selected customer exists in the list
+      const selectedExists = selectedCustomerForAnalytics && 
+        allCustomers.some(c => c.id === selectedCustomerForAnalytics);
+      
+      if (!selectedExists) {
+        // Auto-select first customer alphabetically
+        const firstCustomer = allCustomers[0];
+        console.log('Auto-selecting first customer alphabetically:', firstCustomer.name, firstCustomer.id);
+        setSelectedCustomerForAnalytics(firstCustomer.id);
+        loadCustomerData(firstCustomer.id);
+      } else {
+        console.log('Selected customer exists, loading its data');
+        loadCustomerData(selectedCustomerForAnalytics);
+      }
     }
-  }, [allCustomers, selectedCustomerForAnalytics]);
+  }, [allCustomers]);
 
 
   const handleProceedClick = () => {
