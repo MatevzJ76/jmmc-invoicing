@@ -496,6 +496,15 @@ const Customers = () => {
                       className="hover:bg-slate-50 transition-colors cursor-pointer"
                       onClick={() => navigate(`/customers/${customer.id}`)}
                     >
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                          customer.status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {customer.status === 'active' ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
                         {customer.companyName || '-'}
                       </td>
