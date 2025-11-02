@@ -144,19 +144,31 @@ const ImportVerification = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Filter to show only active and new customers with valid names
+      // Count customers by status
+      const statusCount = {
+        active: response.data.filter(c => c.status === 'active').length,
+        new: response.data.filter(c => c.status === 'new').length,
+        inactive: response.data.filter(c => c.status === 'inactive').length,
+        undefined: response.data.filter(c => !c.status).length
+      };
+      
+      console.log('Customer status breakdown:', statusCount);
+      
+      // Filter to show ONLY active and new customers with valid names
+      // INACTIVE customers are EXCLUDED from navigation
       const activeAndNewCustomers = response.data.filter(c => 
         (c.status === 'active' || c.status === 'new' || !c.status) &&
         c.name && c.name.trim() !== ''  // Exclude empty names
       );
+      
+      console.log(`✓ Filtered customers: ${activeAndNewCustomers.length} (Active + New only, Inactive excluded)`);
       
       // Sort alphabetically by name (a-z)
       const sortedCustomers = activeAndNewCustomers.sort((a, b) => 
         (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
       );
       
-      console.log('Loaded and sorted customers:', sortedCustomers.length, 'customers');
-      console.log('First 5 customers:', sortedCustomers.slice(0, 5).map(c => c.name));
+      console.log('First 5 customers (alphabetical):', sortedCustomers.slice(0, 5).map(c => `${c.name} [${c.status || 'active'}]`));
       
       setAllCustomers(sortedCustomers);
     } catch (error) {
