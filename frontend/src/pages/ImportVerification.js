@@ -1453,6 +1453,215 @@ const ImportVerification = () => {
           )}
         </div>
 
+        {/* Customer Analytics Tile */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 mb-6">
+          <button
+            onClick={() => setCustomerAnalyticsExpanded(!customerAnalyticsExpanded)}
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors rounded-t-2xl"
+          >
+            <h3 className="text-sm font-semibold text-slate-800">Customer Analytics</h3>
+            <svg 
+              className={`w-5 h-5 text-slate-600 transition-transform ${customerAnalyticsExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {customerAnalyticsExpanded && (
+            <div className="px-4 pb-4">
+              {/* Navigation Buttons */}
+              <div className="flex gap-2 mb-4">
+                <Button
+                  onClick={handlePreviousCustomer}
+                  disabled={!allCustomers || allCustomers.length === 0}
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
+                </Button>
+                <Button
+                  onClick={handleNextCustomer}
+                  disabled={!allCustomers || allCustomers.length === 0}
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center gap-1"
+                >
+                  Next
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Button>
+              </div>
+
+              {loadingCustomerData ? (
+                <div className="text-center py-8 text-slate-500">Loading customer data...</div>
+              ) : customerSettings ? (
+                <>
+                  {/* Customer Name */}
+                  <h4 className="text-lg font-bold text-slate-900 mb-4">{customerSettings.name}</h4>
+                  
+                  {/* Check if customer has entries in current batch */}
+                  {(() => {
+                    const customerHasData = verificationData?.rows?.some(row => row.customerId === selectedCustomerForAnalytics);
+                    
+                    if (!customerHasData) {
+                      return (
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                          <p className="text-sm text-amber-800">No data for this customer in current batch</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  
+                  {/* Customer Settings Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                    {/* Hourly Rate */}
+                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                      <p className="text-xs text-blue-600 mb-1">Hourly Rate</p>
+                      <p className="text-lg font-bold text-blue-900">€{formatEuro(customerSettings.unitPrice || 0)}</p>
+                    </div>
+                    
+                    {/* Invoicing Type */}
+                    <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                      <p className="text-xs text-purple-600 mb-1">Invoicing Type</p>
+                      <p className="text-sm font-semibold text-purple-900">
+                        {customerSettings.invoicingType || 'Not Set'}
+                      </p>
+                    </div>
+                    
+                    {/* Fixed Forfait Value */}
+                    {customerSettings.fixedForfaitValue > 0 && (
+                      <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                        <p className="text-xs text-green-600 mb-1">Fixed Forfait</p>
+                        <p className="text-lg font-bold text-green-900">€{formatEuro(customerSettings.fixedForfaitValue || 0)}</p>
+                      </div>
+                    )}
+                    
+                    {/* Invoicing Period */}
+                    <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Period</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {customerSettings.invoicingPeriod || 'Monthly'}
+                      </p>
+                    </div>
+                    
+                    {/* Start Date */}
+                    {customerSettings.invoicingStartDate && (
+                      <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Start Date</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {customerSettings.invoicingStartDate}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Address Service */}
+                    {customerSettings.offersAddress && (
+                      <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
+                        <p className="text-xs text-orange-600 mb-1">Address Service</p>
+                        <p className="text-sm font-semibold text-orange-900">
+                          €{formatEuro(customerSettings.addressServiceUnitPrice || 0)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Historical Invoices Section */}
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setHistoricalInvoicesExpanded(!historicalInvoicesExpanded)}
+                      className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+                    >
+                      <span className="text-sm font-semibold text-slate-800">
+                        Historical Invoices (Last 12 Months)
+                      </span>
+                      <svg 
+                        className={`w-4 h-4 text-slate-600 transition-transform ${historicalInvoicesExpanded ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {historicalInvoicesExpanded && (
+                      <div className="mt-3 border border-slate-200 rounded-lg overflow-hidden">
+                        {historicalInvoices.length === 0 ? (
+                          <div className="p-4 text-center text-slate-500 text-sm">
+                            No historical invoices in the last 12 months
+                          </div>
+                        ) : (
+                          <div className="max-h-[400px] overflow-y-auto">
+                            {historicalInvoices.map((invoice, idx) => (
+                              <div key={idx} className="border-b border-slate-200 last:border-b-0">
+                                {/* Main Invoice Row */}
+                                <div className="bg-slate-50 p-3 flex items-center justify-between hover:bg-slate-100 transition-colors">
+                                  <div className="flex items-center gap-3 flex-1">
+                                    <span className="text-sm font-medium text-slate-700">{invoice.date}</span>
+                                    <span className="text-sm text-slate-600 truncate flex-1">{invoice.description}</span>
+                                  </div>
+                                  <span className="text-sm font-bold text-slate-900 ml-4">€{formatEuro(invoice.amount)}</span>
+                                </div>
+                                
+                                {/* Individual Transaction Rows */}
+                                {invoice.individualRows && invoice.individualRows.length > 0 && (
+                                  <div className="bg-white">
+                                    <table className="w-full text-xs">
+                                      <thead className="bg-slate-100">
+                                        <tr>
+                                          <th className="text-left p-2 text-slate-600 font-semibold">Date</th>
+                                          <th className="text-left p-2 text-slate-600 font-semibold">Article No</th>
+                                          <th className="text-left p-2 text-slate-600 font-semibold">Article</th>
+                                          <th className="text-left p-2 text-slate-600 font-semibold">Description</th>
+                                          <th className="text-right p-2 text-slate-600 font-semibold">Qty</th>
+                                          <th className="text-left p-2 text-slate-600 font-semibold">Unit</th>
+                                          <th className="text-right p-2 text-slate-600 font-semibold">Unit Price</th>
+                                          <th className="text-right p-2 text-slate-600 font-semibold">Amount</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {invoice.individualRows.map((row, rowIdx) => (
+                                          <tr key={rowIdx} className="border-t border-slate-100">
+                                            <td className="p-2 text-slate-700">{row.date}</td>
+                                            <td className="p-2 text-slate-700">{row.articleNo}</td>
+                                            <td className="p-2 text-slate-700">{row.article}</td>
+                                            <td className="p-2 text-slate-700">{row.description || '-'}</td>
+                                            <td className="p-2 text-slate-700 text-right">{row.qty}</td>
+                                            <td className="p-2 text-slate-700">{row.unit}</td>
+                                            <td className="p-2 text-slate-700 text-right">€{formatEuro(row.unitPrice)}</td>
+                                            <td className="p-2 text-slate-900 font-semibold text-right">€{formatEuro(row.amount)}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8 text-slate-500">
+                  No customer selected
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Filters */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 shadow-lg border border-slate-200 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
