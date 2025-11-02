@@ -144,9 +144,10 @@ const ImportVerification = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Filter to show only active and new customers
+      // Filter to show only active and new customers with valid names
       const activeAndNewCustomers = response.data.filter(c => 
-        c.status === 'active' || c.status === 'new' || !c.status
+        (c.status === 'active' || c.status === 'new' || !c.status) &&
+        c.name && c.name.trim() !== ''  // Exclude empty names
       );
       
       // Sort alphabetically by name (a-z)
@@ -154,7 +155,8 @@ const ImportVerification = () => {
         (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
       );
       
-      console.log('Loaded and sorted customers:', sortedCustomers.map(c => c.name));
+      console.log('Loaded and sorted customers:', sortedCustomers.length, 'customers');
+      console.log('First 5 customers:', sortedCustomers.slice(0, 5).map(c => c.name));
       
       setAllCustomers(sortedCustomers);
     } catch (error) {
