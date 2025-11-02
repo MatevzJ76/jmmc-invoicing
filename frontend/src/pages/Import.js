@@ -260,22 +260,6 @@ const Import = () => {
       }
     });
   };
-              invoiceDate,
-              periodFrom,
-              periodTo,
-              dueDate
-            },
-            rows
-          }
-        }
-      });
-    } catch (error) {
-      toast.error('Failed to parse file. Please check the format.');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
