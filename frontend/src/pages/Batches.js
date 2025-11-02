@@ -138,7 +138,7 @@ const Batches = () => {
     }
   };
 
-  const filterBatches = () => {
+  const filterBatches = useCallback(() => {
     let filtered = [...batches];
 
     // Search filter
@@ -157,7 +157,7 @@ const Batches = () => {
     filtered = sortBatches(filtered);
 
     setFilteredBatches(filtered);
-  };
+  }, [batches, searchTerm, statusFilter, sortBatches]);
 
   const handleArchive = async (batchId, e) => {
     e.stopPropagation(); // Prevent row click
