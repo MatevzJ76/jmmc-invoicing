@@ -801,3 +801,78 @@ agent_communication:
       message: "BUG FIXED: Found and fixed the root cause in Batches.js. When navigating from Monthly Batches to Import Verification, Batches.js was not including customerId in row data (line 224) and was not including customerId/customer in originalValues (lines 202-204, 215-217). FIXES: (1) Added customerId to row mapping in Batches.js (line 225). (2) Updated originalValues to include customerId and customer fields in Batches.js (lines 202-206, 215-219). (3) Updated backend GET /api/batches/{batch_id}/time-entries to return originalCustomerName for display (lines 739-743). Now when user navigates from Monthly Batches → Import Verification, the data includes customerId and originalValues with customer tracking. Highlighting will now work correctly for all edited fields (customer, description, hours) with bold blue text."
     - agent: "testing"
       message: "✅ CUSTOMERID FIELD DEBUGGING COMPLETE! User reported 'customerId is undefined in frontend'. Conducted comprehensive backend testing with 3 scenarios. RESULT: BACKEND IS WORKING CORRECTLY - NO BACKEND ISSUE FOUND. Test results: (1) ✅ Existing 'in progress' batch (October 2025, 1621 entries) - First 3 entries ALL have customerId field populated. API response includes customerId and customerName. (2) ✅ Database direct check - MongoDB timeEntries collection has customerId field in all documents. Customers exist and are linked correctly. (3) ✅ Complete flow test - Created new batch with 3 entries, verified customerId in database, called GET API endpoint, confirmed customerId in API response. CONCLUSION: The customerId field is properly stored in database and correctly returned by the GET /api/batches/{batch_id}/time-entries endpoint. The issue is a FRONTEND ISSUE, not backend. The frontend code (ImportVerification.js) may be: (a) Not reading customerId from API response, (b) Overwriting it with null/undefined during data processing, (c) Using wrong field name or mapping. RECOMMENDATION: Main agent should investigate frontend code, specifically: (1) How loadBatchDataForVerification() processes API response, (2) How rows are mapped from API data, (3) Whether customerId is being preserved or lost during state updates. Backend does not need any fixes - it's working correctly."
+
+
+# ============ AI PROMPTS FEATURE IMPLEMENTATION ============
+
+user_problem_statement: "Implement AI Agent Prompts feature: 1) Update Settings page to show enhanced prompts for Grammar Correction, Fraud Detection, GDPR Data Masking, and Invoice Verification (General). 2) Create backend endpoint to run all 4 prompts consecutively on selected time entries. 3) Connect 'Run AI Prompts' button in Import Verification page to execute AI analysis and show suggestions for user review."
+
+backend:
+  - task: "POST /api/batches/{batch_id}/run-ai-prompts - Run all AI prompts on selected entries"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW ENDPOINT CREATED (lines 1073-1279): Accepts batch_id and entry_ids array. Runs 4 AI prompts consecutively on each entry: (1) Grammar Correction - fixes spelling/grammar errors, (2) Fraud Detection - checks for suspicious hours/vague descriptions, (3) GDPR Data Masking - identifies personal data and suggests masking, (4) Invoice Verification (General) - performs custom user-defined checks. Uses user's AI settings (aiProvider, customApiKey, customModel) from database. Supports both Emergent LLM key and Custom OpenAI API key. Returns suggestions array with results for each prompt type. Each suggestion includes: type, suggestion text, applied status. Includes error handling and 20s timeout per prompt. Ready for backend testing."
+
+  - task: "AISettings model - Update default prompts for all 4 AI features"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "ENHANCED DEFAULT PROMPTS (lines 127-135): Updated AISettings Pydantic model with detailed prompts. (1) grammarPrompt: Enhanced to correct grammar/spelling and improve clarity, return only corrected text. (2) fraudPrompt: NEW - checks for suspicious hours vs task, vague descriptions, unusual patterns. (3) gdprPrompt: NEW - identifies personal data (full names, emails, phone numbers) and suggests masking to initials/[MASKED]. (4) verificationPrompt: RENAMED from Batch Review to General - performs data quality checks, missing info, formatting, business logic violations. All prompts are more specific and actionable compared to previous versions. Ready for backend testing with sample time entries."
+
+frontend:
+  - task: "Settings page - Update AI Agent Prompts section"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Settings.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "SETTINGS UI UPDATES: (1) Renamed 'Invoice Verification (Batch Review)' to 'Invoice Verification (General)' (line 1875) to reflect broader use case. (2) Updated description text to 'User-defined prompt for custom verification checks on time entry data' (line 1884). (3) Enhanced default prompts in state initialization (lines 1237-1240) to match backend updates. (4) Removed Claude and Gemini models from Model dropdown (lines 1643-1654), now showing ONLY OpenAI models: GPT-5, GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo. All 4 AI prompts (Grammar, Fraud, GDPR, Verification) have test sections where users can test prompts with sample input. Ready for frontend verification."
+
+  - task: "Import Verification page - Connect 'Run AI Prompts' button to backend"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/pages/ImportVerification.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NOT YET IMPLEMENTED: Need to connect 'Run AI Prompts' button to POST /api/batches/{batch_id}/run-ai-prompts endpoint. Button should: (1) Get selected row IDs or all rows if none selected, (2) Call backend endpoint with batch_id and entry_ids, (3) Display AI suggestions in modal for user review, (4) Allow user to apply/reject each suggestion. This will be implemented next after backend testing is complete."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "POST /api/batches/{batch_id}/run-ai-prompts endpoint"
+    - "AISettings model default prompts"
+    - "Settings page AI Agent Prompts section"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Implemented AI Agent Prompts feature Phase 1: (1) Enhanced all 4 default AI prompts in backend AISettings model, (2) Created new POST /api/batches/{batch_id}/run-ai-prompts endpoint that runs all prompts consecutively on selected time entries, (3) Updated Settings page to rename 'Batch Review' to 'General' and show enhanced prompt descriptions, (4) Removed Claude/Gemini models from dropdown to show only OpenAI models. Backend endpoint is ready for testing. Frontend integration (connecting button) will be done after backend testing confirms the endpoint works correctly. Please test the new endpoint with a sample batch and time entry IDs to verify: (1) AI prompts execute in sequence, (2) Results are returned in correct format, (3) Error handling works, (4) Both Emergent LLM key and Custom OpenAI API work."
+
