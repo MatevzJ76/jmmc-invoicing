@@ -111,6 +111,11 @@ const ImportVerification = () => {
       setOriginalValues(data.originalValues);
     }
     
+    // Load rowsPerPage preference from backend if we have a batchId
+    if (data.batchId && data.resuming) {
+      loadRowsPerPagePreference(data.batchId);
+    }
+    
     // Save to sessionStorage in case of page refresh
     if (location.state?.verificationData) {
       sessionStorage.setItem('importVerificationData', JSON.stringify(data));
