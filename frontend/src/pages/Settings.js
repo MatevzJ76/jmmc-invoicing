@@ -1678,13 +1678,51 @@ ${randomFinal}`;
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="gpt-5">GPT-5 (Latest)</SelectItem>
-                      <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                      <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-                      <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
-                      <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                      <SelectItem value="gpt-5-nano">gpt-5-nano</SelectItem>
+                      <SelectItem value="gpt-5-mini">gpt-5-mini</SelectItem>
+                      <SelectItem value="gpt-5">gpt-5</SelectItem>
+                      <SelectItem value="gpt-4o-mini">gpt-4o-mini</SelectItem>
                     </SelectContent>
                   </Select>
+                  
+                  {/* Model Information */}
+                  <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    {settings.customModel === 'gpt-5-nano' && (
+                      <div className="space-y-1 text-xs">
+                        <p className="font-semibold text-slate-800">GPT-5 Nano</p>
+                        <p className="text-slate-600">Ultra-fast, low-cost model for grammar/style cleanup and simple edits</p>
+                        <p className="text-slate-500">⚡ Speed: ~0.5–0.8s (typical for short prompts)</p>
+                        <p className="text-slate-500">💰 Pricing: $0.05/1M input • $0.005/1M cached • $0.40/1M output</p>
+                      </div>
+                    )}
+                    {settings.customModel === 'gpt-5-mini' && (
+                      <div className="space-y-1 text-xs">
+                        <p className="font-semibold text-slate-800">GPT-5 Mini</p>
+                        <p className="text-slate-600">Balanced cost/speed; great for invoice verification and fraud pre-screening</p>
+                        <p className="text-slate-500">⚡ Speed: ~0.6–1.2s (typical for short prompts)</p>
+                        <p className="text-slate-500">💰 Pricing: $0.25/1M input • $0.025/1M cached • $2.00/1M output</p>
+                      </div>
+                    )}
+                    {settings.customModel === 'gpt-5' && (
+                      <div className="space-y-1 text-xs">
+                        <p className="font-semibold text-slate-800">GPT-5</p>
+                        <p className="text-slate-600">Deep reasoning for ambiguous anomaly cases and complex cross-record checks</p>
+                        <p className="text-slate-500">⚡ Speed: ~1–3s (typical for short-to-medium prompts)</p>
+                        <p className="text-slate-500">💰 Pricing: $1.25/1M input • $0.125/1M cached • $10.00/1M output</p>
+                      </div>
+                    )}
+                    {settings.customModel === 'gpt-4o-mini' && (
+                      <div className="space-y-1 text-xs">
+                        <p className="font-semibold text-slate-800">GPT-4o mini</p>
+                        <p className="text-slate-600">Fast multimodal (text+vision) small model; ideal fallback for masking/formatting</p>
+                        <p className="text-slate-500">⚡ Speed: ~0.7–1.4s (typical for short prompts)</p>
+                        <p className="text-slate-500">💰 Pricing: $0.15/1M input • $0.60/1M output</p>
+                      </div>
+                    )}
+                    <p className="text-xs text-slate-400 mt-2 pt-2 border-t border-slate-200">
+                      Note: Speeds are approximate and vary with prompt/response size. For current pricing, see OpenAI's pricing page.
+                    </p>
+                  </div>
                 </div>
               </>
             )}
