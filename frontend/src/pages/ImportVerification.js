@@ -423,7 +423,8 @@ const ImportVerification = () => {
           employeeFilter,
           tariffFilter,
           statusFilter,
-          rowsPerPage
+          rowsPerPage,
+          hoursBreakdownExpanded
         };
         
         await axios.put(
