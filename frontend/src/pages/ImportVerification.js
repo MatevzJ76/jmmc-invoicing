@@ -2050,7 +2050,11 @@ const ImportVerification = () => {
                     </Select>
                   </div>
                   
-                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                  <div className={`rounded-lg p-4 border ${
+                    (verificationData.rows[editingRowIndex]?.status === 'invoiced') 
+                      ? 'bg-slate-100 border-slate-300 opacity-60' 
+                      : 'bg-purple-50 border-purple-200'
+                  }`}>
                     <p className="text-xs font-semibold text-purple-800 mb-2">Tariff:</p>
                     <Select 
                       value={editableSuggestions.tariff} 
@@ -2060,8 +2064,9 @@ const ImportVerification = () => {
                           tariff: value
                         });
                       }}
+                      disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                     >
-                      <SelectTrigger className="bg-white border-purple-300 focus:border-purple-500">
+                      <SelectTrigger className="bg-white border-purple-300 focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed">
                         <SelectValue placeholder="Select tariff" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
