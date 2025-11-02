@@ -1244,10 +1244,10 @@ const ImportVerification = () => {
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 mb-6">
           <button
             onClick={() => setImportDetailsExpanded(!importDetailsExpanded)}
-            className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors rounded-t-2xl"
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors rounded-t-2xl"
           >
             <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold text-slate-800">Import Details</h3>
+              <h3 className="text-sm font-semibold text-slate-800">Import Details</h3>
               {importDetailsExpanded && verificationData.fileData && verificationData.fileData.length > 0 && (
                 <Button
                   variant="outline"
