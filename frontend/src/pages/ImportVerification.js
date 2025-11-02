@@ -461,7 +461,7 @@ const ImportVerification = () => {
   }, [searchTerm, customerFilter, employeeFilter, tariffFilter, statusFilter, rowsPerPage, hoursBreakdownExpanded, importDetailsExpanded, customerAnalyticsExpanded, historicalInvoicesExpanded, selectedCustomerForAnalytics, verificationData?.batchId]);
 
   // Load customer data (settings + historical invoices)
-  const loadCustomerData = async (customerId) => {
+  const loadCustomerData = useCallback(async (customerId) => {
     setLoadingCustomerData(true);
     try {
       const token = localStorage.getItem('access_token');
@@ -492,7 +492,7 @@ const ImportVerification = () => {
     } finally {
       setLoadingCustomerData(false);
     }
-  };
+  }, []);
 
   // Navigate to next customer
   const handleNextCustomer = () => {
