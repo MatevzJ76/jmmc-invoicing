@@ -1565,6 +1565,50 @@ ${randomFinal}`;
     setTestResult(null);
   };
 
+  // Helper function to render model info card
+  const renderModelInfo = (modelName) => {
+    const modelInfoMap = {
+      'gpt-5-nano': {
+        name: 'GPT-5 Nano',
+        description: 'Ultra-fast, low-cost model for grammar/style cleanup and simple edits',
+        speed: '~0.5–0.8s (typical for short prompts)',
+        pricing: '$0.05/1M input • $0.005/1M cached • $0.40/1M output'
+      },
+      'gpt-5-mini': {
+        name: 'GPT-5 Mini',
+        description: 'Balanced cost/speed; great for invoice verification and fraud pre-screening',
+        speed: '~0.6–1.2s (typical for short prompts)',
+        pricing: '$0.25/1M input • $0.025/1M cached • $2.00/1M output'
+      },
+      'gpt-5': {
+        name: 'GPT-5',
+        description: 'Deep reasoning for ambiguous anomaly cases and complex cross-record checks',
+        speed: '~1–3s (typical for short-to-medium prompts)',
+        pricing: '$1.25/1M input • $0.125/1M cached • $10.00/1M output'
+      },
+      'gpt-4o-mini': {
+        name: 'GPT-4o mini',
+        description: 'Fast multimodal (text+vision) small model; ideal fallback for masking/formatting',
+        speed: '~0.7–1.4s (typical for short prompts)',
+        pricing: '$0.15/1M input • $0.60/1M output'
+      }
+    };
+
+    const info = modelInfoMap[modelName];
+    if (!info) return null;
+
+    return (
+      <div className="mt-2 p-2 bg-slate-50 rounded border border-slate-200">
+        <div className="space-y-1 text-xs">
+          <p className="font-semibold text-slate-800">{info.name}</p>
+          <p className="text-slate-600">{info.description}</p>
+          <p className="text-slate-500">⚡ Speed: {info.speed}</p>
+          <p className="text-slate-500">💰 Pricing: {info.pricing}</p>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
