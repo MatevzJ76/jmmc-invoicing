@@ -1799,6 +1799,10 @@ async def get_all_customers(company_id: Optional[str] = None, current_user: User
         customer["averageInvoice"] = total_amount / invoice_count if invoice_count > 0 else 0
         customer["unitPrice"] = customer.get("unitPrice", 0)
         
+        # Default status to active if not set
+        if "status" not in customer or customer["status"] is None:
+            customer["status"] = "active"
+        
         # Add company name if customer has companyId
         if customer.get("companyId"):
             company = await db.companies.find_one({"id": customer["companyId"]}, {"_id": 0})
