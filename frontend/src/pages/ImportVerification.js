@@ -687,7 +687,7 @@ const ImportVerification = () => {
       
       // Call the new backend endpoint that runs all 4 prompts consecutively
       const response = await axios.post(
-        `${BACKEND_URL}/api/batches/${batchId}/run-ai-prompts`,
+        `${BACKEND_URL}/api/batches/${verificationData.batchId}/run-ai-prompts`,
         { entry_ids: [entryId] },
         { headers: { Authorization: `Bearer ${token}` }}
       );
