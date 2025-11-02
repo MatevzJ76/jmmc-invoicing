@@ -1360,7 +1360,7 @@ const ImportVerification = () => {
           <div className="flex items-center gap-2 mb-4">
             <Filter className="w-5 h-5 text-slate-600" />
             <h3 className="text-lg font-semibold text-slate-800">Filters</h3>
-            {(searchTerm || projectFilter !== 'all' || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' || statusFilter !== 'all') && (
+            {(searchTerm || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' || statusFilter !== 'all') && (
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                 Showing {displayRows.length} of {verificationData.rows.length} rows
               </span>
