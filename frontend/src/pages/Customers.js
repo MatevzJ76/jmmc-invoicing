@@ -36,6 +36,7 @@ const Customers = () => {
   const [uploadingHistory, setUploadingHistory] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
     name: '',
