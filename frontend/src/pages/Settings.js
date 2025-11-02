@@ -1622,6 +1622,42 @@ ${randomFinal}`;
 
             {settings.aiProvider === 'custom' && (
               <>
+                {/* Credentials Reference Box */}
+                <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-bold text-purple-700">🔑 Your OpenAI Credentials:</p>
+                    <button
+                      onClick={() => setShowOpenAiCreds(!showOpenAiCreds)}
+                      className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                      type="button"
+                    >
+                      {showOpenAiCreds ? (
+                        <>
+                          <EyeOff className="w-4 h-4" />
+                          <span>Hide</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4" />
+                          <span>Show</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    <div className="bg-white p-2 rounded border border-purple-300">
+                      <div className="font-semibold text-purple-800">OpenAI API Key:</div>
+                      <div className="font-mono text-slate-700 break-all">
+                        {showOpenAiCreds 
+                          ? (settings.customApiKey || 'Not set') 
+                          : (settings.customApiKey ? '••••••••••••••••••••••••••••••••••••••••••••••••••••••••' : 'Not set')}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">Your API key is stored securely and never shared</p>
+                </div>
+
+                {/* API Key Input */}
                 <div className="space-y-2">
                   <Label htmlFor="apiKey">OpenAI API Key</Label>
                   <Input
@@ -1629,10 +1665,10 @@ ${randomFinal}`;
                     type="password"
                     value={settings.customApiKey}
                     onChange={(e) => updateSetting('customApiKey', e.target.value)}
-                    placeholder="sk-..."
+                    placeholder="sk-proj-..."
                     data-testid="custom-api-key-input"
                   />
-                  <p className="text-xs text-slate-500">Your API key is stored securely and never shared</p>
+                  <p className="text-xs text-slate-500">Paste your OpenAI API key here</p>
                 </div>
 
                 <div className="space-y-2">
