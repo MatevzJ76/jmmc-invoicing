@@ -521,7 +521,7 @@ const Batches = () => {
                       </td>
                       <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-center gap-2">
-                          {/* Archive Button */}
+                          {/* Archive/Unarchive Button */}
                           {batch.status !== 'archived' ? (
                             <Button
                               variant="ghost"
@@ -534,7 +534,16 @@ const Batches = () => {
                               <Archive className="w-4 h-4" />
                             </Button>
                           ) : (
-                            <span className="text-xs text-gray-400 mr-2">Archived</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => handleUnarchive(batch.id, e)}
+                              className="text-amber-600 hover:text-amber-900 hover:bg-amber-50 rounded-full"
+                              data-testid={`unarchive-button-${batch.id}`}
+                              title="Unarchive batch"
+                            >
+                              <Archive className="w-4 h-4" />
+                            </Button>
                           )}
                           
                           {/* Delete Button - Show for all batches, active only when invoiceCount = 0 */}
