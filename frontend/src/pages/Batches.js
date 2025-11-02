@@ -66,7 +66,7 @@ const Batches = () => {
     }
   };
 
-  const sortBatches = (batchesToSort) => {
+  const sortBatches = useCallback((batchesToSort) => {
     return [...batchesToSort].sort((a, b) => {
       // Always put "in progress" batches at the top
       if (a.status === 'in progress' && b.status !== 'in progress') return -1;
@@ -119,7 +119,7 @@ const Batches = () => {
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-  };
+  }, [sortColumn, sortDirection]);
 
   const loadBatches = async () => {
     try {
