@@ -338,7 +338,6 @@ const ImportVerification = () => {
       if (batchData.filterPreferences) {
         const prefs = batchData.filterPreferences;
         if (prefs.searchTerm !== undefined) setSearchTerm(prefs.searchTerm);
-        if (prefs.projectFilter !== undefined) setProjectFilter(prefs.projectFilter);
         if (prefs.customerFilter !== undefined) setCustomerFilter(prefs.customerFilter);
         if (prefs.employeeFilter !== undefined) setEmployeeFilter(prefs.employeeFilter);
         if (prefs.tariffFilter !== undefined) setTariffFilter(prefs.tariffFilter);
