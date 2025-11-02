@@ -1881,7 +1881,7 @@ ${randomFinal}`;
                 className="font-mono text-sm"
                 data-testid="verification-prompt-input"
               />
-              <p className="text-xs text-slate-500">Checks work descriptions in batch verification for fraud, irregularities, or suspicious patterns. Must return JSON format.</p>
+              <p className="text-xs text-slate-500">User-defined prompt for custom verification checks on time entry data</p>
               
               {/* Test Section */}
               <div className="mt-4 pt-4 border-t border-slate-300">
