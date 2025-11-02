@@ -1556,15 +1556,13 @@ const ImportVerification = () => {
               )}
             </span>
             {displayCount < totalFiltered && (
-              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-4 py-2 rounded-full shadow-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-blue-700">
-                  Showing first {displayCount} rows only
-                </span>
-                <span className="text-xs text-blue-600">•</span>
-                <span className="text-xs text-blue-600">
-                  Adjust "Rows per page" to see more
-                </span>
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-semibold text-slate-800">
+                    Showing first {displayCount} rows only - adjust "Rows per page" to see more
+                  </span>
+                </div>
               </div>
             )}
           </div>
