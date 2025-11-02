@@ -45,6 +45,7 @@ const ImportVerification = () => {
   const [statusFilter, setStatusFilter] = useState('all'); // New: invoiced/uninvoiced filter
   const [rowsPerPage, setRowsPerPage] = useState(100); // Rows per page limit (default: 100)
   const [hoursBreakdownExpanded, setHoursBreakdownExpanded] = useState(false); // Hours by Employee tile collapsed by default
+  const [importDetailsExpanded, setImportDetailsExpanded] = useState(false); // Import Details tile collapsed by default
   const [filteredRows, setFilteredRows] = useState([]);
   
   // Customer dropdown open state
