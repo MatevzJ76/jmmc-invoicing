@@ -2112,15 +2112,19 @@ const ImportVerification = () => {
                   </div>
                   
                   {/* AI Processing Section */}
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                  <div className={`rounded-lg p-4 border ${
+                    (verificationData.rows[editingRowIndex]?.status === 'invoiced') 
+                      ? 'bg-slate-100 border-slate-300 opacity-60' 
+                      : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200'
+                  }`}>
                     <p className="text-xs font-semibold text-purple-800 mb-3">AI Processing:</p>
                     <div className="flex gap-2 mb-4">
                       <Button
                         type="button"
                         size="sm"
                         onClick={handleRunAllAiPrompts}
-                        disabled={aiProcessing}
-                        className="flex-1 rounded-full bg-purple-600 hover:bg-purple-700"
+                        disabled={aiProcessing || (verificationData.rows[editingRowIndex]?.status === 'invoiced')}
+                        className="flex-1 rounded-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Sparkles className="w-4 h-4 mr-2" />
                         {aiProcessing ? 'Processing...' : 'Run All AI Prompts'}
@@ -2129,8 +2133,8 @@ const ImportVerification = () => {
                         type="button"
                         size="sm"
                         onClick={handleRun2xDTM}
-                        disabled={aiProcessing}
-                        className="flex-1 rounded-full bg-pink-600 hover:bg-pink-700"
+                        disabled={aiProcessing || (verificationData.rows[editingRowIndex]?.status === 'invoiced')}
+                        className="flex-1 rounded-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Sparkles className="w-4 h-4 mr-2" />
                         2xDTM
