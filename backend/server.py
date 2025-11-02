@@ -637,7 +637,24 @@ async def import_xlsx(
         if entries:
             await db.timeEntries.insert_many(entries)
         
-        return {"batchId": batch_id, "rowCount": len(entries)}
+        # Calculate summary statistics
+        total_hours = sum(e["hours"] for e in entries)
+        total_value = sum(e["value"] for e in entries)
+        unique_employees = len(set(e["employeeName"] for e in entries))
+        unique_customers = len(set(e["customerId"] for e in entries if e["customerId"]))
+        
+        return {
+            "batchId": batch_id,
+            "rowCount": len(entries),
+            "newCustomers": new_customers_created,
+            "summary": {
+                "totalRows": len(entries),
+                "totalHours": round(total_hours, 2),
+                "totalValue": round(total_value, 2),
+                "uniqueEmployees": unique_employees,
+                "uniqueCustomers": unique_customers
+            }
+        }
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
