@@ -427,7 +427,8 @@ const ImportVerification = () => {
           tariffFilter,
           statusFilter,
           rowsPerPage,
-          hoursBreakdownExpanded
+          hoursBreakdownExpanded,
+          importDetailsExpanded
         };
         
         await axios.put(
