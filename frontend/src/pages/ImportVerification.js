@@ -2002,9 +2002,9 @@ const ImportVerification = () => {
                   <p className="text-xs font-semibold text-amber-800 mb-1">Active Filters:</p>
                   <div className="text-xs text-amber-700 space-y-1">
                     {customerFilter !== 'all' && <div>• Customer: <span className="font-semibold">{customerFilter}</span></div>}
-                    {projectFilter !== 'all' && <div>• Project: <span className="font-semibold">{projectFilter}</span></div>}
                     {employeeFilter !== 'all' && <div>• Employee: <span className="font-semibold">{employeeFilter}</span></div>}
                     {tariffFilter !== 'all' && <div>• Tariff: <span className="font-semibold">{tariffFilter}</span></div>}
+                    {statusFilter !== 'all' && <div>• Status: <span className="font-semibold">{statusFilter}</span></div>}
                     {searchTerm && <div>• Search: <span className="font-semibold">"{searchTerm}"</span></div>}
                   </div>
                 </div>
