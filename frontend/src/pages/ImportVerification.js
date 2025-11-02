@@ -1412,7 +1412,10 @@ const ImportVerification = () => {
             </Select>
             
             {/* Rows Per Page Selector */}
-            <Select value={rowsPerPage.toString()} onValueChange={(value) => handleRowsPerPageChange(value === 'all' ? -1 : parseInt(value))}>
+            <Select 
+              value={rowsPerPage === -1 || rowsPerPage === 'all' ? 'all' : rowsPerPage.toString()} 
+              onValueChange={(value) => handleRowsPerPageChange(value === 'all' ? 'all' : parseInt(value))}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Rows per page" />
               </SelectTrigger>
