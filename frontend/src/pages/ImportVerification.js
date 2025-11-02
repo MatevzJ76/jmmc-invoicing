@@ -2132,13 +2132,27 @@ const ImportVerification = () => {
                         </td>
                         <td className="px-3 py-2 text-right text-blue-600 font-medium">€{formatEuro(row.hourlyRate || 0)}</td>
                         <td className="px-3 py-2 text-right text-slate-700">€{formatEuro(row.value || 0)}</td>
+                        
+                        {/* Entry Source Icon */}
+                        <td className="px-3 py-2 text-center">
+                          <div className="flex items-center justify-center">
+                            <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-bold ${
+                              entrySource === 'manual' 
+                                ? 'bg-green-600' 
+                                : 'bg-blue-600'
+                            }`} title={entrySource === 'manual' ? 'Manual Entry' : 'Imported from File'}>
+                              {entrySource === 'manual' ? 'M' : 'I'}
+                            </span>
+                          </div>
+                        </td>
+                        
                         <td className="px-3 py-2 text-slate-600">{row.invoiceNumber || '-'}</td>
                       </tr>
                     );
                   })
                 ) : (
                   <tr>
-                    <td colSpan="9" className="px-3 py-8 text-center text-slate-500">
+                    <td colSpan="11" className="px-3 py-8 text-center text-slate-500">
                       No rows match the current filters
                     </td>
                   </tr>
