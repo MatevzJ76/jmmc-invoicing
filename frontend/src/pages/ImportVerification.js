@@ -966,20 +966,8 @@ const ImportVerification = () => {
     // Update state immediately
     setRowsPerPage(newValue);
     
-    // Save to backend if we have a batchId
-    if (verificationData?.batchId) {
-      try {
-        const token = localStorage.getItem('access_token');
-        await axios.put(
-          `${BACKEND_URL}/api/batches/${verificationData.batchId}`,
-          { rowsPerPage: newValue },
-          { headers: { Authorization: `Bearer ${token}` }}
-        );
-      } catch (error) {
-        console.error('Failed to save rows per page preference:', error);
-        // Don't show error toast - this is a minor preference save
-      }
-    }
+    // Trigger save after state update
+    setTimeout(() => saveFilterPreferences(), 100);
   };
 
   const handleProceed = async () => {
