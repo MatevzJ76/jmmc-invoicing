@@ -332,8 +332,19 @@ const ImportVerification = () => {
       setManuallyEditedRows(new Set(manuallyEditedRowsArray));
       setOriginalValues(originalValuesObj);
       
-      // Load rowsPerPage preference from batch (default: 100)
-      if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
+      // Load filter preferences from batch
+      if (batchData.filterPreferences) {
+        const prefs = batchData.filterPreferences;
+        if (prefs.searchTerm !== undefined) setSearchTerm(prefs.searchTerm);
+        if (prefs.projectFilter !== undefined) setProjectFilter(prefs.projectFilter);
+        if (prefs.customerFilter !== undefined) setCustomerFilter(prefs.customerFilter);
+        if (prefs.employeeFilter !== undefined) setEmployeeFilter(prefs.employeeFilter);
+        if (prefs.tariffFilter !== undefined) setTariffFilter(prefs.tariffFilter);
+        if (prefs.statusFilter !== undefined) setStatusFilter(prefs.statusFilter);
+        if (prefs.rowsPerPage !== undefined) setRowsPerPage(prefs.rowsPerPage);
+      }
+      // Legacy support: load old rowsPerPage field
+      else if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
         setRowsPerPage(batchData.rowsPerPage);
       }
       
