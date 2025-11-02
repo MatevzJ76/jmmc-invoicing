@@ -1774,6 +1774,7 @@ const ImportVerification = () => {
                 <SelectItem value="ready">Ready</SelectItem>
                 <SelectItem value="internal">Internal</SelectItem>
                 <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="forfait">Forfait</SelectItem>
                 <SelectItem value="invoiced">Invoiced</SelectItem>
               </SelectContent>
             </Select>
