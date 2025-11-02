@@ -315,10 +315,18 @@ const CustomerDetail = () => {
             <p className="text-2xl font-bold text-blue-600">€{formatEuro(customer.averageInvoice || 0)}</p>
           </div>
           
-          {/* Historical Entries Tile */}
+          {/* Status Tile */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-            <p className="text-sm text-slate-600 mb-1">Historical Entries</p>
-            <p className="text-2xl font-bold text-purple-600">{customer.historicalInvoices?.length || 0}</p>
+            <p className="text-sm text-slate-600 mb-1">Status</p>
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                customer.status === 'active' 
+                  ? 'bg-green-100 text-green-800 border border-green-300' 
+                  : 'bg-gray-100 text-gray-800 border border-gray-300'
+              }`}>
+                {customer.status === 'active' ? '● Active' : '● Inactive'}
+              </span>
+            </div>
           </div>
         </div>
 
