@@ -529,7 +529,7 @@ const InvoiceDetail = () => {
   };
 
   const handleDeleteInvoice = async () => {
-    if (!window.confirm('Delete this invoice? This will permanently remove the invoice and all its line items from the database. This action cannot be undone.')) return;
+    if (!window.confirm('Delete this invoice? This will permanently remove the invoice and all its line items from the database. Related Import Verification rows will be reset to Uninvoiced status.')) return;
 
     try {
       const token = localStorage.getItem('access_token');
@@ -537,7 +537,14 @@ const InvoiceDetail = () => {
         `${BACKEND_URL}/api/invoices/${id}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      toast.success(`Invoice completely deleted. ${response.data.linesDeleted || 0} line items removed.`);
+      
+      const linesDeleted = response.data.linesDeleted || 0;
+      const entriesReset = response.data.timeEntriesResetToUninvoiced || 0;
+      
+      toast.success(
+        `Invoice deleted! ${linesDeleted} line items removed, ${entriesReset} Import Verification rows reset to Uninvoiced.`,
+        { duration: 5000 }
+      );
       navigate(-1); // Go back to previous page
     } catch (error) {
       toast.error('Failed to delete invoice');
