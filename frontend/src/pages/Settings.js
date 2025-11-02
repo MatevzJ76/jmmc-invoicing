@@ -1886,6 +1886,23 @@ ${randomFinal}`;
               />
               <p className="text-xs text-slate-500">Used when clicking the AI sparkle icon on description fields</p>
               
+              {/* Model Selection */}
+              <div className="space-y-2 mt-3">
+                <Label htmlFor="grammar-model" className="text-sm font-medium">Model</Label>
+                <Select value={settings.grammarModel} onValueChange={(value) => updateSetting('grammarModel', value)}>
+                  <SelectTrigger id="grammar-model">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gpt-5-nano">gpt-5-nano</SelectItem>
+                    <SelectItem value="gpt-5-mini">gpt-5-mini</SelectItem>
+                    <SelectItem value="gpt-5">gpt-5</SelectItem>
+                    <SelectItem value="gpt-4o-mini">gpt-4o-mini</SelectItem>
+                  </SelectContent>
+                </Select>
+                {renderModelInfo(settings.grammarModel)}
+              </div>
+              
               {/* Test Section */}
               <div className="mt-4 pt-4 border-t border-slate-300">
                 <Label htmlFor="grammar-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
