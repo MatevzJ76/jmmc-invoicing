@@ -438,7 +438,7 @@ const ImportVerification = () => {
     }, 500); // Wait 500ms after last change before saving
     
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, projectFilter, customerFilter, employeeFilter, tariffFilter, statusFilter, rowsPerPage, verificationData?.batchId]);
+  }, [searchTerm, projectFilter, customerFilter, employeeFilter, tariffFilter, statusFilter, rowsPerPage, hoursBreakdownExpanded, verificationData?.batchId]);
 
   const handleProceedClick = () => {
     // Show confirmation dialog
