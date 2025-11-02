@@ -151,12 +151,8 @@ const ImportVerification = () => {
       });
       const batchData = response.data;
       
-      console.log('Loading rowsPerPage preference from batch:', batchData.rowsPerPage, 'Type:', typeof batchData.rowsPerPage);
       if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
         setRowsPerPage(batchData.rowsPerPage);
-        console.log('Set rowsPerPage to:', batchData.rowsPerPage);
-      } else {
-        console.log('No rowsPerPage in batch, keeping default 100');
       }
     } catch (error) {
       console.error('Failed to load rowsPerPage preference:', error);
