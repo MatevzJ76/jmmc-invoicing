@@ -935,6 +935,33 @@ const ImportVerification = () => {
     }
   };
   
+  const saveFilterPreferences = async () => {
+    // Save all filter preferences to backend
+    if (verificationData?.batchId) {
+      try {
+        const token = localStorage.getItem('access_token');
+        const filterPreferences = {
+          searchTerm,
+          projectFilter,
+          customerFilter,
+          employeeFilter,
+          tariffFilter,
+          statusFilter,
+          rowsPerPage
+        };
+        
+        await axios.put(
+          `${BACKEND_URL}/api/batches/${verificationData.batchId}`,
+          { filterPreferences },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+      } catch (error) {
+        console.error('Failed to save filter preferences:', error);
+        // Don't show error toast - this is a minor preference save
+      }
+    }
+  };
+  
   const handleRowsPerPageChange = async (newValue) => {
     // Update state immediately
     setRowsPerPage(newValue);
