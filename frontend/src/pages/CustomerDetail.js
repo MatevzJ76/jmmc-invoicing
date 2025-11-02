@@ -597,7 +597,9 @@ const CustomerDetail = () => {
                 >
                   <SelectTrigger className={`border-2 h-12 font-semibold text-base ${
                     (customer?.status === 'active' || !customer?.status)
-                      ? 'border-green-400 bg-green-50 focus:ring-green-500 focus:border-green-500' 
+                      ? 'border-green-400 bg-green-50 focus:ring-green-500 focus:border-green-500'
+                    : customer?.status === 'new'
+                      ? 'border-orange-400 bg-orange-50 focus:ring-orange-500 focus:border-orange-500'
                       : 'border-gray-400 bg-gray-50 focus:ring-gray-500 focus:border-gray-500'
                   }`}>
                     <SelectValue placeholder="Select status" />
@@ -607,6 +609,12 @@ const CustomerDetail = () => {
                       <span className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-green-500"></span>
                         Active
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="new" className="font-semibold">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                        New
                       </span>
                     </SelectItem>
                     <SelectItem value="inactive" className="font-semibold">
