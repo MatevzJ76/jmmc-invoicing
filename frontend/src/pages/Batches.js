@@ -162,23 +162,6 @@ const Batches = () => {
     }
   };
 
-  const loadBatches = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await axios.get(`${BACKEND_URL}/api/batches`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      // Store raw data - sorting will be handled by sortBatches function
-      setBatches(response.data);
-    } catch (error) {
-      toast.error('Failed to load batches');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleArchive = async (batchId, e) => {
     e.stopPropagation(); // Prevent row click
     
