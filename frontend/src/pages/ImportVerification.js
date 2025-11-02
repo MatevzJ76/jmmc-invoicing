@@ -38,11 +38,10 @@ const ImportVerification = () => {
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
-  const [projectFilter, setProjectFilter] = useState('all');
   const [customerFilter, setCustomerFilter] = useState('all');
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [tariffFilter, setTariffFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all'); // New: invoiced/uninvoiced filter
+  const [statusFilter, setStatusFilter] = useState('all'); // Filter by row status
   const [rowsPerPage, setRowsPerPage] = useState(100); // Rows per page limit (default: 100)
   const [hoursBreakdownExpanded, setHoursBreakdownExpanded] = useState(false); // Hours by Employee tile collapsed by default
   const [importDetailsExpanded, setImportDetailsExpanded] = useState(false); // Import Details tile collapsed by default
