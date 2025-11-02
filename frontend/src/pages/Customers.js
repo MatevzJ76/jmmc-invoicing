@@ -502,13 +502,22 @@ const Customers = () => {
                       onClick={() => navigate(`/customers/${customer.id}`)}
                     >
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                          customer.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {customer.status === 'active' ? 'Active' : 'Inactive'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                            customer.status === 'active' 
+                              ? 'bg-green-100 text-green-800'
+                            : customer.status === 'new'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {customer.status === 'active' ? 'Active' : customer.status === 'new' ? 'New' : 'Inactive'}
+                          </span>
+                          {customer.status === 'new' && (
+                            <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
                         {customer.companyName || '-'}
