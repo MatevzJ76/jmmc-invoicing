@@ -205,9 +205,10 @@ class TestAISettings:
                     
                     if entries_response.status_code == 200:
                         entries = entries_response.json()
-                        if len(entries) >= 2:
+                        if len(entries) >= 1:
                             self.test_batch_id = batch_id
-                            self.test_entry_ids = [entries[0]["id"], entries[1]["id"]]
+                            # Use only 1 entry to speed up testing (4 AI prompts per entry)
+                            self.test_entry_ids = [entries[0]["id"]]
                             print(f"  ✅ Using batch: {batch.get('title')}")
                             print(f"     Batch ID: {batch_id}")
                             print(f"     Entry count: {len(entries)}")
