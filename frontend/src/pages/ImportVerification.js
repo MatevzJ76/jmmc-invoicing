@@ -298,6 +298,11 @@ const ImportVerification = () => {
       setManuallyEditedRows(new Set(manuallyEditedRowsArray));
       setOriginalValues(originalValuesObj);
       
+      // Load rowsPerPage preference from batch (default: 100)
+      if (batchData.rowsPerPage !== undefined) {
+        setRowsPerPage(batchData.rowsPerPage);
+      }
+      
       // Save to sessionStorage
       sessionStorage.setItem('importVerificationData', JSON.stringify(fullData));
       
