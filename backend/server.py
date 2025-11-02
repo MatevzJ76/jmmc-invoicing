@@ -1129,13 +1129,14 @@ async def run_ai_prompts_on_entries(
     if not entries:
         raise HTTPException(status_code=404, detail="No entries found")
     
-    # Determine provider based on model
-    if "claude" in model.lower():
-        provider = "anthropic"
-    elif "gemini" in model.lower():
-        provider = "google"
-    else:
-        provider = "openai"
+    # Helper function to determine provider from model name
+    def get_provider(model_name: str) -> str:
+        if "claude" in model_name.lower():
+            return "anthropic"
+        elif "gemini" in model_name.lower():
+            return "google"
+        else:
+            return "openai"
     
     results = []
     
@@ -1163,7 +1164,7 @@ Time Entry Details:
         }
         
         try:
-            # Run all prompts consecutively
+            # Run all prompts consecutively with their specific models
             
             # 1. Grammar Correction
             if grammar_prompt:
@@ -1172,7 +1173,7 @@ Time Entry Details:
                         api_key=api_key,
                         session_id=f"grammar-{current_user.email}-{entry_id}",
                         system_message="You are an expert grammar and spelling corrector."
-                    ).with_model(provider, model)
+                    ).with_model(get_provider(grammar_model), grammar_model)
                     
                     prompt_text = f"{grammar_prompt}\n\n{entry_context}"
                     message = UserMessage(text=prompt_text)
