@@ -2927,7 +2927,7 @@ const ImportVerification = () => {
                         size="sm"
                         variant={editableSuggestions.status === 'uninvoiced' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'uninvoiced' })}
-                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        disabled={editingRowIndex !== -1 && verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                         className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'uninvoiced' 
                             ? 'bg-slate-600 hover:bg-slate-700' 
@@ -2941,7 +2941,7 @@ const ImportVerification = () => {
                         size="sm"
                         variant={editableSuggestions.status === 'internal' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'internal' })}
-                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        disabled={editingRowIndex !== -1 && verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                         className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'internal' 
                             ? 'bg-blue-600 hover:bg-blue-700' 
@@ -2955,7 +2955,7 @@ const ImportVerification = () => {
                         size="sm"
                         variant={editableSuggestions.status === 'free' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'free' })}
-                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        disabled={editingRowIndex !== -1 && verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                         className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'free' 
                             ? 'bg-yellow-600 hover:bg-yellow-700' 
@@ -2967,9 +2967,23 @@ const ImportVerification = () => {
                       <Button
                         type="button"
                         size="sm"
+                        variant={editableSuggestions.status === 'forfait' ? 'default' : 'outline'}
+                        onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'forfait' })}
+                        disabled={editingRowIndex !== -1 && verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
+                          editableSuggestions.status === 'forfait' 
+                            ? 'bg-purple-600 hover:bg-purple-700' 
+                            : 'border-purple-300 hover:bg-purple-50'
+                        }`}
+                      >
+                        <span className="mr-1">💼</span> Forfait
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
                         variant={editableSuggestions.status === 'ready' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'ready' })}
-                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        disabled={editingRowIndex !== -1 && verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                         className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'ready' 
                             ? 'bg-green-600 hover:bg-green-700' 
@@ -2980,9 +2994,9 @@ const ImportVerification = () => {
                       </Button>
                     </div>
                     <p className="text-xs text-slate-500 mt-2">
-                      {verificationData.rows[editingRowIndex]?.status === 'invoiced' 
+                      {editingRowIndex !== -1 && verificationData.rows[editingRowIndex]?.status === 'invoiced' 
                         ? 'This entry is already invoiced. Status cannot be changed.'
-                        : 'Internal, Free, and Ready rows will not be included in invoices'
+                        : 'Internal, Free, Forfait, and Ready rows will not be included in invoices'
                       }
                     </p>
                   </div>
