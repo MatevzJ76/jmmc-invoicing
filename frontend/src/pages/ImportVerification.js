@@ -1502,18 +1502,6 @@ const ImportVerification = () => {
               </SelectContent>
             </Select>
             
-            {/* Status Filter (Invoiced/Uninvoiced) */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Rows</SelectItem>
-                <SelectItem value="uninvoiced">Uninvoiced</SelectItem>
-                <SelectItem value="invoiced">Invoiced</SelectItem>
-              </SelectContent>
-            </Select>
-            
             {/* Rows Per Page Selector */}
             <Select 
               value={rowsPerPage === -1 || rowsPerPage === 'all' ? 'all' : rowsPerPage.toString()} 
