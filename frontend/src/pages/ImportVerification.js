@@ -2521,11 +2521,38 @@ const ImportVerification = () => {
               {/* Current/Editable Values */}
               <div className="mb-6">
                 <h4 className="text-sm font-bold text-slate-800 mb-3">
-                  {originalValues[editingRowIndex] ? 'Corrected Values (Editable)' : 'Current Values (Editable)'}
+                  {editingRowIndex === -1 ? 'New Manual Entry' : originalValues[editingRowIndex] ? 'Corrected Values (Editable)' : 'Current Values (Editable)'}
                 </h4>
                 <div className="space-y-3">
+                  {/* Employee Name - Only for manual entries */}
+                  {editingRowIndex === -1 && (
+                    <div className="rounded-lg p-4 border bg-blue-50 border-blue-200">
+                      <p className="text-xs font-semibold text-blue-800 mb-2">Employee Name:</p>
+                      <Input
+                        type="text"
+                        value={editableSuggestions.employeeName || ''}
+                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, employeeName: e.target.value })}
+                        placeholder="Enter employee name"
+                        className="bg-white border-blue-300 focus:border-blue-500"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Date - Only for manual entries */}
+                  {editingRowIndex === -1 && (
+                    <div className="rounded-lg p-4 border bg-blue-50 border-blue-200">
+                      <p className="text-xs font-semibold text-blue-800 mb-2">Date:</p>
+                      <Input
+                        type="date"
+                        value={editableSuggestions.date || ''}
+                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, date: e.target.value })}
+                        className="bg-white border-blue-300 focus:border-blue-500"
+                      />
+                    </div>
+                  )}
+                  
                   <div className={`rounded-lg p-4 border ${
-                    (verificationData.rows[editingRowIndex]?.status === 'invoiced') 
+                    (editingRowIndex !== -1 && verificationData.rows[editingRowIndex]?.status === 'invoiced') 
                       ? 'bg-slate-100 border-slate-300 opacity-60' 
                       : 'bg-orange-50 border-orange-200'
                   }`}>
@@ -2541,7 +2568,7 @@ const ImportVerification = () => {
                         });
                         setCustomerSearchTerm(''); // Reset search on selection
                       }}
-                      disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                      disabled={editingRowIndex !== -1 && verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                     >
                       <SelectTrigger className="bg-white border-orange-300 focus:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed">
                         <SelectValue placeholder="Select customer" />
