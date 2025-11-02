@@ -1530,6 +1530,39 @@ async def archive_batch(batch_id: str, current_user: User = Depends(get_current_
     return {"message": "Batch archived successfully"}
 
 
+@api_router.post("/batches/{batch_id}/unarchive")
+async def unarchive_batch(batch_id: str, current_user: User = Depends(get_current_user)):
+    """Unarchive a batch - restore to 'composed' or 'imported' status based on invoice count"""
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    if batch.get("status") != "archived":
+        raise HTTPException(status_code=400, detail="Batch is not archived")
+    
+    # Determine new status based on whether batch has invoices
+    invoice_count = await db.invoices.count_documents({"batchId": batch_id})
+    new_status = "composed" if invoice_count > 0 else "imported"
+    
+    await db.importBatches.update_one(
+        {"id": batch_id},
+        {"$set": {"status": new_status}}
+    )
+    
+    # Audit event
+    await db.auditEvents.insert_one({
+        "id": str(uuid.uuid4()),
+        "actorId": current_user.email,
+        "action": "unarchive_batch",
+        "entity": "Batch",
+        "entityId": batch_id,
+        "metadata": {"newStatus": new_status},
+        "at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"message": "Batch unarchived successfully", "newStatus": new_status}
+
+
 @api_router.delete("/batches/{batch_id}")
 async def delete_batch(batch_id: str, current_user: User = Depends(get_current_user)):
     """
