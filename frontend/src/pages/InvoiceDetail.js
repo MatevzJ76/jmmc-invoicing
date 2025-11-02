@@ -529,15 +529,15 @@ const InvoiceDetail = () => {
   };
 
   const handleDeleteInvoice = async () => {
-    if (!window.confirm('Delete this invoice? (Soft delete - status will be set to deleted)')) return;
+    if (!window.confirm('Delete this invoice? This will permanently remove the invoice and all its line items from the database. This action cannot be undone.')) return;
 
     try {
       const token = localStorage.getItem('access_token');
-      await axios.delete(
+      const response = await axios.delete(
         `${BACKEND_URL}/api/invoices/${id}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      toast.success('Invoice deleted');
+      toast.success(`Invoice completely deleted. ${response.data.linesDeleted || 0} line items removed.`);
       navigate(-1); // Go back to previous page
     } catch (error) {
       toast.error('Failed to delete invoice');
