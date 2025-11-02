@@ -1680,6 +1680,8 @@ const ImportVerification = () => {
                         title={
                           rowStatus === 'invoiced'
                             ? 'Invoiced - click to change status'
+                            : rowStatus === 'ready'
+                            ? 'Ready - verified and approved'
                             : rowStatus === 'internal'
                             ? 'Internal job - click to edit or change status'
                             : rowStatus === 'free'
@@ -1697,6 +1699,11 @@ const ImportVerification = () => {
                           <div className="flex items-center gap-2">
                             <span>
                               {rowStatus === 'invoiced' && <span className="text-green-600 font-bold text-lg" title={statusTitle}>✓</span>}
+                              {rowStatus === 'ready' && (
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-[10px] font-bold" title={statusTitle}>
+                                  OK
+                                </span>
+                              )}
                               {rowStatus === 'internal' && <span className="text-blue-600 text-lg" title={statusTitle}>🏢</span>}
                               {rowStatus === 'free' && <span className="text-yellow-600 text-lg" title={statusTitle}>🎁</span>}
                               {rowStatus === 'uninvoiced' && <span className="text-slate-300 text-sm" title={statusTitle}>○</span>}
