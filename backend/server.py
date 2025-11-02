@@ -1260,7 +1260,7 @@ Time Entry Details:
                         api_key=api_key,
                         session_id=f"verification-{current_user.email}-{entry_id}",
                         system_message="You are a general verification expert for time entry data quality."
-                    ).with_model(provider, model)
+                    ).with_model(get_provider(verification_model), verification_model)
                     
                     prompt_text = f"{verification_prompt}\n\n{entry_context}"
                     message = UserMessage(text=prompt_text)
