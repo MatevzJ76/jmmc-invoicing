@@ -974,12 +974,9 @@ const ImportVerification = () => {
     }
   };
   
-  const handleRowsPerPageChange = async (newValue) => {
-    // Update state immediately
+  const handleRowsPerPageChange = (newValue) => {
+    // Update state immediately - useEffect will handle saving
     setRowsPerPage(newValue);
-    
-    // Trigger save after state update
-    setTimeout(() => saveFilterPreferences(), 100);
   };
 
   const handleProceed = async () => {
