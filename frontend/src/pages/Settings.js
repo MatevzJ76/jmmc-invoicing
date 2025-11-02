@@ -2302,22 +2302,6 @@ ${randomFinal}`;
 
           <AddCustomerForm />
         </div>
-
-        {/* Save Button - Global */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">Save all configuration changes</p>
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              className="rounded-full bg-blue-600 hover:bg-blue-700"
-              data-testid="save-settings-button"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {saving ? 'Saving...' : 'Save Settings'}
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* API Debug Modal */}
