@@ -974,9 +974,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "DELETE /api/batches/{batch_id} endpoint"
-    - "Batches.js delete icon and modal"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
