@@ -434,6 +434,12 @@ const ImportVerification = () => {
             }
           );
           
+          // Check if there's an error message from backend (e.g., budget exceeded)
+          if (response.data.message && response.data.message.includes('Budget') || response.data.message && response.data.message.includes('error')) {
+            toast.error(`AI Error: ${response.data.message}`);
+            console.error('Backend AI error:', response.data.message);
+          }
+          
           // Merge results (adjust indices to match original row indices)
           const chunkResults = response.data.results || {};
           Object.keys(chunkResults).forEach(localIdx => {
@@ -456,7 +462,8 @@ const ImportVerification = () => {
           
         } catch (error) {
           console.error(`Batch ${currentBatch} failed:`, error);
-          toast.error(`Batch ${currentBatch}/${totalBatches} failed, continuing...`);
+          const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
+          toast.error(`Batch ${currentBatch}/${totalBatches} failed: ${errorMsg}`);
         }
       }
       
