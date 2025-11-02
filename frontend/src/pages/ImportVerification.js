@@ -1084,7 +1084,6 @@ const ImportVerification = () => {
   const totalValue = verificationData.rows.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
   
   // Get unique values for filters
-  const uniqueProjects = [...new Set(verificationData.rows.map(r => r.project).filter(Boolean))];
   const uniqueCustomers = [...new Set(verificationData.rows.map(r => r.customer).filter(Boolean))];
   const uniqueEmployees = [...new Set(verificationData.rows.map(r => r.employee).filter(Boolean))];
   const uniqueTariffs = [...new Set(verificationData.rows.map(r => r.tariff).filter(Boolean))];
