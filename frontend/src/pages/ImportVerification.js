@@ -1545,27 +1545,6 @@ const ImportVerification = () => {
               </Button>
             </div>
           </div>
-          
-          {/* Row Count Display */}
-          <div className="mt-4 flex items-center justify-between text-sm">
-            <span className="text-slate-600">
-              Showing <span className="font-semibold text-slate-800">{showingFrom}-{showingTo}</span> of{' '}
-              <span className="font-semibold text-slate-800">{totalFiltered}</span> rows
-              {totalFiltered !== verificationData.rows.length && (
-                <span className="text-slate-500"> (filtered from {verificationData.rows.length} total)</span>
-              )}
-            </span>
-            {displayCount < totalFiltered && (
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-semibold text-slate-800">
-                    Showing first {displayCount} rows only - adjust "Rows per page" to see more
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Data Table */}
