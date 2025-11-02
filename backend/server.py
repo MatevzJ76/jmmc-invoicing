@@ -1575,6 +1575,62 @@ async def delete_batch(batch_id: str, current_user: User = Depends(get_current_u
         raise HTTPException(status_code=404, detail="Batch not found")
     
     # Check if batch has any invoices
+
+@api_router.delete("/admin/batches/{batch_id}/force")
+async def force_delete_batch(batch_id: str, current_user: User = Depends(get_current_user)):
+    """
+    ADMIN ONLY: Force delete a batch including all invoices and time entries.
+    WARNING: This is destructive and deletes all related data.
+    """
+    # Check admin role
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check if batch exists
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Count what will be deleted
+    time_entry_count = await db.timeEntries.count_documents({"batchId": batch_id})
+    invoice_count = await db.invoices.count_documents({"batchId": batch_id})
+    
+    # Delete all invoices for this batch
+    await db.invoices.delete_many({"batchId": batch_id})
+    
+    # Delete all invoice lines for this batch's invoices
+    await db.invoiceLines.delete_many({"batchId": batch_id})
+    
+    # Delete all time entries for this batch
+    await db.timeEntries.delete_many({"batchId": batch_id})
+    
+    # Delete the batch itself
+    await db.importBatches.delete_one({"id": batch_id})
+    
+    # Audit event
+    await db.auditEvents.insert_one({
+        "id": str(uuid.uuid4()),
+        "actorId": current_user.email,
+        "action": "force_delete_batch",
+        "entity": "Batch",
+        "entityId": batch_id,
+        "metadata": {
+            "batchTitle": batch.get("title", "Unknown"),
+            "timeEntriesDeleted": time_entry_count,
+            "invoicesDeleted": invoice_count,
+            "status": batch.get("status", "Unknown"),
+            "warning": "FORCE DELETE - All related data removed"
+        },
+        "at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "message": "Batch force deleted successfully",
+        "batchTitle": batch.get("title", "Unknown"),
+        "timeEntriesDeleted": time_entry_count,
+        "invoicesDeleted": invoice_count
+    }
+
     invoice_count = await db.invoices.count_documents({"batchId": batch_id})
     
     if invoice_count > 0:
