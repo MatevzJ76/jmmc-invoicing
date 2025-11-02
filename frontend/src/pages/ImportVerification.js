@@ -1890,6 +1890,33 @@ const ImportVerification = () => {
               >
                 <X className="w-5 h-5" />
               </Button>
+              
+              {/* Add Manual Entry Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  // Open edit modal for new manual entry
+                  setEditingRowIndex(-1); // Use -1 to indicate new entry
+                  setEditableSuggestions({
+                    description: '',
+                    hours: null,
+                    customerId: '',
+                    customer: '',
+                    status: 'uninvoiced',
+                    tariff: '',
+                    employeeName: '',
+                    date: new Date().toISOString().split('T')[0]
+                  });
+                  setShowEditModal(true);
+                }}
+                className="rounded-full h-10 w-10 bg-green-50 hover:bg-green-100 border-green-300 text-green-600"
+                title="Add Manual Entry"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </Button>
             </div>
           </div>
         </div>
