@@ -198,13 +198,8 @@ const ImportVerification = () => {
         if (prefs.importDetailsExpanded !== undefined) setImportDetailsExpanded(prefs.importDetailsExpanded);
         if (prefs.customerAnalyticsExpanded !== undefined) setCustomerAnalyticsExpanded(prefs.customerAnalyticsExpanded);
         if (prefs.historicalInvoicesExpanded !== undefined) setHistoricalInvoicesExpanded(prefs.historicalInvoicesExpanded);
-        if (prefs.selectedCustomerForAnalytics !== undefined) {
-          setSelectedCustomerForAnalytics(prefs.selectedCustomerForAnalytics);
-          // Load customer data after setting the customer
-          if (prefs.selectedCustomerForAnalytics) {
-            loadCustomerData(prefs.selectedCustomerForAnalytics);
-          }
-        }
+        // Note: selectedCustomerForAnalytics will be set by the initialization useEffect
+        // after allCustomers loads, to ensure it's a valid active/new customer
       }
       // Legacy support: load old rowsPerPage field if filterPreferences doesn't exist
       else if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
