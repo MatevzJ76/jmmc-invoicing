@@ -2087,6 +2087,7 @@ const ImportVerification = () => {
                               )}
                               {rowStatus === 'internal' && <span className="text-blue-600 text-lg" title={statusTitle}>🏢</span>}
                               {rowStatus === 'free' && <span className="text-yellow-600 text-lg" title={statusTitle}>🎁</span>}
+                              {rowStatus === 'forfait' && <span className="text-purple-600 text-lg" title={statusTitle}>💼</span>}
                               {rowStatus === 'uninvoiced' && <span className="text-slate-300 text-sm" title={statusTitle}>○</span>}
                             </span>
                             <span className="font-medium">{displayIndex + 1}</span>
