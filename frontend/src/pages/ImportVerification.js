@@ -45,6 +45,12 @@ const ImportVerification = () => {
   const [rowsPerPage, setRowsPerPage] = useState(100); // Rows per page limit (default: 100)
   const [hoursBreakdownExpanded, setHoursBreakdownExpanded] = useState(false); // Hours by Employee tile collapsed by default
   const [importDetailsExpanded, setImportDetailsExpanded] = useState(false); // Import Details tile collapsed by default
+  const [customerAnalyticsExpanded, setCustomerAnalyticsExpanded] = useState(true); // Customer Analytics tile expanded by default
+  const [historicalInvoicesExpanded, setHistoricalInvoicesExpanded] = useState(false); // Historical Invoices section collapsed by default
+  const [selectedCustomerForAnalytics, setSelectedCustomerForAnalytics] = useState(null); // Current customer in analytics tile
+  const [customerSettings, setCustomerSettings] = useState(null); // Customer settings data
+  const [historicalInvoices, setHistoricalInvoices] = useState([]); // Historical invoices for selected customer
+  const [loadingCustomerData, setLoadingCustomerData] = useState(false); // Loading state for customer data
   const [filteredRows, setFilteredRows] = useState([]);
   
   // Customer dropdown open state
