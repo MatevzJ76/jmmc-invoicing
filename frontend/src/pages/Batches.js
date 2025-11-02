@@ -144,61 +144,6 @@ const Batches = () => {
     }
   };
 
-  const sortBatches = useCallback((batchesToSort) => {
-    return [...batchesToSort].sort((a, b) => {
-      // Always put "in progress" batches at the top
-      if (a.status === 'in progress' && b.status !== 'in progress') return -1;
-      if (a.status !== 'in progress' && b.status === 'in progress') return 1;
-      
-      let aValue, bValue;
-
-      switch (sortColumn) {
-        case 'title':
-          aValue = (a.title || 'Untitled').toLowerCase();
-          bValue = (b.title || 'Untitled').toLowerCase();
-          break;
-        case 'periodFrom':
-          aValue = new Date(a.periodFrom);
-          bValue = new Date(b.periodFrom);
-          break;
-        case 'periodTo':
-          aValue = new Date(a.periodTo);
-          bValue = new Date(b.periodTo);
-          break;
-        case 'invoiceDate':
-          aValue = new Date(a.invoiceDate);
-          bValue = new Date(b.invoiceDate);
-          break;
-        case 'dueDate':
-          aValue = new Date(a.dueDate);
-          bValue = new Date(b.dueDate);
-          break;
-        case 'invoiceCount':
-          aValue = a.invoiceCount || 0;
-          bValue = b.invoiceCount || 0;
-          break;
-        case 'totalAmount':
-          aValue = a.totalAmount || 0;
-          bValue = b.totalAmount || 0;
-          break;
-        case 'status':
-          aValue = a.status.toLowerCase();
-          bValue = b.status.toLowerCase();
-          break;
-        case 'createdAt':
-          aValue = new Date(a.createdAt);
-          bValue = new Date(b.createdAt);
-          break;
-        default:
-          return 0;
-      }
-
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [sortColumn, sortDirection]);
-
   const loadBatches = async () => {
     try {
       const token = localStorage.getItem('access_token');
