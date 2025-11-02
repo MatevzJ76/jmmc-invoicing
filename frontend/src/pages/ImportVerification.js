@@ -829,9 +829,51 @@ const ImportVerification = () => {
     setShowEditModal(true);
   };
   
-  const handleApplyEdits = () => {
+  const handleApplyEdits = async () => {
     if (editingRowIndex === null) return;
     
+    // Handle manual entry creation
+    if (editingRowIndex === -1) {
+      try {
+        const token = localStorage.getItem('access_token');
+        
+        // Validate required fields
+        if (!editableSuggestions.customerId || !editableSuggestions.employeeName || !editableSuggestions.date) {
+          toast.error('Please fill in Employee, Customer, and Date');
+          return;
+        }
+        
+        // Create manual entry via backend
+        const response = await axios.post(
+          `${BACKEND_URL}/api/batches/${verificationData.batchId}/manual-entry`,
+          {
+            customerId: editableSuggestions.customerId,
+            employeeName: editableSuggestions.employeeName,
+            date: editableSuggestions.date,
+            tariff: editableSuggestions.tariff,
+            notes: editableSuggestions.description,
+            hours: editableSuggestions.hours || 0,
+            status: editableSuggestions.status || 'uninvoiced'
+          },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        
+        toast.success('Manual entry added successfully');
+        setShowEditModal(false);
+        setEditingRowIndex(null);
+        
+        // Reload the batch data
+        loadBatchDataForVerification(verificationData.batchId);
+        
+        return;
+      } catch (error) {
+        console.error('Failed to add manual entry:', error);
+        toast.error('Failed to add manual entry');
+        return;
+      }
+    }
+    
+    // Handle existing row edit
     const updatedRows = [...verificationData.rows];
     
     // Save original values if this is the first edit (and not already AI-corrected)
