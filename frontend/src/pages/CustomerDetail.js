@@ -315,16 +315,22 @@ const CustomerDetail = () => {
             <p className="text-2xl font-bold text-blue-600">€{formatEuro(customer.averageInvoice || 0)}</p>
           </div>
           
-          {/* Status Tile */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
-            <p className="text-sm text-slate-600 mb-1">Status</p>
-            <div className="flex items-center gap-2">
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
-                customer.status === 'active' 
-                  ? 'bg-green-100 text-green-800 border border-green-300' 
-                  : 'bg-gray-100 text-gray-800 border border-gray-300'
+          {/* Status Tile - Important Data */}
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 shadow-xl border-2 border-blue-300">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-bold text-blue-900 uppercase tracking-wide">Customer Status</p>
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-base font-bold shadow-md ${
+                (customer?.status === 'active' || !customer?.status)
+                  ? 'bg-green-500 text-white border-2 border-green-600' 
+                  : 'bg-gray-400 text-white border-2 border-gray-500'
               }`}>
-                {customer.status === 'active' ? '● Active' : '● Inactive'}
+                <span className="w-3 h-3 rounded-full bg-white animate-pulse"></span>
+                {(customer?.status === 'active' || !customer?.status) ? 'ACTIVE' : 'INACTIVE'}
               </span>
             </div>
           </div>
