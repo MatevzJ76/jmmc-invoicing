@@ -696,7 +696,7 @@ const ImportVerification = () => {
       const response = await axios.post(
         `${BACKEND_URL}/api/batches/${verificationData.batchId}/run-ai-prompts`,
         { entry_ids: [entryId] },
-        { headers: { Authorization: `Bearer ${token}` }}
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 150000 } // 150s timeout for 4 prompts
       );
       
       if (response.data.success && response.data.results && response.data.results.length > 0) {
@@ -706,11 +706,19 @@ const ImportVerification = () => {
         // Map the suggestions to the expected format
         const results = {};
         const prompts = ['grammar', 'fraud', 'gdpr', 'verification'];
+        let hasErrors = false;
         
         prompts.forEach((promptType) => {
           if (suggestions[promptType]) {
             if (suggestions[promptType].error) {
-              results[promptType] = `Error: ${suggestions[promptType].error}`;
+              const errorMsg = suggestions[promptType].error;
+              results[promptType] = `❌ Error: ${errorMsg}`;
+              hasErrors = true;
+              
+              // Show budget error prominently
+              if (errorMsg.includes('Budget') || errorMsg.includes('budget')) {
+                toast.error('AI Budget Exceeded! Please top up your Emergent LLM balance or use a custom API key in Settings.');
+              }
             } else {
               results[promptType] = suggestions[promptType].suggestion || 'No suggestion provided';
             }
@@ -722,14 +730,26 @@ const ImportVerification = () => {
         setAiProcessResults(results);
         // Auto-expand all result tiles
         setExpandedAiResults(new Set(prompts));
-        toast.success('AI processing complete! All 4 prompts executed.');
+        
+        if (hasErrors) {
+          toast.warning('AI processing completed with some errors. Check the results below.');
+        } else {
+          toast.success('AI processing complete! All 4 prompts executed.');
+        }
       } else {
         toast.error('No AI results returned');
       }
       
     } catch (error) {
       console.error('AI processing error:', error);
-      toast.error(error.response?.data?.detail || 'AI processing failed');
+      const errorMsg = error.response?.data?.detail || error.message;
+      
+      // Check for budget errors
+      if (errorMsg && (errorMsg.includes('Budget') || errorMsg.includes('budget') || errorMsg.includes('exceeded'))) {
+        toast.error('AI Budget Exceeded! Please top up your Emergent LLM balance or use a custom API key in Settings.');
+      } else {
+        toast.error(`AI processing failed: ${errorMsg || 'Unknown error'}`);
+      }
     } finally {
       setAiProcessing(false);
     }
