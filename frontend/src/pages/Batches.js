@@ -41,6 +41,24 @@ const Batches = () => {
   const [batchToDelete, setBatchToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Define loadBatches with useCallback BEFORE useEffect uses it
+  const loadBatches = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/batches`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Store raw data - sorting will be handled by sortBatches function
+      setBatches(response.data);
+    } catch (error) {
+      toast.error('Failed to load batches');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []); // Empty deps - only needs to be created once
+
   useEffect(() => {
     const userStr = localStorage.getItem('user');
     if (!userStr) {
@@ -49,7 +67,7 @@ const Batches = () => {
     }
     setUser(JSON.parse(userStr));
     loadBatches();
-  }, [navigate]);
+  }, [navigate, loadBatches]);
 
   // Define sortBatches with useCallback BEFORE filterBatches uses it
   const sortBatches = useCallback((batchesToSort) => {
