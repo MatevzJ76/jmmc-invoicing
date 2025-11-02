@@ -680,39 +680,49 @@ const ImportVerification = () => {
     
     setAiProcessing(true);
     const rowData = verificationData.rows[editingRowIndex];
-    const textToAnalyze = rowData.comments || '';
+    const entryId = rowData.id;
     
     try {
       const token = localStorage.getItem('access_token');
-      const results = {};
       
-      // Run all AI prompts in parallel
-      const prompts = ['grammar', 'fraud', 'gdpr', 'verification'];
-      const promises = prompts.map(async (promptType) => {
-        try {
-          const response = await axios.post(
-            `${BACKEND_URL}/api/ai/suggest`,
-            { text: textToAnalyze, feature: promptType },
-            { headers: { Authorization: `Bearer ${token}` }}
-          );
-          return { type: promptType, result: response.data.suggestion, success: true };
-        } catch (error) {
-          return { type: promptType, result: error.response?.data?.detail || 'Error', success: false };
-        }
-      });
+      // Call the new backend endpoint that runs all 4 prompts consecutively
+      const response = await axios.post(
+        `${BACKEND_URL}/api/batches/${batchId}/run-ai-prompts`,
+        { entry_ids: [entryId] },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
       
-      const responses = await Promise.all(promises);
-      responses.forEach(({ type, result }) => {
-        results[type] = result;
-      });
-      
-      setAiProcessResults(results);
-      // Auto-expand all result tiles
-      setExpandedAiResults(new Set(prompts));
-      toast.success('AI processing complete!');
+      if (response.data.success && response.data.results && response.data.results.length > 0) {
+        const entryResult = response.data.results[0];
+        const suggestions = entryResult.suggestions || {};
+        
+        // Map the suggestions to the expected format
+        const results = {};
+        const prompts = ['grammar', 'fraud', 'gdpr', 'verification'];
+        
+        prompts.forEach((promptType) => {
+          if (suggestions[promptType]) {
+            if (suggestions[promptType].error) {
+              results[promptType] = `Error: ${suggestions[promptType].error}`;
+            } else {
+              results[promptType] = suggestions[promptType].suggestion || 'No suggestion provided';
+            }
+          } else {
+            results[promptType] = 'No result';
+          }
+        });
+        
+        setAiProcessResults(results);
+        // Auto-expand all result tiles
+        setExpandedAiResults(new Set(prompts));
+        toast.success('AI processing complete! All 4 prompts executed.');
+      } else {
+        toast.error('No AI results returned');
+      }
       
     } catch (error) {
-      toast.error('AI processing failed');
+      console.error('AI processing error:', error);
+      toast.error(error.response?.data?.detail || 'AI processing failed');
     } finally {
       setAiProcessing(false);
     }
