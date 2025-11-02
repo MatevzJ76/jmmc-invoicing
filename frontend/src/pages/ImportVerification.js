@@ -339,7 +339,8 @@ const ImportVerification = () => {
           hourlyRate: entry.hourlyRate || 0,  // Add hourlyRate from backend
           value: entry.value || 0,
           invoiceNumber: entry.invoiceNumber || '',
-          status: entry.status || 'uninvoiced'  // Row status: uninvoiced, invoiced, internal, free
+          status: entry.status || 'uninvoiced',  // Row status: uninvoiced, invoiced, internal, free
+          entrySource: entry.entrySource || 'imported'  // Entry source: imported or manual
         };
       });
       
