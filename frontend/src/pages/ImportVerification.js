@@ -111,9 +111,9 @@ const ImportVerification = () => {
       setOriginalValues(data.originalValues);
     }
     
-    // Load rowsPerPage preference from backend if we have a batchId
+    // Load filter preferences from backend if we have a batchId
     if (data.batchId && data.resuming) {
-      loadRowsPerPagePreference(data.batchId);
+      loadFilterPreferences(data.batchId);
     }
     
     // Save to sessionStorage in case of page refresh
