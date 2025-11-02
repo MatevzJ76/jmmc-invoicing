@@ -149,7 +149,14 @@ const ImportVerification = () => {
         c.status === 'active' || c.status === 'new' || !c.status
       );
       
-      setAllCustomers(activeAndNewCustomers);
+      // Sort alphabetically by name (a-z)
+      const sortedCustomers = activeAndNewCustomers.sort((a, b) => 
+        (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
+      );
+      
+      console.log('Loaded and sorted customers:', sortedCustomers.map(c => c.name));
+      
+      setAllCustomers(sortedCustomers);
     } catch (error) {
       console.error('Failed to load customers:', error);
       // Don't block UI if customers fail to load
