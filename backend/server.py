@@ -1758,7 +1758,8 @@ async def create_customer(
         "id": customer_id,
         "name": customer_data.get("name", "").strip(),
         "unitPrice": float(customer_data.get("unitPrice", 0)),
-        "historicalInvoices": []
+        "historicalInvoices": [],
+        "status": "active"  # Default status for new customers
     }
     
     # Add company if provided
