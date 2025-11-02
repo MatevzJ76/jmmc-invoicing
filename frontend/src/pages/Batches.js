@@ -512,30 +512,28 @@ const Batches = () => {
                               <Archive className="w-4 h-4" />
                             </Button>
                           ) : (
-                            <span className="text-xs text-gray-400">Archived</span>
+                            <span className="text-xs text-gray-400 mr-2">Archived</span>
                           )}
                           
-                          {/* Delete Button */}
-                          {batch.status !== 'archived' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => handleDeleteClick(batch, e)}
-                              className={`rounded-full ${
-                                batch.invoiceCount === 0 
-                                  ? 'text-red-600 hover:text-red-900 hover:bg-red-50' 
-                                  : 'text-gray-300 cursor-not-allowed'
-                              }`}
-                              data-testid={`delete-button-${batch.id}`}
-                              title={
-                                batch.invoiceCount === 0 
-                                  ? 'Delete batch and all time entries' 
-                                  : `Cannot delete: ${batch.invoiceCount} invoice(s) prepared`
-                              }
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
+                          {/* Delete Button - Show for all batches, active only when invoiceCount = 0 */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleDeleteClick(batch, e)}
+                            className={`rounded-full ${
+                              batch.invoiceCount === 0 
+                                ? 'text-red-600 hover:text-red-900 hover:bg-red-50' 
+                                : 'text-gray-300 cursor-not-allowed'
+                            }`}
+                            data-testid={`delete-button-${batch.id}`}
+                            title={
+                              batch.invoiceCount === 0 
+                                ? 'Delete batch and all time entries' 
+                                : `Cannot delete: ${batch.invoiceCount} invoice(s) prepared`
+                            }
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
