@@ -2365,7 +2365,8 @@ const ImportVerification = () => {
                 </Button>
                 <Button
                   onClick={handleApplyEdits}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 rounded-full"
+                  disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 rounded-full disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-400"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Save Changes
