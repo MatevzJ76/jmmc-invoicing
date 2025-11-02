@@ -1129,9 +1129,9 @@ const ImportVerification = () => {
         </div>
 
         {/* Hours by Employee Breakdown */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Hours by Employee</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-slate-200 mb-6">
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">Hours by Employee</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {(() => {
               // Calculate hours per employee
               const hoursByEmployee = {};
@@ -1145,9 +1145,9 @@ const ImportVerification = () => {
               const sorted = Object.entries(hoursByEmployee).sort((a, b) => b[1] - a[1]);
               
               return sorted.map(([employee, hours]) => (
-                <div key={employee} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">{employee}</p>
-                  <p className="text-xl font-bold text-blue-600">{hours.toFixed(2)} h</p>
+                <div key={employee} className="bg-slate-50 rounded-lg p-2 border border-slate-200">
+                  <p className="text-xs text-slate-600 mb-0.5 truncate">{employee}</p>
+                  <p className="text-base font-bold text-blue-600">{hours.toFixed(2)} h</p>
                 </div>
               ));
             })()}
