@@ -410,8 +410,27 @@ const ImportVerification = () => {
     if (!verificationData?.batchId) return;
     
     // Debounce the save to avoid too many API calls
-    const timeoutId = setTimeout(() => {
-      saveFilterPreferences();
+    const timeoutId = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const filterPreferences = {
+          searchTerm,
+          projectFilter,
+          customerFilter,
+          employeeFilter,
+          tariffFilter,
+          statusFilter,
+          rowsPerPage
+        };
+        
+        await axios.put(
+          `${BACKEND_URL}/api/batches/${verificationData.batchId}`,
+          { filterPreferences },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+      } catch (error) {
+        console.error('Failed to save filter preferences:', error);
+      }
     }, 500); // Wait 500ms after last change before saving
     
     return () => clearTimeout(timeoutId);
