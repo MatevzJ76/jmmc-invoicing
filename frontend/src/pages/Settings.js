@@ -1949,6 +1949,23 @@ ${randomFinal}`;
               />
               <p className="text-xs text-slate-500">Analyzes invoice descriptions for suspicious patterns</p>
               
+              {/* Model Selection */}
+              <div className="space-y-2 mt-3">
+                <Label htmlFor="fraud-model" className="text-sm font-medium">Model</Label>
+                <Select value={settings.fraudModel} onValueChange={(value) => updateSetting('fraudModel', value)}>
+                  <SelectTrigger id="fraud-model">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gpt-5-nano">gpt-5-nano</SelectItem>
+                    <SelectItem value="gpt-5-mini">gpt-5-mini</SelectItem>
+                    <SelectItem value="gpt-5">gpt-5</SelectItem>
+                    <SelectItem value="gpt-4o-mini">gpt-4o-mini</SelectItem>
+                  </SelectContent>
+                </Select>
+                {renderModelInfo(settings.fraudModel)}
+              </div>
+              
               {/* Test Section */}
               <div className="mt-4 pt-4 border-t border-slate-300">
                 <Label htmlFor="fraud-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
