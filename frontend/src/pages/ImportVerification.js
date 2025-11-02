@@ -2586,14 +2586,22 @@ const ImportVerification = () => {
                   {/* Employee Name - Only for manual entries */}
                   {editingRowIndex === -1 && (
                     <div className="rounded-lg p-4 border bg-blue-50 border-blue-200">
-                      <p className="text-xs font-semibold text-blue-800 mb-2">Employee Name:</p>
-                      <Input
-                        type="text"
+                      <p className="text-xs font-semibold text-blue-800 mb-2">Employee:</p>
+                      <Select
                         value={editableSuggestions.employeeName || ''}
-                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, employeeName: e.target.value })}
-                        placeholder="Enter employee name"
-                        className="bg-white border-blue-300 focus:border-blue-500"
-                      />
+                        onValueChange={(value) => setEditableSuggestions({ ...editableSuggestions, employeeName: value })}
+                      >
+                        <SelectTrigger className="bg-white border-blue-300 focus:border-blue-500">
+                          <SelectValue placeholder="Select employee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {uniqueEmployees.map(employee => (
+                            <SelectItem key={employee} value={employee}>
+                              {employee}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
                   
