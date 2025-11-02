@@ -1567,14 +1567,27 @@ ${randomFinal}`;
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <nav className="bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/batches')} className="rounded-full">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/batches')} className="rounded-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Settings
+            </h1>
+          </div>
+          
+          {/* Save Settings Button - Top Right */}
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="rounded-full bg-blue-600 hover:bg-blue-700"
+            data-testid="save-settings-button"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {saving ? 'Saving...' : 'Save Settings'}
           </Button>
-          <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Settings
-          </h1>
         </div>
       </nav>
 
