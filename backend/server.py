@@ -3157,17 +3157,40 @@ async def issue_invoice(invoice_id: str, current_user: User = Depends(get_curren
 
 @api_router.delete("/invoices/{invoice_id}")
 async def delete_invoice(invoice_id: str, current_user: User = Depends(get_current_user)):
-    """Soft delete invoice (change status to deleted)"""
+    """Completely delete invoice and its lines from database"""
     invoice = await db.invoices.find_one({"id": invoice_id})
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
     
-    await db.invoices.update_one(
-        {"id": invoice_id},
-        {"$set": {"status": "deleted"}}
-    )
+    # Count lines before deletion for audit
+    lines_count = await db.invoiceLines.count_documents({"invoiceId": invoice_id})
     
-    return {"message": "Invoice deleted (status set to deleted)"}
+    # Delete all invoice lines first
+    await db.invoiceLines.delete_many({"invoiceId": invoice_id})
+    
+    # Delete the invoice itself
+    await db.invoices.delete_one({"id": invoice_id})
+    
+    # Audit event
+    await db.auditEvents.insert_one({
+        "id": str(uuid.uuid4()),
+        "actorId": current_user.email,
+        "action": "delete_invoice",
+        "entity": "Invoice",
+        "entityId": invoice_id,
+        "metadata": {
+            "customerName": invoice.get("customerName", "Unknown"),
+            "total": invoice.get("total", 0),
+            "linesDeleted": lines_count,
+            "batchId": invoice.get("batchId")
+        },
+        "at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "message": "Invoice completely deleted",
+        "linesDeleted": lines_count
+    }
 
 
     return {"message": "Invoice updated"}
