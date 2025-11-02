@@ -1633,6 +1633,10 @@ const ImportVerification = () => {
                       rowBgClass = 'bg-gradient-to-r from-green-100 to-emerald-100 border-l-4 border-green-500 opacity-85';
                       statusIcon = '✓';
                       statusTitle = 'Already invoiced';
+                    } else if (rowStatus === 'ready') {
+                      rowBgClass = 'bg-gradient-to-r from-emerald-50 to-green-50 border-l-4 border-emerald-400';
+                      statusIcon = 'OK';
+                      statusTitle = 'Ready - verified and approved';
                     } else if (rowStatus === 'internal') {
                       rowBgClass = 'bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-400';
                       statusIcon = '🏢';
