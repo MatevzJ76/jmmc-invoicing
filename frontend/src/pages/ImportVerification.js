@@ -143,6 +143,27 @@ const ImportVerification = () => {
     }
   };
   
+  const loadRowsPerPagePreference = async (batchId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/batches/${batchId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const batchData = response.data;
+      
+      console.log('Loading rowsPerPage preference from batch:', batchData.rowsPerPage, 'Type:', typeof batchData.rowsPerPage);
+      if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
+        setRowsPerPage(batchData.rowsPerPage);
+        console.log('Set rowsPerPage to:', batchData.rowsPerPage);
+      } else {
+        console.log('No rowsPerPage in batch, keeping default 100');
+      }
+    } catch (error) {
+      console.error('Failed to load rowsPerPage preference:', error);
+      // Don't block - just use default
+    }
+  };
+  
   const autoSaveAsInProgress = async (data) => {
     try {
       const token = localStorage.getItem('access_token');
