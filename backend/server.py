@@ -1070,6 +1070,216 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
         logger.error(f"AI verification error: {str(e)}")
         return {"results": {}, "message": f"AI verification error: {str(e)}"}
 
+
+@api_router.post("/batches/{batch_id}/run-ai-prompts")
+async def run_ai_prompts_on_entries(
+    batch_id: str,
+    entry_ids: List[str],
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Run all AI prompts (Grammar, Fraud, GDPR, Verification) consecutively on selected time entries.
+    Returns suggestions for each entry that the user can review and apply.
+    """
+    import asyncio
+    
+    # Get user's AI settings
+    user_settings = await db.aiSettings.find_one({"userId": current_user.email})
+    
+    if not user_settings:
+        user_settings = AISettings().model_dump()
+    
+    # Determine API key and model
+    if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
+        api_key = user_settings["customApiKey"]
+        model = user_settings.get("customModel", "gpt-5")
+    else:
+        if not EMERGENT_LLM_KEY:
+            raise HTTPException(status_code=400, detail="AI not configured. Please configure AI settings first.")
+        api_key = EMERGENT_LLM_KEY
+        model = "gpt-5"
+    
+    # Get the prompts from settings
+    grammar_prompt = user_settings.get("grammarPrompt", "")
+    fraud_prompt = user_settings.get("fraudPrompt", "")
+    gdpr_prompt = user_settings.get("gdprPrompt", "")
+    verification_prompt = user_settings.get("verificationPrompt", "")
+    
+    # Fetch the time entries
+    entries = await db.timeEntries.find(
+        {"batchId": batch_id, "id": {"$in": entry_ids}},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    if not entries:
+        raise HTTPException(status_code=404, detail="No entries found")
+    
+    # Determine provider based on model
+    if "claude" in model.lower():
+        provider = "anthropic"
+    elif "gemini" in model.lower():
+        provider = "google"
+    else:
+        provider = "openai"
+    
+    results = []
+    
+    # Process each entry
+    for entry in entries:
+        entry_id = entry.get("id")
+        description = entry.get("notes", "")
+        hours = entry.get("hours", 0)
+        employee = entry.get("employeeName", "")
+        date = entry.get("date", "")
+        
+        # Prepare context for AI
+        entry_context = f"""
+Time Entry Details:
+- Description: {description}
+- Employee: {employee}
+- Hours: {hours}
+- Date: {date}
+"""
+        
+        entry_result = {
+            "entryId": entry_id,
+            "originalDescription": description,
+            "suggestions": {}
+        }
+        
+        try:
+            # Run all prompts consecutively
+            
+            # 1. Grammar Correction
+            if grammar_prompt:
+                try:
+                    chat = LlmChat(
+                        api_key=api_key,
+                        session_id=f"grammar-{current_user.email}-{entry_id}",
+                        system_message="You are an expert grammar and spelling corrector."
+                    ).with_model(provider, model)
+                    
+                    prompt_text = f"{grammar_prompt}\n\n{entry_context}"
+                    message = UserMessage(text=prompt_text)
+                    response = await asyncio.wait_for(chat.send_message(message), timeout=20.0)
+                    
+                    entry_result["suggestions"]["grammar"] = {
+                        "type": "grammar",
+                        "suggestion": response.strip(),
+                        "applied": False
+                    }
+                except asyncio.TimeoutError:
+                    entry_result["suggestions"]["grammar"] = {
+                        "type": "grammar",
+                        "error": "Request timed out"
+                    }
+                except Exception as e:
+                    entry_result["suggestions"]["grammar"] = {
+                        "type": "grammar",
+                        "error": str(e)
+                    }
+            
+            # 2. Fraud Detection
+            if fraud_prompt:
+                try:
+                    chat = LlmChat(
+                        api_key=api_key,
+                        session_id=f"fraud-{current_user.email}-{entry_id}",
+                        system_message="You are a fraud detection expert for time entries and invoicing."
+                    ).with_model(provider, model)
+                    
+                    prompt_text = f"{fraud_prompt}\n\n{entry_context}"
+                    message = UserMessage(text=prompt_text)
+                    response = await asyncio.wait_for(chat.send_message(message), timeout=20.0)
+                    
+                    entry_result["suggestions"]["fraud"] = {
+                        "type": "fraud",
+                        "suggestion": response.strip(),
+                        "applied": False
+                    }
+                except asyncio.TimeoutError:
+                    entry_result["suggestions"]["fraud"] = {
+                        "type": "fraud",
+                        "error": "Request timed out"
+                    }
+                except Exception as e:
+                    entry_result["suggestions"]["fraud"] = {
+                        "type": "fraud",
+                        "error": str(e)
+                    }
+            
+            # 3. GDPR Data Masking
+            if gdpr_prompt:
+                try:
+                    chat = LlmChat(
+                        api_key=api_key,
+                        session_id=f"gdpr-{current_user.email}-{entry_id}",
+                        system_message="You are a GDPR compliance expert focused on data privacy."
+                    ).with_model(provider, model)
+                    
+                    prompt_text = f"{gdpr_prompt}\n\n{entry_context}"
+                    message = UserMessage(text=prompt_text)
+                    response = await asyncio.wait_for(chat.send_message(message), timeout=20.0)
+                    
+                    entry_result["suggestions"]["gdpr"] = {
+                        "type": "gdpr",
+                        "suggestion": response.strip(),
+                        "applied": False
+                    }
+                except asyncio.TimeoutError:
+                    entry_result["suggestions"]["gdpr"] = {
+                        "type": "gdpr",
+                        "error": "Request timed out"
+                    }
+                except Exception as e:
+                    entry_result["suggestions"]["gdpr"] = {
+                        "type": "gdpr",
+                        "error": str(e)
+                    }
+            
+            # 4. Invoice Verification (General)
+            if verification_prompt:
+                try:
+                    chat = LlmChat(
+                        api_key=api_key,
+                        session_id=f"verification-{current_user.email}-{entry_id}",
+                        system_message="You are a general verification expert for time entry data quality."
+                    ).with_model(provider, model)
+                    
+                    prompt_text = f"{verification_prompt}\n\n{entry_context}"
+                    message = UserMessage(text=prompt_text)
+                    response = await asyncio.wait_for(chat.send_message(message), timeout=20.0)
+                    
+                    entry_result["suggestions"]["verification"] = {
+                        "type": "verification",
+                        "suggestion": response.strip(),
+                        "applied": False
+                    }
+                except asyncio.TimeoutError:
+                    entry_result["suggestions"]["verification"] = {
+                        "type": "verification",
+                        "error": "Request timed out"
+                    }
+                except Exception as e:
+                    entry_result["suggestions"]["verification"] = {
+                        "type": "verification",
+                        "error": str(e)
+                    }
+            
+            results.append(entry_result)
+            
+        except Exception as e:
+            logger.error(f"Error processing entry {entry_id}: {str(e)}")
+            entry_result["error"] = str(e)
+            results.append(entry_result)
+    
+    return {
+        "success": True,
+        "results": results,
+        "total_entries": len(entries),
+        "message": f"AI prompts executed on {len(entries)} entries"
+    }
+
 @api_router.post("/imports/verify-preview")
 async def verify_import_preview(rows: List[dict], current_user: User = Depends(get_current_user)):
     """Run AI verification on import preview rows before creating batch"""
