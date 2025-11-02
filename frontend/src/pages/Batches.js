@@ -161,27 +161,6 @@ const Batches = () => {
     }
   };
 
-  const filterBatches = useCallback(() => {
-    let filtered = [...batches];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(batch =>
-        batch.filename.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(batch => batch.status === statusFilter);
-    }
-
-    // Apply sorting
-    filtered = sortBatches(filtered);
-
-    setFilteredBatches(filtered);
-  }, [batches, searchTerm, statusFilter, sortBatches]);
-
   const handleArchive = async (batchId, e) => {
     e.stopPropagation(); // Prevent row click
     
