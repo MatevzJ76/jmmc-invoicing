@@ -3196,13 +3196,33 @@ async def issue_invoice(invoice_id: str, current_user: User = Depends(get_curren
 
 @api_router.delete("/invoices/{invoice_id}")
 async def delete_invoice(invoice_id: str, current_user: User = Depends(get_current_user)):
-    """Completely delete invoice and its lines from database"""
+    """Completely delete invoice and its lines from database, and reset time entries to uninvoiced"""
     invoice = await db.invoices.find_one({"id": invoice_id})
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
     
+    batch_id = invoice.get("batchId")
+    customer_id = invoice.get("customerId")
+    
     # Count lines before deletion for audit
     lines_count = await db.invoiceLines.count_documents({"invoiceId": invoice_id})
+    
+    # Find all time entries that were invoiced for this customer in this batch
+    # These are the entries that were used to create this invoice
+    # We need to set their status back to "uninvoiced"
+    if batch_id and customer_id:
+        # Update all time entries for this batch+customer that are "invoiced" back to "uninvoiced"
+        update_result = await db.timeEntries.update_many(
+            {
+                "batchId": batch_id,
+                "customerId": customer_id,
+                "status": "invoiced"
+            },
+            {"$set": {"status": "uninvoiced"}}
+        )
+        time_entries_updated = update_result.modified_count
+    else:
+        time_entries_updated = 0
     
     # Delete all invoice lines first
     await db.invoiceLines.delete_many({"invoiceId": invoice_id})
@@ -3221,14 +3241,16 @@ async def delete_invoice(invoice_id: str, current_user: User = Depends(get_curre
             "customerName": invoice.get("customerName", "Unknown"),
             "total": invoice.get("total", 0),
             "linesDeleted": lines_count,
-            "batchId": invoice.get("batchId")
+            "timeEntriesResetToUninvoiced": time_entries_updated,
+            "batchId": batch_id
         },
         "at": datetime.now(timezone.utc).isoformat()
     })
     
     return {
         "message": "Invoice completely deleted",
-        "linesDeleted": lines_count
+        "linesDeleted": lines_count,
+        "timeEntriesResetToUninvoiced": time_entries_updated
     }
 
 
