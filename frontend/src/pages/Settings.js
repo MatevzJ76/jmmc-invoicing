@@ -1203,6 +1203,7 @@ const Settings = () => {
   const [eracuniTestResult, setEracuniTestResult] = useState(null);
   const [aiTestPrompt, setAiTestPrompt] = useState('');
   const [showEracuniCreds, setShowEracuniCreds] = useState(false);
+  const [showOpenAiCreds, setShowOpenAiCreds] = useState(false); // Track OpenAI credentials visibility
   const [showDtmPrompt, setShowDtmPrompt] = useState(false); // Track 2xDTM prompt visibility
   const [showApiDebugModal, setShowApiDebugModal] = useState(false);
   const [apiDebugData, setApiDebugData] = useState(null);
