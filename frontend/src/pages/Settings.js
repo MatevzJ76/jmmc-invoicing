@@ -2012,6 +2012,23 @@ ${randomFinal}`;
               />
               <p className="text-xs text-slate-500">Identifies and masks personal data in invoice text</p>
               
+              {/* Model Selection */}
+              <div className="space-y-2 mt-3">
+                <Label htmlFor="gdpr-model" className="text-sm font-medium">Model</Label>
+                <Select value={settings.gdprModel} onValueChange={(value) => updateSetting('gdprModel', value)}>
+                  <SelectTrigger id="gdpr-model">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gpt-5-nano">gpt-5-nano</SelectItem>
+                    <SelectItem value="gpt-5-mini">gpt-5-mini</SelectItem>
+                    <SelectItem value="gpt-5">gpt-5</SelectItem>
+                    <SelectItem value="gpt-4o-mini">gpt-4o-mini</SelectItem>
+                  </SelectContent>
+                </Select>
+                {renderModelInfo(settings.gdprModel)}
+              </div>
+              
               {/* Test Section */}
               <div className="mt-4 pt-4 border-t border-slate-300">
                 <Label htmlFor="gdpr-test" className="text-sm font-medium mb-2 block">Test Input:</Label>
