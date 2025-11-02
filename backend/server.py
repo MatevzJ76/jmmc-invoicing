@@ -1476,7 +1476,7 @@ async def update_batch(batch_id: str, update_data: dict, current_user: User = De
         raise HTTPException(status_code=404, detail="Batch not found")
     
     # Update allowed fields
-    allowed_fields = ["title", "invoiceDate", "periodFrom", "periodTo", "dueDate", "status", "rowsPerPage"]
+    allowed_fields = ["title", "invoiceDate", "periodFrom", "periodTo", "dueDate", "status", "rowsPerPage", "filterPreferences"]
     update_fields = {k: v for k, v in update_data.items() if k in allowed_fields}
     
     if update_fields:
