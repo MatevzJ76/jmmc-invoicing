@@ -441,7 +441,10 @@ const ImportVerification = () => {
           statusFilter,
           rowsPerPage,
           hoursBreakdownExpanded,
-          importDetailsExpanded
+          importDetailsExpanded,
+          customerAnalyticsExpanded,
+          historicalInvoicesExpanded,
+          selectedCustomerForAnalytics
         };
         
         await axios.put(
