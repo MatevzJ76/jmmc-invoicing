@@ -460,6 +460,81 @@ const ImportVerification = () => {
     return () => clearTimeout(timeoutId);
   }, [searchTerm, customerFilter, employeeFilter, tariffFilter, statusFilter, rowsPerPage, hoursBreakdownExpanded, importDetailsExpanded, customerAnalyticsExpanded, historicalInvoicesExpanded, selectedCustomerForAnalytics, verificationData?.batchId]);
 
+  // Load customer data (settings + historical invoices)
+  const loadCustomerData = async (customerId) => {
+    setLoadingCustomerData(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${BACKEND_URL}/api/customers/${customerId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setCustomerSettings(response.data);
+      
+      // Filter historical invoices to last 12 months
+      const now = new Date();
+      const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 12, 1);
+      
+      const recentInvoices = (response.data.historicalInvoices || [])
+        .filter(inv => {
+          if (!inv.date) return false;
+          const invDate = new Date(inv.date);
+          return invDate >= twelveMonthsAgo;
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      setHistoricalInvoices(recentInvoices);
+    } catch (error) {
+      console.error('Failed to load customer data:', error);
+      toast.error('Failed to load customer data');
+      setCustomerSettings(null);
+      setHistoricalInvoices([]);
+    } finally {
+      setLoadingCustomerData(false);
+    }
+  };
+
+  // Navigate to next customer
+  const handleNextCustomer = () => {
+    if (!allCustomers || allCustomers.length === 0) return;
+    
+    const currentIndex = selectedCustomerForAnalytics 
+      ? allCustomers.findIndex(c => c.id === selectedCustomerForAnalytics)
+      : -1;
+    
+    const nextIndex = (currentIndex + 1) % allCustomers.length;
+    const nextCustomer = allCustomers[nextIndex];
+    
+    setSelectedCustomerForAnalytics(nextCustomer.id);
+    setCustomerFilter(nextCustomer.name); // Update customer filter
+    loadCustomerData(nextCustomer.id);
+  };
+
+  // Navigate to previous customer
+  const handlePreviousCustomer = () => {
+    if (!allCustomers || allCustomers.length === 0) return;
+    
+    const currentIndex = selectedCustomerForAnalytics 
+      ? allCustomers.findIndex(c => c.id === selectedCustomerForAnalytics)
+      : -1;
+    
+    const prevIndex = currentIndex <= 0 ? allCustomers.length - 1 : currentIndex - 1;
+    const prevCustomer = allCustomers[prevIndex];
+    
+    setSelectedCustomerForAnalytics(prevCustomer.id);
+    setCustomerFilter(prevCustomer.name); // Update customer filter
+    loadCustomerData(prevCustomer.id);
+  };
+
+  // Initialize with first customer when allCustomers loads
+  useEffect(() => {
+    if (allCustomers && allCustomers.length > 0 && !selectedCustomerForAnalytics) {
+      const firstCustomer = allCustomers[0];
+      setSelectedCustomerForAnalytics(firstCustomer.id);
+      loadCustomerData(firstCustomer.id);
+    }
+  }, [allCustomers]);
+
   const handleProceedClick = () => {
     // Show confirmation dialog
     setShowConfirmation(true);
