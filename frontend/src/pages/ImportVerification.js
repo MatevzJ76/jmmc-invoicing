@@ -360,6 +360,15 @@ const ImportVerification = () => {
         if (prefs.rowsPerPage !== undefined) setRowsPerPage(prefs.rowsPerPage);
         if (prefs.hoursBreakdownExpanded !== undefined) setHoursBreakdownExpanded(prefs.hoursBreakdownExpanded);
         if (prefs.importDetailsExpanded !== undefined) setImportDetailsExpanded(prefs.importDetailsExpanded);
+        if (prefs.customerAnalyticsExpanded !== undefined) setCustomerAnalyticsExpanded(prefs.customerAnalyticsExpanded);
+        if (prefs.historicalInvoicesExpanded !== undefined) setHistoricalInvoicesExpanded(prefs.historicalInvoicesExpanded);
+        if (prefs.selectedCustomerForAnalytics !== undefined) {
+          setSelectedCustomerForAnalytics(prefs.selectedCustomerForAnalytics);
+          // Load customer data after setting the customer
+          if (prefs.selectedCustomerForAnalytics) {
+            loadCustomerData(prefs.selectedCustomerForAnalytics);
+          }
+        }
       }
       // Legacy support: load old rowsPerPage field
       else if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
