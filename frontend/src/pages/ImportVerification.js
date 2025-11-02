@@ -541,12 +541,20 @@ const ImportVerification = () => {
 
   // Initialize with first customer when allCustomers loads
   useEffect(() => {
+    console.log('Customer initialization check:', {
+      hasCustomers: allCustomers && allCustomers.length > 0,
+      customersCount: allCustomers?.length,
+      selectedCustomer: selectedCustomerForAnalytics
+    });
+    
     if (allCustomers && allCustomers.length > 0 && !selectedCustomerForAnalytics) {
       const firstCustomer = allCustomers[0];
+      console.log('Auto-selecting first customer:', firstCustomer.name, firstCustomer.id);
       setSelectedCustomerForAnalytics(firstCustomer.id);
       loadCustomerData(firstCustomer.id);
     }
-  }, [allCustomers, selectedCustomerForAnalytics, loadCustomerData]);
+  }, [allCustomers, selectedCustomerForAnalytics]);
+
 
   const handleProceedClick = () => {
     // Show confirmation dialog
