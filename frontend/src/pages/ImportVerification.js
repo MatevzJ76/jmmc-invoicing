@@ -1988,7 +1988,11 @@ const ImportVerification = () => {
                   {originalValues[editingRowIndex] ? 'Corrected Values (Editable)' : 'Current Values (Editable)'}
                 </h4>
                 <div className="space-y-3">
-                  <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                  <div className={`rounded-lg p-4 border ${
+                    (verificationData.rows[editingRowIndex]?.status === 'invoiced') 
+                      ? 'bg-slate-100 border-slate-300 opacity-60' 
+                      : 'bg-orange-50 border-orange-200'
+                  }`}>
                     <p className="text-xs font-semibold text-orange-800 mb-2">Customer:</p>
                     <Select 
                       value={editableSuggestions.customerId} 
@@ -2001,8 +2005,9 @@ const ImportVerification = () => {
                         });
                         setCustomerSearchTerm(''); // Reset search on selection
                       }}
+                      disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                     >
-                      <SelectTrigger className="bg-white border-orange-300 focus:border-orange-500">
+                      <SelectTrigger className="bg-white border-orange-300 focus:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed">
                         <SelectValue placeholder="Select customer" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
