@@ -1249,6 +1249,8 @@ const Settings = () => {
     verificationModel: 'gpt-5', // Deep reasoning
     
     dtmPrompt: 'Do the magic on this data. Enhance, optimize, and improve it in the best way possible.',
+    dtmModel: 'gpt-5', // Deep reasoning for magic
+    
     eracuniEndpoint: 'https://e-racuni.com/WebServicesSI/API',
     eracuniUsername: '',
     eracuniSecretKey: '',
