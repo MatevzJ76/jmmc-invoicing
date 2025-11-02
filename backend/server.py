@@ -903,8 +903,8 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
             if 'manuallyEdited' in update_data:
                 update_fields['manuallyEdited'] = bool(update_data['manuallyEdited'])
             if 'status' in update_data:
-                # Allow changing status: uninvoiced, invoiced, internal, free, ready
-                allowed_statuses = ['uninvoiced', 'invoiced', 'internal', 'free', 'ready']
+                # Allow changing status: uninvoiced, invoiced, internal, free, forfait, ready
+                allowed_statuses = ['uninvoiced', 'invoiced', 'internal', 'free', 'forfait', 'ready']
                 if update_data['status'] in allowed_statuses:
                     update_fields['status'] = update_data['status']
             
