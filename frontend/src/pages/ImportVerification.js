@@ -1458,6 +1458,21 @@ const ImportVerification = () => {
             </div>
           </div>
           
+          {/* Row Count Display */}
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <span className="text-slate-600">
+              Showing <span className="font-semibold text-slate-800">{showingFrom}-{showingTo}</span> of{' '}
+              <span className="font-semibold text-slate-800">{totalFiltered}</span> rows
+              {totalFiltered !== verificationData.rows.length && (
+                <span className="text-slate-500"> (filtered from {verificationData.rows.length} total)</span>
+              )}
+            </span>
+            {displayCount < totalFiltered && (
+              <span className="text-xs text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
+                ⚠️ Showing first {displayCount} rows only - adjust "Rows per page" to see more
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Data Table */}
