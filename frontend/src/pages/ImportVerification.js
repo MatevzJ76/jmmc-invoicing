@@ -143,7 +143,7 @@ const ImportVerification = () => {
     }
   };
   
-  const loadRowsPerPagePreference = async (batchId) => {
+  const loadFilterPreferences = async (batchId) => {
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.get(`${BACKEND_URL}/api/batches/${batchId}`, {
@@ -151,12 +151,24 @@ const ImportVerification = () => {
       });
       const batchData = response.data;
       
-      if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
+      // Load filterPreferences object if available
+      if (batchData.filterPreferences) {
+        const prefs = batchData.filterPreferences;
+        if (prefs.searchTerm !== undefined) setSearchTerm(prefs.searchTerm);
+        if (prefs.projectFilter !== undefined) setProjectFilter(prefs.projectFilter);
+        if (prefs.customerFilter !== undefined) setCustomerFilter(prefs.customerFilter);
+        if (prefs.employeeFilter !== undefined) setEmployeeFilter(prefs.employeeFilter);
+        if (prefs.tariffFilter !== undefined) setTariffFilter(prefs.tariffFilter);
+        if (prefs.statusFilter !== undefined) setStatusFilter(prefs.statusFilter);
+        if (prefs.rowsPerPage !== undefined) setRowsPerPage(prefs.rowsPerPage);
+      }
+      // Legacy support: load old rowsPerPage field if filterPreferences doesn't exist
+      else if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
         setRowsPerPage(batchData.rowsPerPage);
       }
     } catch (error) {
-      console.error('Failed to load rowsPerPage preference:', error);
-      // Don't block - just use default
+      console.error('Failed to load filter preferences:', error);
+      // Don't block - just use defaults
     }
   };
   
