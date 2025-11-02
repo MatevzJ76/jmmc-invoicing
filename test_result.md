@@ -941,15 +941,18 @@ user_problem_statement: "Add delete functionality to Monthly Batches. Delete ico
 backend:
   - task: "DELETE /api/batches/{batch_id} - Delete batch and time entries"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "NEW ENDPOINT CREATED (lines 1533-1577): DELETE /api/batches/{batch_id} endpoint added. Logic: (1) Checks if batch exists, (2) Counts invoices for batch, (3) If invoices > 0, returns HTTP 400 error with message 'Cannot delete batch with X invoice(s)', (4) If invoices = 0, deletes all time entries for batch using db.timeEntries.delete_many(), (5) Deletes the batch itself using db.importBatches.delete_one(), (6) Creates audit event with metadata (batchTitle, timeEntriesDeleted, status), (7) Returns success message with count of deleted time entries. Endpoint prevents accidental deletion of batches with invoices. Ready for backend testing."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE BACKEND TESTING COMPLETED - ALL TESTS PASSED (4/4). Test Results: (1) ✅ TEST CASE 1 - Delete Batch with 0 Invoices (SUCCESS): Created test batch with saveAsProgress=true (status='in progress', 0 invoices, 3 time entries). Called DELETE /api/batches/{batch_id}. Response: HTTP 200 with correct structure {message, batchTitle, timeEntriesDeleted: 3, invoicesDeleted: 0}. Verified batch deleted from database (GET returns 404). Verified all 3 time entries deleted (GET /api/batches/{batch_id}/time-entries returns 404). Deletion successful. (2) ✅ TEST CASE 2 - Delete Batch with Invoices (FAIL as expected): Found existing batch with 572 invoices. Called DELETE /api/batches/{batch_id}. Response: HTTP 400 with error message 'Cannot delete batch with 572 invoice(s). Please delete all invoices first or use Archive instead.' Error message correctly mentions invoice count. Verified batch NOT deleted (still exists in database). Protection working correctly. (3) ✅ TEST CASE 3 - Delete Non-existent Batch (FAIL as expected): Called DELETE with fake batch ID '00000000-0000-0000-0000-000000000000'. Response: HTTP 404 with error 'Batch not found'. Error handling working correctly. (4) ✅ AUDIT TRAIL VERIFICATION: Verified audit event created in auditEvents collection with correct structure: action='delete_batch', entityId=batch_id, metadata={batchTitle: 'DELETE TEST - Zero Invoices Batch', timeEntriesDeleted: 3, status: 'in progress'}, actorId='admin@local', timestamp present. Audit trail working correctly (lines 1563-1575 in server.py). CONCLUSION: DELETE batch functionality is FULLY FUNCTIONAL and PRODUCTION-READY. All success criteria met: ✅ DELETE succeeds when invoices=0, ✅ DELETE fails when invoices>0 with clear error message, ✅ DELETE fails for non-existent batch with 404, ✅ Batch and all time entries removed from database, ✅ Audit event created with correct metadata, ✅ Response includes deleted counts."
 
 frontend:
   - task: "Batches.js - Add delete icon and confirmation modal"
