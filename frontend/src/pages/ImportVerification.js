@@ -43,6 +43,7 @@ const ImportVerification = () => {
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [tariffFilter, setTariffFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all'); // New: invoiced/uninvoiced filter
+  const [rowsPerPage, setRowsPerPage] = useState(100); // Rows per page limit (default: 100)
   const [filteredRows, setFilteredRows] = useState([]);
   
   // Customer dropdown open state
