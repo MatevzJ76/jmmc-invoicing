@@ -1378,16 +1378,18 @@ const ImportVerification = () => {
               />
             </div>
             
-            {/* Project Filter */}
-            <Select value={projectFilter} onValueChange={setProjectFilter}>
+            {/* Status Filter - All row statuses */}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="All Projects" />
+                <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {uniqueProjects.map(project => (
-                  <SelectItem key={project} value={project}>{project}</SelectItem>
-                ))}
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="uninvoiced">Uninvoiced</SelectItem>
+                <SelectItem value="ready">Ready</SelectItem>
+                <SelectItem value="internal">Internal</SelectItem>
+                <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="invoiced">Invoiced</SelectItem>
               </SelectContent>
             </Select>
             
