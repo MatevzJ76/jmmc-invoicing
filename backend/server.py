@@ -1231,7 +1231,7 @@ Time Entry Details:
                         api_key=api_key,
                         session_id=f"gdpr-{current_user.email}-{entry_id}",
                         system_message="You are a GDPR compliance expert focused on data privacy."
-                    ).with_model(provider, model)
+                    ).with_model(get_provider(gdpr_model), gdpr_model)
                     
                     prompt_text = f"{gdpr_prompt}\n\n{entry_context}"
                     message = UserMessage(text=prompt_text)
