@@ -1234,11 +1234,20 @@ const Settings = () => {
   const [settings, setSettings] = useState({
     aiProvider: 'emergent',
     customApiKey: '',
-    customModel: 'gpt-5',
+    customModel: 'gpt-5', // For testing only
+    
     grammarPrompt: 'Correct any grammar errors, spelling mistakes, and improve the clarity of this time entry description. Return ONLY the corrected text without any explanations, comments, or additional formatting.',
+    grammarModel: 'gpt-5-nano', // Fast, low-cost
+    
     fraudPrompt: 'Analyze this time entry for fraud indicators: 1) Suspicious hours (e.g., 20 hours claimed for a simple 1-hour task), 2) Vague or generic descriptions (e.g., "work done", "various tasks"), 3) Unusual patterns or inconsistencies. If suspicious, explain the concern. If normal, respond with "No issues detected".',
+    fraudModel: 'gpt-5-mini', // Balanced
+    
     gdprPrompt: 'Check this time entry description for GDPR compliance. Identify any personal data such as: employee full names (should be initials only), personal email addresses, phone numbers, or other identifying information. If found, return the text with sensitive data replaced by initials or [MASKED]. If compliant, return the original text unchanged.',
+    gdprModel: 'gpt-5-mini', // Balanced
+    
     verificationPrompt: 'Perform a general verification check on this time entry. Look for: 1) Data quality issues, 2) Missing information, 3) Formatting problems, 4) Business logic violations, 5) Any other anomalies. Provide specific feedback on what needs attention, or respond with "Entry looks good" if no issues found.',
+    verificationModel: 'gpt-5', // Deep reasoning
+    
     dtmPrompt: 'Do the magic on this data. Enhance, optimize, and improve it in the best way possible.',
     eracuniEndpoint: 'https://e-racuni.com/WebServicesSI/API',
     eracuniUsername: '',
