@@ -398,15 +398,13 @@ const ImportVerification = () => {
       filtered = filtered.filter(row => row.tariff === tariffFilter);
     }
     
-    // Status filter (invoiced/uninvoiced)
-    if (statusFilter === 'invoiced') {
-      filtered = filtered.filter(row => row.invoiced === true);
-    } else if (statusFilter === 'uninvoiced') {
-      filtered = filtered.filter(row => row.invoiced !== true);
+    // Status filter - filter by specific row status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(row => row.status === statusFilter);
     }
     
     setFilteredRows(filtered);
-  }, [verificationData, searchTerm, projectFilter, customerFilter, employeeFilter, tariffFilter, statusFilter]);
+  }, [verificationData, searchTerm, customerFilter, employeeFilter, tariffFilter, statusFilter]);
 
   // Save filter preferences whenever they change (debounced)
   useEffect(() => {
