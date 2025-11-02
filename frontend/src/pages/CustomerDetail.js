@@ -79,20 +79,29 @@ const CustomerDetail = () => {
       const response = await axios.get(`${BACKEND_URL}/api/customers/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setCustomer(response.data);
-      const price = response.data.unitPrice || 0;
+      
+      // Ensure status defaults to 'active' if not set
+      const customerData = {
+        ...response.data,
+        status: response.data.status || 'active'
+      };
+      
+      console.log('Customer loaded with status:', customerData.status);
+      
+      setCustomer(customerData);
+      const price = customerData.unitPrice || 0;
       setUnitPrice(price);
       setUnitPriceDisplay(parseFloat(price).toFixed(2).replace('.', ','));
       
-      const forfaitVal = response.data.fixedForfaitValue || 0;
+      const forfaitVal = customerData.fixedForfaitValue || 0;
       setFixedForfaitValue(forfaitVal);
       setFixedForfaitDisplay(parseFloat(forfaitVal).toFixed(2).replace('.', ','));
       
-      const addressPrice = response.data.addressServiceUnitPrice || 0;
+      const addressPrice = customerData.addressServiceUnitPrice || 0;
       setAddressServicePrice(addressPrice);
       setAddressServicePriceDisplay(parseFloat(addressPrice).toFixed(2).replace('.', ','));
       
-      setSelectedCompanyId(response.data.companyId || '');
+      setSelectedCompanyId(customerData.companyId || '');
     } catch (error) {
       toast.error('Failed to load customer');
       console.error(error);
