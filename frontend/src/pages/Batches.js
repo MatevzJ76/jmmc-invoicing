@@ -181,6 +181,25 @@ const Batches = () => {
     }
   };
 
+  const handleUnarchive = async (batchId, e) => {
+    e.stopPropagation(); // Prevent row click
+    
+    if (!window.confirm('Unarchive this batch? It will be restored to active status.')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.post(`${BACKEND_URL}/api/batches/${batchId}/unarchive`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(`Batch unarchived (Status: ${response.data.newStatus})`);
+      loadBatches(); // Reload to reflect changes
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to unarchive batch');
+    }
+  };
+
   const handleDeleteClick = (batch, e) => {
     e.stopPropagation(); // Prevent row click
     
