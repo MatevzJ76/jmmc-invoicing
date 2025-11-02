@@ -1646,11 +1646,6 @@ ${randomFinal}`;
                       <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
                       <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
                       <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                      <SelectItem value="claude-sonnet-4-20250514">Claude Sonnet 4</SelectItem>
-                      <SelectItem value="claude-opus-4-20250514">Claude Opus 4</SelectItem>
-                      <SelectItem value="claude-haiku-4-20250514">Claude Haiku 4</SelectItem>
-                      <SelectItem value="gemini-2.0-flash-exp">Gemini 2.0 Flash</SelectItem>
-                      <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
