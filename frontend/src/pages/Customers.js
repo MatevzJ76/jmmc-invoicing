@@ -372,6 +372,7 @@ const Customers = () => {
               >
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
+                <option value="new">New</option>
                 <option value="inactive">Inactive</option>
               </select>
             </div>
