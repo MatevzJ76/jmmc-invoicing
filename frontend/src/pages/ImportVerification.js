@@ -2079,13 +2079,18 @@ const ImportVerification = () => {
                     </Select>
                   </div>
                   
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className={`rounded-lg p-4 border ${
+                    (verificationData.rows[editingRowIndex]?.status === 'invoiced') 
+                      ? 'bg-slate-100 border-slate-300 opacity-60' 
+                      : 'bg-blue-50 border-blue-200'
+                  }`}>
                     <p className="text-xs font-semibold text-blue-800 mb-2">Description:</p>
                     <Textarea
                       value={editableSuggestions.description}
                       onChange={(e) => setEditableSuggestions({ ...editableSuggestions, description: e.target.value })}
-                      className="text-sm bg-white border-blue-300 focus:border-blue-500 min-h-[80px]"
+                      className="text-sm bg-white border-blue-300 focus:border-blue-500 min-h-[80px] disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="Edit the description..."
+                      disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
                     />
                   </div>
                   
