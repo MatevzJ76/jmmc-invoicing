@@ -922,26 +922,21 @@ const ImportVerification = () => {
   
   const handleRowsPerPageChange = async (newValue) => {
     // Update state immediately
-    console.log('handleRowsPerPageChange called with:', newValue, 'Type:', typeof newValue);
     setRowsPerPage(newValue);
     
     // Save to backend if we have a batchId
     if (verificationData?.batchId) {
       try {
         const token = localStorage.getItem('access_token');
-        console.log('Saving rowsPerPage to backend:', newValue, 'for batch:', verificationData.batchId);
-        const response = await axios.put(
+        await axios.put(
           `${BACKEND_URL}/api/batches/${verificationData.batchId}`,
           { rowsPerPage: newValue },
           { headers: { Authorization: `Bearer ${token}` }}
         );
-        console.log('Backend save response:', response.data);
       } catch (error) {
         console.error('Failed to save rows per page preference:', error);
         // Don't show error toast - this is a minor preference save
       }
-    } else {
-      console.log('No batchId, skipping backend save');
     }
   };
 
