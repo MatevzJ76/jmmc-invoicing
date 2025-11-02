@@ -104,6 +104,10 @@ const Customers = () => {
           aValue = (a.name || '').toLowerCase();
           bValue = (b.name || '').toLowerCase();
           break;
+        case 'status':
+          aValue = (a.status || 'active').toLowerCase();
+          bValue = (b.status || 'active').toLowerCase();
+          break;
         case 'company':
           aValue = (a.companyName || '').toLowerCase();
           bValue = (b.companyName || '').toLowerCase();
