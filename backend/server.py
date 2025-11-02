@@ -583,8 +583,15 @@ async def import_xlsx(
             if current_customer:
                 customer = await db.customers.find_one({"name": current_customer})
                 if not customer:
+                    # Auto-create new customer with "new" status during import
                     customer_id = str(uuid.uuid4())
-                    await db.customers.insert_one({"id": customer_id, "name": current_customer})
+                    await db.customers.insert_one({
+                        "id": customer_id, 
+                        "name": current_customer,
+                        "status": "new",  # Flag as new customer
+                        "unitPrice": 0,
+                        "historicalInvoices": []
+                    })
                 else:
                     customer_id = customer["id"]
             # If no customer, customer_id remains None
