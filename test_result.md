@@ -599,6 +599,42 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TESTING COMPLETED - ALL TESTS PASSED (5/5). Test Results: (1) ✅ Create batch with saveAsProgress=true: Successfully created test batch with 5 time entries. Batch status correctly set to 'in progress'. Verified batch details and time entries were created in database. (2) ✅ Get time entry IDs: Successfully retrieved 5 time entries from batch. Extracted first 3 entry IDs for filtered composition testing. Entry details verified (customer names, employee names, hours, values). (3) ✅ Compose invoices for filtered entries: Called POST /api/invoices/compose-filtered with payload {batchId, entryIds: [3 IDs]}. Endpoint returned HTTP 200 with correct response structure: {invoiceIds: [2 invoice IDs], entriesProcessed: 3}. Verified response has invoiceIds array and entriesProcessed count matches input. (4) ✅ Verify invoices created in database: Retrieved 2 invoices from batch via GET /api/batches/{batch_id}/invoices. All invoice IDs from compose response found in database. Invoice 1: JMMC HP d.o.o., Total: €382.5, Status: imported, 2 lines. Invoice 2: JMMC Finance d.o.o., Total: €180.0, Status: imported, 1 line. All invoices have totals > 0, all required fields present (id, batchId, customerId, customerName, invoiceDate, periodFrom, periodTo, dueDate, status, total). All invoice lines have correct structure (id, invoiceId, description, quantity, unitPrice, amount). (5) ✅ Batch status updated: Verified batch status changed from 'in progress' to 'composed' after invoice composition. CONCLUSION: Filtered invoice composition flow is FULLY FUNCTIONAL and production-ready. The endpoint correctly: (a) Accepts {batchId, entryIds} payload, (b) Creates invoices only for specified time entry IDs (not all entries in batch), (c) Groups entries by customer and creates separate invoices, (d) Calculates invoice totals correctly, (e) Persists invoices and lines to database, (f) Updates batch status to 'composed', (g) Returns correct response with invoiceIds and entriesProcessed count. Feature is working as designed and ready for production use."
 
+  - task: "GET /api/settings/ai - Return all AI settings including 4 prompts"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TEST PASSED: GET /api/settings/ai endpoint working correctly. Tested with admin@local credentials. Endpoint returns all required AI settings fields including the 4 enhanced prompts: (1) ✅ grammarPrompt - Present and populated (70 chars). (2) ✅ fraudPrompt - Present and populated (59 chars). (3) ✅ gdprPrompt - Present and populated (67 chars). (4) ✅ verificationPrompt - Present and populated (63 chars). Additional fields also returned correctly: aiProvider (emergent), customApiKey (null), customModel (gpt-5), eracuniEndpoint, eracuniUsername. Response structure matches AISettings model (lines 128-141 in server.py). Endpoint implementation at lines 3189-3198. Returns default settings if user has no saved settings, otherwise returns user's saved settings from aiSettings collection. All fields properly excluded (_id, userId). CONCLUSION: Endpoint is PRODUCTION-READY and working as designed."
+
+  - task: "POST /api/settings/ai - Save and persist AI settings"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TEST PASSED: POST /api/settings/ai endpoint working correctly. Tested complete save and persistence workflow: (1) ✅ Settings Update - Successfully updated AI settings with custom test prompts (grammarPrompt, fraudPrompt, gdprPrompt, verificationPrompt). Endpoint returned HTTP 200 with message 'Settings saved successfully'. (2) ✅ Persistence Verification - Retrieved settings via GET /api/settings/ai immediately after update. All 4 custom prompts persisted correctly in database and matched expected values exactly. (3) ✅ Database Storage - Settings stored in aiSettings collection with userId=admin@local, updatedAt timestamp added automatically. Endpoint uses upsert operation (lines 3207-3211 in server.py) to create or update settings document. CONCLUSION: Settings persistence is FULLY FUNCTIONAL. The endpoint correctly: saves all AISettings fields to database, associates settings with current user (userId), adds updatedAt timestamp, uses upsert to handle both create and update cases, returns success message. Feature is PRODUCTION-READY."
+
+  - task: "POST /api/batches/{batch_id}/run-ai-prompts - NEW AI Prompts endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TEST PASSED: POST /api/batches/{batch_id}/run-ai-prompts endpoint working correctly. This is the NEW endpoint that runs all 4 AI prompts consecutively on selected time entries. Test Results: (1) ✅ Endpoint Accepts Correct Input - Endpoint accepts batch_id as path parameter and entry_ids as JSON array in request body (List[str]). Tested with batch ID ebfd35f1-8f39-4f1e-8703-039344c6deae and entry ID e64b2a98-6ecd-437b-8562-1b67dcaf894b. (2) ✅ Response Structure Correct - Response includes all required fields: {success: true, results: [...], total_entries: 1, message: 'AI prompts executed on 1 entries'}. (3) ✅ All 4 Prompts Execute Consecutively - Verified all 4 AI prompt types executed successfully: Grammar (corrects grammar/spelling), Fraud (analyzes for fraud indicators), GDPR (checks compliance and masks personal data), Verification (general data quality check). Each prompt returned meaningful, contextual responses (not just 'OK' or empty). (4) ✅ Entry Result Structure - Each entry result contains: entryId, originalDescription, suggestions object with 4 keys (grammar, fraud, gdpr, verification). Each suggestion has: type, suggestion (AI response text), applied (false by default). (5) ✅ AI Responses Are Meaningful - Grammar: Returned formatted entry details. Fraud: Provided detailed risk assessment (2/10 rating, identified minor issues, recommended validations). GDPR: Identified personal data (employee name), provided compliance checklist and masked versions. Verification: Assessed data quality, identified date format issue, suggested improvements. All responses were contextual and specific to the time entry content. (6) ✅ Execution Time - Endpoint took approximately 90-120 seconds for 1 entry (4 AI prompts × ~20-30 seconds each). This is expected behavior as prompts run consecutively with 20-second timeout per prompt (lines 1164, 1193, 1222, 1251 in server.py). Backend logs show 8 LiteLLM completion calls (4 prompts × 2 entries in earlier test). CONCLUSION: The NEW AI Prompts endpoint is FULLY FUNCTIONAL and PRODUCTION-READY. Implementation at lines 1074-1281 in server.py. Endpoint correctly: fetches user's AI settings (or uses defaults), determines API key and model (Emergent LLM or custom OpenAI), retrieves time entries from batch, runs all 4 prompts consecutively for each entry, handles timeouts gracefully (20s per prompt), returns structured suggestions that frontend can display for user review. Feature working as designed."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
