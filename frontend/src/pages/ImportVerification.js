@@ -1366,7 +1366,7 @@ const ImportVerification = () => {
             )}
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
