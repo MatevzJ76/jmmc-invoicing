@@ -579,19 +579,38 @@ const CustomerDetail = () => {
             </h3>
             
             <div className="grid grid-cols-3 gap-6">
-              {/* Customer Status */}
-              <div>
-                <Label className="text-slate-700 mb-2 block font-medium">Customer Status</Label>
+              {/* Customer Status - Highlighted as Important */}
+              <div className="relative">
+                <div className="absolute -top-2 -right-2 z-10">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-orange-500 text-white shadow-lg">
+                    IMPORTANT
+                  </span>
+                </div>
+                <Label className="text-slate-900 mb-2 block font-bold text-base">Customer Status</Label>
                 <Select 
                   value={customer?.status || 'active'}
                   onValueChange={(value) => handleFieldUpdate('status', value)}
                 >
-                  <SelectTrigger className="border-2 border-blue-300 focus:ring-blue-500 focus:border-blue-500">
+                  <SelectTrigger className={`border-2 h-12 font-semibold text-base ${
+                    (customer?.status === 'active' || !customer?.status)
+                      ? 'border-green-400 bg-green-50 focus:ring-green-500 focus:border-green-500' 
+                      : 'border-gray-400 bg-gray-50 focus:ring-gray-500 focus:border-gray-500'
+                  }`}>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="active" className="font-semibold">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        Active
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="inactive" className="font-semibold">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-gray-500"></span>
+                        Inactive
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
