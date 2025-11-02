@@ -933,3 +933,51 @@ agent_communication:
     - agent: "main"
       message: "FRONTEND INTEGRATION COMPLETE! Updated ImportVerification.js to connect 'Run AI Prompts' button to the new backend endpoint POST /api/batches/{batch_id}/run-ai-prompts. The button now: (1) Gets the current editing row's entry ID, (2) Calls backend with batch_id and entry_ids array, (3) Receives AI suggestions for all 4 prompts (grammar, fraud, gdpr, verification), (4) Displays results in the existing AI modal for user review. The flow is: User clicks row → Edit modal opens → User clicks 'Run All AI Prompts' → AI processes all 4 prompts consecutively → Results display in expandable tiles. Ready for end-to-end testing with real batch data. NOTE: Processing takes ~90-120 seconds due to 4 consecutive AI calls."
 
+
+# ============ BATCH DELETE FEATURE ============
+
+user_problem_statement: "Add delete functionality to Monthly Batches. Delete icon in Actions column (after Archive). Active only when Invoices = 0. If Invoices > 0, show inactive icon with tooltip. Double confirmation modal with batch details before deletion. Deletes batch and all associated time entries."
+
+backend:
+  - task: "DELETE /api/batches/{batch_id} - Delete batch and time entries"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW ENDPOINT CREATED (lines 1533-1577): DELETE /api/batches/{batch_id} endpoint added. Logic: (1) Checks if batch exists, (2) Counts invoices for batch, (3) If invoices > 0, returns HTTP 400 error with message 'Cannot delete batch with X invoice(s)', (4) If invoices = 0, deletes all time entries for batch using db.timeEntries.delete_many(), (5) Deletes the batch itself using db.importBatches.delete_one(), (6) Creates audit event with metadata (batchTitle, timeEntriesDeleted, status), (7) Returns success message with count of deleted time entries. Endpoint prevents accidental deletion of batches with invoices. Ready for backend testing."
+
+frontend:
+  - task: "Batches.js - Add delete icon and confirmation modal"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Batches.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "DELETE FUNCTIONALITY IMPLEMENTED: (1) Added Trash2 icon import from lucide-react, (2) Added state: showDeleteModal, batchToDelete, deleting, (3) Created handleDeleteClick() function - checks batch.invoiceCount, if > 0 shows toast info why delete is disabled, if = 0 opens confirmation modal, (4) Created handleConfirmDelete() function - calls DELETE /api/batches/{batch_id}, shows success toast with details, reloads batches, (5) Updated Actions column - added delete icon button after archive icon with flex layout, (6) Delete button styling: Red when active (invoiceCount=0), Gray when inactive (invoiceCount>0), (7) Created delete confirmation modal with: Red gradient header, Warning box (red), Batch details box (title, period, total, status, entries count), Double confirmation box (yellow), Cancel + Delete buttons. Modal shows all batch info before deletion. Ready for E2E testing with batches having 0 and >0 invoices."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "DELETE /api/batches/{batch_id} endpoint"
+    - "Batches.js delete icon and modal"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Implemented batch delete feature. Backend endpoint checks for invoices and prevents deletion if any exist. Frontend shows delete icon in Actions column (red when active, gray when inactive). Double confirmation modal displays all batch details before deletion. Ready for comprehensive testing: (1) Test DELETE endpoint with batch having 0 invoices (should succeed), (2) Test DELETE endpoint with batch having >0 invoices (should fail with error), (3) Test frontend delete button states (active/inactive), (4) Test clicking inactive delete shows info toast, (5) Test clicking active delete opens modal, (6) Test modal shows correct batch details, (7) Test actual deletion removes batch and time entries from database."
