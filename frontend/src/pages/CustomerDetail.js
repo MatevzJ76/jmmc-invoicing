@@ -572,7 +572,24 @@ const CustomerDetail = () => {
               Invoicing Period
             </h3>
             
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-3 gap-6">
+              {/* Customer Status */}
+              <div>
+                <Label className="text-slate-700 mb-2 block font-medium">Customer Status</Label>
+                <Select 
+                  value={customer?.status || 'active'}
+                  onValueChange={(value) => handleFieldUpdate('status', value)}
+                >
+                  <SelectTrigger className="border-2 border-blue-300 focus:ring-blue-500 focus:border-blue-500">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
               {/* Invoicing Period */}
               <div>
                 <Label className="text-slate-700 mb-2 block font-medium">Invoicing Period</Label>
@@ -608,6 +625,21 @@ const CustomerDetail = () => {
                   {customer?.invoicingPeriod === 'semi-annual' && 'First invoice after 6 months'}
                   {customer?.invoicingPeriod === 'yearly' && 'First invoice after 1 year'}
                 </p>
+              </div>
+            </div>
+            
+            {/* Second row: Invoicing End Date */}
+            <div className="grid grid-cols-3 gap-6 mt-6">
+              <div>
+                <Label className="text-slate-700 mb-2 block font-medium">Invoicing End Period (MM/YYYY)</Label>
+                <Input
+                  type="month"
+                  value={customer?.invoicingEndDate || ''}
+                  onChange={(e) => handleFieldUpdate('invoicingEndDate', e.target.value)}
+                  placeholder="MM/YYYY"
+                  className="border-2 border-blue-300 focus-visible:ring-blue-500 focus-visible:border-blue-500"
+                />
+                <p className="text-xs text-slate-500 mt-1">Leave empty for ongoing invoicing</p>
               </div>
             </div>
           </div>
