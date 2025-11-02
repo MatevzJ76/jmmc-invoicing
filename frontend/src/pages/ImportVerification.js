@@ -1910,15 +1910,52 @@ const ImportVerification = () => {
             </div>
 
             <div className="p-6 overflow-y-auto max-h-[calc(80vh-200px)]">
-              {/* Row Information */}
-              <div className="mb-6">
-                <h4 className="text-sm font-bold text-slate-800 mb-3">Entry Details</h4>
-                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-2 text-sm">
-                  <div><span className="font-semibold">Employee:</span> {verificationData.rows[editingRowIndex].employee}</div>
-                  <div><span className="font-semibold">Customer:</span> {verificationData.rows[editingRowIndex].customer}</div>
-                  <div><span className="font-semibold">Date:</span> {verificationData.rows[editingRowIndex].date}</div>
-                </div>
-              </div>
+              {(() => {
+                // Determine if editing should be disabled based on row status
+                const currentRowStatus = verificationData.rows[editingRowIndex]?.status || 'uninvoiced';
+                const isInvoiced = currentRowStatus === 'invoiced';
+                
+                return (
+                  <>
+                    {/* Warning message if row is invoiced */}
+                    {isInvoiced && (
+                      <div className="mb-4 bg-green-100 border-l-4 border-green-500 p-4 rounded-lg">
+                        <div className="flex items-center">
+                          <span className="text-green-600 text-xl mr-2">✓</span>
+                          <p className="text-sm font-semibold text-green-800">
+                            This entry is already invoiced. Editing is disabled.
+                          </p>
+                        </div>
+                        <p className="text-xs text-green-700 mt-1 ml-7">
+                          Change the status to "Uninvoiced", "Internal", or "Free" to enable editing.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Row Information */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-bold text-slate-800 mb-3">Entry Details</h4>
+                      <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-2 text-sm">
+                        <div><span className="font-semibold">Employee:</span> {verificationData.rows[editingRowIndex].employee}</div>
+                        <div><span className="font-semibold">Customer:</span> {verificationData.rows[editingRowIndex].customer}</div>
+                        <div><span className="font-semibold">Date:</span> {verificationData.rows[editingRowIndex].date}</div>
+                        <div>
+                          <span className="font-semibold">Status:</span>{' '}
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            currentRowStatus === 'invoiced' ? 'bg-green-100 text-green-800' :
+                            currentRowStatus === 'internal' ? 'bg-blue-100 text-blue-800' :
+                            currentRowStatus === 'free' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-slate-100 text-slate-800'
+                          }`}>
+                            {currentRowStatus.charAt(0).toUpperCase() + currentRowStatus.slice(1)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+              
 
               {/* Original Values (if available) */}
               {originalValues[editingRowIndex] && (
