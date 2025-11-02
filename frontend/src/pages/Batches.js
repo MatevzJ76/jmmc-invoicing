@@ -53,7 +53,7 @@ const Batches = () => {
 
   useEffect(() => {
     filterBatches();
-  }, [batches, searchTerm, statusFilter, sortColumn, sortDirection]);
+  }, [filterBatches]);
 
   const handleSort = (column) => {
     if (sortColumn === column) {
