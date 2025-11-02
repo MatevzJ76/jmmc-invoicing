@@ -693,9 +693,10 @@ const ImportVerification = () => {
       const token = localStorage.getItem('access_token');
       
       // Call the new backend endpoint that runs all 4 prompts consecutively
+      // Backend expects array directly, not an object with entry_ids key
       const response = await axios.post(
         `${BACKEND_URL}/api/batches/${verificationData.batchId}/run-ai-prompts`,
-        { entry_ids: [entryId] },
+        [entryId], // Send array directly
         { headers: { Authorization: `Bearer ${token}` }, timeout: 150000 } // 150s timeout for 4 prompts
       );
       
