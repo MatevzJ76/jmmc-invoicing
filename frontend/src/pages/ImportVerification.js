@@ -1350,12 +1350,7 @@ const ImportVerification = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-slate-200 mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter className="w-4 h-4 text-slate-600" />
-            <h3 className="text-sm font-semibold text-slate-800">Filters</h3>
-          </div>
-          
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 shadow-lg border border-slate-200 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
             {/* Search */}
             <div className="relative">
