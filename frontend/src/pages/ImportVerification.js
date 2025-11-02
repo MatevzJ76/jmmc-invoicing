@@ -1032,7 +1032,7 @@ const ImportVerification = () => {
     : verificationData.rows;
   
   // Apply rowsPerPage limit
-  const displayRows = rowsPerPage === 'all' || rowsPerPage === -1
+  const displayRows = (rowsPerPage === 'all' || rowsPerPage === -1)
     ? allFilteredRows
     : allFilteredRows.slice(0, rowsPerPage);
   
