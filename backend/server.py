@@ -917,6 +917,76 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
     
     return {"message": f"Updated {updated_count} time entries", "updated_count": updated_count}
 
+@api_router.post("/batches/{batch_id}/manual-entry")
+async def add_manual_entry(
+    batch_id: str,
+    entry_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Add a manual time entry to a batch"""
+    batch = await db.importBatches.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    
+    # Get tariff rate if tariff provided
+    hourly_rate = 0
+    if entry_data.get("tariff"):
+        tariff = await db.tariffs.find_one({"code": entry_data["tariff"]})
+        if tariff:
+            hourly_rate = tariff.get("value", 0)
+    
+    # Calculate value
+    hours = float(entry_data.get("hours", 0))
+    calculated_value = round(hours * hourly_rate, 2)
+    
+    # Get customer name for project linking
+    customer_name = ""
+    if entry_data.get("customerId"):
+        customer = await db.customers.find_one({"id": entry_data["customerId"]})
+        if customer:
+            customer_name = customer.get("name", "")
+    
+    # Find or create project
+    project = await db.projects.find_one({"name": "Manual Entry", "customerId": entry_data.get("customerId")})
+    if not project:
+        project_id = str(uuid.uuid4())
+        await db.projects.insert_one({
+            "id": project_id,
+            "name": "Manual Entry",
+            "customerId": entry_data.get("customerId")
+        })
+    else:
+        project_id = project["id"]
+    
+    # Create manual entry
+    manual_entry = {
+        "id": str(uuid.uuid4()),
+        "batchId": batch_id,
+        "projectId": project_id,
+        "projectName": "Manual Entry",
+        "customerId": entry_data.get("customerId"),
+        "customerName": customer_name,
+        "employeeName": entry_data.get("employeeName", "Manual Entry"),
+        "date": entry_data.get("date"),
+        "hours": hours,
+        "tariff": entry_data.get("tariff", ""),
+        "hourlyRate": hourly_rate,
+        "notes": entry_data.get("notes", ""),
+        "value": calculated_value,
+        "aiCorrectionApplied": False,
+        "manuallyEdited": False,
+        "originalNotes": None,
+        "originalHours": None,
+        "originalCustomerId": None,
+        "originalTariff": None,
+        "status": entry_data.get("status", "uninvoiced"),
+        "entrySource": "manual"  # Mark as manually entered
+    }
+    
+    await db.timeEntries.insert_one(manual_entry)
+    
+    return {"message": "Manual entry added successfully", "entryId": manual_entry["id"]}
+
 @api_router.get("/batches/{batch_id}/verification")
 async def get_batch_verification(batch_id: str, current_user: User = Depends(get_current_user)):
     """Get verification data for specific clients and no-client entries - only for composed batches"""
