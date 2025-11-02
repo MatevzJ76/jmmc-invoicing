@@ -522,6 +522,7 @@ async def import_xlsx(
         # Parse rows - Stranka (customer) appears on each data row, not as section headers
         entries = []
         current_project = "General"
+        new_customers_created = []  # Track newly created customers
         
         for row in sheet.iter_rows(min_row=2, values_only=True):
             # Skip completely empty rows
