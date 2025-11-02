@@ -325,12 +325,8 @@ const ImportVerification = () => {
       setOriginalValues(originalValuesObj);
       
       // Load rowsPerPage preference from batch (default: 100)
-      console.log('Loading rowsPerPage from batch:', batchData.rowsPerPage, 'Type:', typeof batchData.rowsPerPage);
       if (batchData.rowsPerPage !== undefined && batchData.rowsPerPage !== null) {
         setRowsPerPage(batchData.rowsPerPage);
-        console.log('Set rowsPerPage to:', batchData.rowsPerPage);
-      } else {
-        console.log('No rowsPerPage in batch, using default 100');
       }
       
       // Save to sessionStorage
