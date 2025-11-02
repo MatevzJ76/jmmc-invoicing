@@ -176,101 +176,96 @@ const Batches = () => {
   };
   
   const handleBatchClick = async (batch) => {
-    // If status is "in progress", load verification page
-    if (batch.status === 'in progress') {
-      try {
-        const token = localStorage.getItem('access_token');
-        
-        // Fetch time entries for this batch
-        const entriesResponse = await axios.get(`${BACKEND_URL}/api/batches/${batch.id}/time-entries`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        const timeEntries = entriesResponse.data;
-        
-        // Convert time entries to verification format and track AI-corrected rows and original values
-        const aiCorrectedRows = [];
-        const manuallyEditedRows = [];
-        const originalValues = {};
-        const rows = timeEntries.map((entry, index) => {
-          // Track which rows have AI corrections applied
-          if (entry.aiCorrectionApplied) {
-            aiCorrectedRows.push(index);
-            
-            // Store original values if they exist (check for not undefined, not just not null)
-            if (entry.originalNotes !== undefined || entry.originalHours !== undefined || entry.originalCustomerId !== undefined) {
-              originalValues[index] = {
-                comments: entry.originalNotes || '',
-                hours: entry.originalHours || 0,
-                customerId: entry.originalCustomerId || '',
-                customer: entry.originalCustomerName || '', // Backend should populate this
-                tariff: entry.originalTariff || ''
-              };
-            }
-          }
+    // ALWAYS load Import Verification page first (user can navigate to Invoices & Verification manually)
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      // Fetch time entries for this batch
+      const entriesResponse = await axios.get(`${BACKEND_URL}/api/batches/${batch.id}/time-entries`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const timeEntries = entriesResponse.data;
+      
+      // Convert time entries to verification format and track AI-corrected rows and original values
+      const aiCorrectedRows = [];
+      const manuallyEditedRows = [];
+      const originalValues = {};
+      const rows = timeEntries.map((entry, index) => {
+        // Track which rows have AI corrections applied
+        if (entry.aiCorrectionApplied) {
+          aiCorrectedRows.push(index);
           
-          // Track which rows have manual edits
-          if (entry.manuallyEdited) {
-            manuallyEditedRows.push(index);
-            
-            // Store original values if they exist and not already stored (check for not undefined)
-            if (!originalValues[index] && (entry.originalNotes !== undefined || entry.originalHours !== undefined || entry.originalCustomerId !== undefined)) {
-              originalValues[index] = {
-                comments: entry.originalNotes || '',
-                hours: entry.originalHours || 0,
-                customerId: entry.originalCustomerId || '',
-                customer: entry.originalCustomerName || '', // Backend should populate this
-                tariff: entry.originalTariff || ''
-              };
-            }
+          // Store original values if they exist (check for not undefined, not just not null)
+          if (entry.originalNotes !== undefined || entry.originalHours !== undefined || entry.originalCustomerId !== undefined) {
+            originalValues[index] = {
+              comments: entry.originalNotes || '',
+              hours: entry.originalHours || 0,
+              customerId: entry.originalCustomerId || '',
+              customer: entry.originalCustomerName || '', // Backend should populate this
+              tariff: entry.originalTariff || ''
+            };
           }
-          
-          return {
-            project: entry.projectName || entry.tariff || '',  // Use projectName from backend
-            customer: entry.customerName || '',
-            customerId: entry.customerId || '',  // Add customerId to row data
-            date: entry.date || '',
-            tariff: entry.tariff || '',
-            employee: entry.employeeName || '',  // Fixed: was entry.employee
-            comments: entry.notes || '',
-            hours: entry.hours || 0,
-            hourlyRate: entry.hourlyRate || 0,  // Add hourlyRate from backend
-            value: entry.value || 0,
-            invoiceNumber: entry.invoiceNumber || '',
-            status: entry.status || 'uninvoiced'  // Row status
-          };
-        });
+        }
         
-        // Navigate to verification page with batch data
-        navigate('/import/verify', {
-          state: {
-            verificationData: {
-              fileName: batch.filename,
-              fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              fileData: [], // Not needed for resume
-              metadata: {
-                title: batch.title,
-                invoiceDate: batch.invoiceDate,
-                periodFrom: batch.periodFrom,
-                periodTo: batch.periodTo,
-                dueDate: batch.dueDate
-              },
-              rows,
-              resuming: true,
-              batchId: batch.id,
-              aiCorrectedRows,  // Pass AI-corrected row indices
-              manuallyEditedRows,  // Pass manually-edited row indices
-              originalValues  // Pass original values before corrections
-            }
+        // Track which rows have manual edits
+        if (entry.manuallyEdited) {
+          manuallyEditedRows.push(index);
+          
+          // Store original values if they exist and not already stored (check for not undefined)
+          if (!originalValues[index] && (entry.originalNotes !== undefined || entry.originalHours !== undefined || entry.originalCustomerId !== undefined)) {
+            originalValues[index] = {
+              comments: entry.originalNotes || '',
+              hours: entry.originalHours || 0,
+              customerId: entry.originalCustomerId || '',
+              customer: entry.originalCustomerName || '', // Backend should populate this
+              tariff: entry.originalTariff || ''
+            };
           }
-        });
-      } catch (error) {
-        toast.error('Failed to load batch data');
-        console.error(error);
-      }
-    } else {
-      // Normal batches open BatchDetail
-      navigate(`/batches/${batch.id}`);
+        }
+        
+        return {
+          project: entry.projectName || entry.tariff || '',  // Use projectName from backend
+          customer: entry.customerName || '',
+          customerId: entry.customerId || '',  // Add customerId to row data
+          date: entry.date || '',
+          tariff: entry.tariff || '',
+          employee: entry.employeeName || '',  // Fixed: was entry.employee
+          comments: entry.notes || '',
+          hours: entry.hours || 0,
+          hourlyRate: entry.hourlyRate || 0,  // Add hourlyRate from backend
+          value: entry.value || 0,
+          invoiceNumber: entry.invoiceNumber || '',
+          status: entry.status || 'uninvoiced'  // Row status
+        };
+      });
+      
+      // Navigate to verification page with batch data
+      navigate('/import/verify', {
+        state: {
+          verificationData: {
+            fileName: batch.filename,
+            fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            fileData: [], // Not needed for resume
+            metadata: {
+              title: batch.title,
+              invoiceDate: batch.invoiceDate,
+              periodFrom: batch.periodFrom,
+              periodTo: batch.periodTo,
+              dueDate: batch.dueDate
+            },
+            rows,
+            resuming: true,
+            batchId: batch.id,
+            aiCorrectedRows,  // Pass AI-corrected row indices
+            manuallyEditedRows,  // Pass manually-edited row indices
+            originalValues  // Pass original values before corrections
+          }
+        }
+      });
+    } catch (error) {
+      toast.error('Failed to load batch data');
+      console.error(error);
     }
   };
 
