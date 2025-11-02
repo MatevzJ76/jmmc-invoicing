@@ -127,11 +127,21 @@ class AIRequest(BaseModel):
 class AISettings(BaseModel):
     aiProvider: str = "emergent"
     customApiKey: Optional[str] = None
-    customModel: str = "gpt-5"
+    customModel: str = "gpt-5"  # For testing purposes only
+    
+    # AI Prompts with individual model selection
     grammarPrompt: str = "Correct any grammar errors, spelling mistakes, and improve the clarity of this time entry description. Return ONLY the corrected text without any explanations, comments, or additional formatting."
+    grammarModel: str = "gpt-5-nano"  # Fast, low-cost for simple edits
+    
     fraudPrompt: str = "Analyze this time entry for fraud indicators: 1) Suspicious hours (e.g., 20 hours claimed for a simple 1-hour task), 2) Vague or generic descriptions (e.g., \"work done\", \"various tasks\"), 3) Unusual patterns or inconsistencies. If suspicious, explain the concern. If normal, respond with \"No issues detected\"."
+    fraudModel: str = "gpt-5-mini"  # Balanced for fraud detection
+    
     gdprPrompt: str = "Check this time entry description for GDPR compliance. Identify any personal data such as: employee full names (should be initials only), personal email addresses, phone numbers, or other identifying information. If found, return the text with sensitive data replaced by initials or [MASKED]. If compliant, return the original text unchanged."
+    gdprModel: str = "gpt-5-mini"  # Balanced for compliance checks
+    
     verificationPrompt: str = "Perform a general verification check on this time entry. Look for: 1) Data quality issues, 2) Missing information, 3) Formatting problems, 4) Business logic violations, 5) Any other anomalies. Provide specific feedback on what needs attention, or respond with \"Entry looks good\" if no issues found."
+    verificationModel: str = "gpt-5"  # Deep reasoning for complex checks
+    
     dtmPrompt: str = "Do the magic on this data. Enhance, optimize, and improve it in the best way possible."
     eracuniEndpoint: Optional[str] = "https://e-racuni.com/WebServicesSI/API"
     eracuniUsername: Optional[str] = None
