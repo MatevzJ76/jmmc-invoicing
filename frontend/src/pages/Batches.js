@@ -498,20 +498,45 @@ const Batches = () => {
                         {new Date(batch.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
-                        {batch.status !== 'archived' ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => handleArchive(batch.id, e)}
-                            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full"
-                            data-testid={`archive-button-${batch.id}`}
-                            title="Archive batch"
-                          >
-                            <Archive className="w-4 h-4" />
-                          </Button>
-                        ) : (
-                          <span className="text-xs text-gray-400">Archived</span>
-                        )}
+                        <div className="flex items-center justify-center gap-2">
+                          {/* Archive Button */}
+                          {batch.status !== 'archived' ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => handleArchive(batch.id, e)}
+                              className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full"
+                              data-testid={`archive-button-${batch.id}`}
+                              title="Archive batch"
+                            >
+                              <Archive className="w-4 h-4" />
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-gray-400">Archived</span>
+                          )}
+                          
+                          {/* Delete Button */}
+                          {batch.status !== 'archived' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => handleDeleteClick(batch, e)}
+                              className={`rounded-full ${
+                                batch.invoiceCount === 0 
+                                  ? 'text-red-600 hover:text-red-900 hover:bg-red-50' 
+                                  : 'text-gray-300 cursor-not-allowed'
+                              }`}
+                              data-testid={`delete-button-${batch.id}`}
+                              title={
+                                batch.invoiceCount === 0 
+                                  ? 'Delete batch and all time entries' 
+                                  : `Cannot delete: ${batch.invoiceCount} invoice(s) prepared`
+                              }
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
