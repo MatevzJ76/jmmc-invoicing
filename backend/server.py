@@ -1202,7 +1202,7 @@ Time Entry Details:
                         api_key=api_key,
                         session_id=f"fraud-{current_user.email}-{entry_id}",
                         system_message="You are a fraud detection expert for time entries and invoicing."
-                    ).with_model(provider, model)
+                    ).with_model(get_provider(fraud_model), fraud_model)
                     
                     prompt_text = f"{fraud_prompt}\n\n{entry_context}"
                     message = UserMessage(text=prompt_text)
