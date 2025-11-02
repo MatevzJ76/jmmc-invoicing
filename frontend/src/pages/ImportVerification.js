@@ -1090,7 +1090,7 @@ const ImportVerification = () => {
   const uniqueTariffs = [...new Set(verificationData.rows.map(r => r.tariff).filter(Boolean))];
   
   // Use filtered rows for display
-  const allFilteredRows = filteredRows.length > 0 || searchTerm || projectFilter !== 'all' || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' 
+  const allFilteredRows = filteredRows.length > 0 || searchTerm || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' || statusFilter !== 'all'
     ? filteredRows 
     : verificationData.rows;
   
