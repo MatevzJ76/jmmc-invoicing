@@ -143,6 +143,8 @@ class AISettings(BaseModel):
     verificationModel: str = "gpt-5"  # Deep reasoning for complex checks
     
     dtmPrompt: str = "Do the magic on this data. Enhance, optimize, and improve it in the best way possible."
+    dtmModel: str = "gpt-5"  # Deep reasoning for magic enhancements
+    
     eracuniEndpoint: Optional[str] = "https://e-racuni.com/WebServicesSI/API"
     eracuniUsername: Optional[str] = None
     eracuniSecretKey: Optional[str] = None
