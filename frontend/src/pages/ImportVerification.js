@@ -1027,9 +1027,20 @@ const ImportVerification = () => {
   const uniqueTariffs = [...new Set(verificationData.rows.map(r => r.tariff).filter(Boolean))];
   
   // Use filtered rows for display
-  const displayRows = filteredRows.length > 0 || searchTerm || projectFilter !== 'all' || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' 
+  const allFilteredRows = filteredRows.length > 0 || searchTerm || projectFilter !== 'all' || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' 
     ? filteredRows 
     : verificationData.rows;
+  
+  // Apply rowsPerPage limit
+  const displayRows = rowsPerPage === 'all' || rowsPerPage === -1
+    ? allFilteredRows
+    : allFilteredRows.slice(0, rowsPerPage);
+  
+  // Calculate display info
+  const totalFiltered = allFilteredRows.length;
+  const displayCount = displayRows.length;
+  const showingFrom = displayCount > 0 ? 1 : 0;
+  const showingTo = displayCount;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
