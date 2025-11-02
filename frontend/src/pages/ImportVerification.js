@@ -143,7 +143,13 @@ const ImportVerification = () => {
       const response = await axios.get(`${BACKEND_URL}/api/customers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setAllCustomers(response.data);
+      
+      // Filter to show only active and new customers
+      const activeAndNewCustomers = response.data.filter(c => 
+        c.status === 'active' || c.status === 'new' || !c.status
+      );
+      
+      setAllCustomers(activeAndNewCustomers);
     } catch (error) {
       console.error('Failed to load customers:', error);
       // Don't block UI if customers fail to load
