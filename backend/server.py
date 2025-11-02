@@ -1099,21 +1099,26 @@ async def run_ai_prompts_on_entries(
     if not user_settings:
         user_settings = AISettings().model_dump()
     
-    # Determine API key and model
+    # Determine API key (not model - each prompt has its own model)
     if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
         api_key = user_settings["customApiKey"]
-        model = user_settings.get("customModel", "gpt-5")
     else:
         if not EMERGENT_LLM_KEY:
             raise HTTPException(status_code=400, detail="AI not configured. Please configure AI settings first.")
         api_key = EMERGENT_LLM_KEY
-        model = "gpt-5"
     
-    # Get the prompts from settings
+    # Get the prompts and their specific models from settings
     grammar_prompt = user_settings.get("grammarPrompt", "")
+    grammar_model = user_settings.get("grammarModel", "gpt-5-nano")
+    
     fraud_prompt = user_settings.get("fraudPrompt", "")
+    fraud_model = user_settings.get("fraudModel", "gpt-5-mini")
+    
     gdpr_prompt = user_settings.get("gdprPrompt", "")
+    gdpr_model = user_settings.get("gdprModel", "gpt-5-mini")
+    
     verification_prompt = user_settings.get("verificationPrompt", "")
+    verification_model = user_settings.get("verificationModel", "gpt-5")
     
     # Fetch the time entries
     entries = await db.timeEntries.find(
