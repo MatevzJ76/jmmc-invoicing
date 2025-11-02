@@ -2470,14 +2470,14 @@ const ImportVerification = () => {
                   {/* Row Status Selection */}
                   <div className="bg-slate-50 rounded-lg p-4 border border-slate-300">
                     <p className="text-xs font-semibold text-slate-800 mb-3">Row Status:</p>
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <Button
                         type="button"
                         size="sm"
                         variant={editableSuggestions.status === 'uninvoiced' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'uninvoiced' })}
                         disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
-                        className={`flex-1 rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'uninvoiced' 
                             ? 'bg-slate-600 hover:bg-slate-700' 
                             : 'border-slate-300 hover:bg-slate-50'
@@ -2491,7 +2491,7 @@ const ImportVerification = () => {
                         variant={editableSuggestions.status === 'internal' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'internal' })}
                         disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
-                        className={`flex-1 rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'internal' 
                             ? 'bg-blue-600 hover:bg-blue-700' 
                             : 'border-blue-300 hover:bg-blue-50'
@@ -2505,7 +2505,7 @@ const ImportVerification = () => {
                         variant={editableSuggestions.status === 'free' ? 'default' : 'outline'}
                         onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'free' })}
                         disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
-                        className={`flex-1 rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
                           editableSuggestions.status === 'free' 
                             ? 'bg-yellow-600 hover:bg-yellow-700' 
                             : 'border-yellow-300 hover:bg-yellow-50'
@@ -2513,11 +2513,25 @@ const ImportVerification = () => {
                       >
                         <span className="mr-1">🎁</span> Free
                       </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={editableSuggestions.status === 'ready' ? 'default' : 'outline'}
+                        onClick={() => setEditableSuggestions({ ...editableSuggestions, status: 'ready' })}
+                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                        className={`rounded-full disabled:opacity-50 disabled:cursor-not-allowed ${
+                          editableSuggestions.status === 'ready' 
+                            ? 'bg-green-600 hover:bg-green-700' 
+                            : 'border-green-300 hover:bg-green-50'
+                        }`}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" /> Ready
+                      </Button>
                     </div>
                     <p className="text-xs text-slate-500 mt-2">
                       {verificationData.rows[editingRowIndex]?.status === 'invoiced' 
                         ? 'This entry is already invoiced. Status cannot be changed.'
-                        : 'Internal and Free rows will not be included in invoices'
+                        : 'Internal, Free, and Ready rows will not be included in invoices'
                       }
                     </p>
                   </div>
