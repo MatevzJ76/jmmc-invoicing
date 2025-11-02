@@ -390,6 +390,107 @@ const Import = () => {
           </Button>
         </form>
       </div>
+      
+      {/* Import Summary Modal */}
+      {showSummaryModal && importSummary && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                  <h2 className="text-2xl font-bold text-white">Import Summary</h2>
+                </div>
+              </div>
+              <p className="text-blue-100 mt-2">Your XLSX file has been successfully imported!</p>
+            </div>
+            
+            {/* Stats Grid */}
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                  <p className="text-xs text-blue-600 font-semibold uppercase">Total Rows</p>
+                  <p className="text-2xl font-bold text-blue-900">{importSummary.summary.totalRows}</p>
+                </div>
+                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                  <p className="text-xs text-green-600 font-semibold uppercase">Total Hours</p>
+                  <p className="text-2xl font-bold text-green-900">{importSummary.summary.totalHours}</p>
+                </div>
+                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                  <p className="text-xs text-purple-600 font-semibold uppercase">Total Value</p>
+                  <p className="text-2xl font-bold text-purple-900">€{importSummary.summary.totalValue.toFixed(2)}</p>
+                </div>
+                <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
+                  <p className="text-xs text-orange-600 font-semibold uppercase">Employees</p>
+                  <p className="text-2xl font-bold text-orange-900">{importSummary.summary.uniqueEmployees}</p>
+                </div>
+                <div className="bg-teal-50 rounded-xl p-4 border border-teal-200">
+                  <p className="text-xs text-teal-600 font-semibold uppercase">Customers</p>
+                  <p className="text-2xl font-bold text-teal-900">{importSummary.summary.uniqueCustomers}</p>
+                </div>
+              </div>
+              
+              {/* New Customers Alert */}
+              {importSummary.newCustomers && importSummary.newCustomers.length > 0 && (
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-xl p-6 shadow-lg">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-orange-500 rounded-full p-3 animate-pulse">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-orange-900 mb-2 flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5" />
+                        New Customers Detected!
+                      </h3>
+                      <p className="text-sm text-orange-700 mb-3">
+                        The following <strong>{importSummary.newCustomers.length}</strong> customer(s) were automatically added to your database. 
+                        Please configure their settings in the <strong>Customers Settings</strong> page.
+                      </p>
+                      <div className="bg-white rounded-lg p-4 border border-orange-200 space-y-2 max-h-40 overflow-y-auto">
+                        {importSummary.newCustomers.map((customer, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-sm">
+                            <span className="w-6 h-6 flex items-center justify-center bg-orange-100 text-orange-700 rounded-full font-bold text-xs">
+                              {idx + 1}
+                            </span>
+                            <span className="font-semibold text-slate-800">{customer.name}</span>
+                            <span className="ml-auto px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-semibold">
+                              NEW
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 flex items-center gap-2 text-sm text-orange-800 bg-orange-100 p-3 rounded-lg">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <p className="font-medium">
+                          Action Required: Visit <strong>Customers Settings</strong> to configure hourly rates, invoicing types, and other settings for these new customers.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {importSummary.newCustomers && importSummary.newCustomers.length === 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <p className="text-sm text-green-800 font-medium">All customers already exist in the system.</p>
+                </div>
+              )}
+              
+              {/* Action Button */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleProceedToVerification}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl py-6 text-lg font-semibold shadow-lg"
+                >
+                  Proceed to Verification →
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
