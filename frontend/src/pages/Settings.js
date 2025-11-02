@@ -1872,7 +1872,7 @@ ${randomFinal}`;
 
             {/* Verification Prompt */}
             <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <Label htmlFor="verification" className="text-base font-semibold">Invoice Verification (Batch Review)</Label>
+              <Label htmlFor="verification" className="text-base font-semibold">Invoice Verification (General)</Label>
               <Textarea
                 id="verification"
                 value={settings.verificationPrompt}
