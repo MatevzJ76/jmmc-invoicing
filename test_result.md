@@ -914,3 +914,22 @@ agent_communication:
 
     - agent: "testing"
       message: "✅ AI SETTINGS & PROMPTS BACKEND TESTING COMPLETE! ALL 3 TESTS PASSED (3/3). Test Results: (1) ✅ GET /api/settings/ai - Returns all 4 enhanced prompts (grammarPrompt, fraudPrompt, gdprPrompt, verificationPrompt) plus other AI settings fields. Tested with admin@local, all fields present and populated correctly. Endpoint at lines 3189-3198 in server.py. (2) ✅ POST /api/settings/ai - Successfully saves and persists AI settings. Updated all 4 prompts with custom test values, retrieved settings again, all values matched exactly. Settings stored in aiSettings collection with userId and updatedAt. Endpoint at lines 3200-3213 in server.py uses upsert operation. (3) ✅ POST /api/batches/{batch_id}/run-ai-prompts - NEW endpoint working correctly. Tested with batch ebfd35f1-8f39-4f1e-8703-039344c6deae and 1 entry. Endpoint accepts entry_ids as JSON array, runs all 4 AI prompts consecutively (Grammar, Fraud, GDPR, Verification), returns structured response with suggestions for each prompt type. All AI responses were meaningful and contextual (not generic 'OK'). Execution time ~90-120 seconds for 1 entry (4 prompts × 20-30s each). Response structure correct: {success: true, results: [{entryId, originalDescription, suggestions: {grammar, fraud, gdpr, verification}}], total_entries, message}. Each suggestion has type, suggestion text, and applied flag. Endpoint at lines 1074-1281 in server.py. CONCLUSION: All AI Settings and Prompts endpoints are PRODUCTION-READY and working as designed. The NEW run-ai-prompts endpoint successfully executes all 4 AI prompts consecutively and returns actionable suggestions that users can review and apply. NO ISSUES FOUND. Main agent should summarize and finish."
+
+
+frontend:
+  - task: "Import Verification page - Connect 'Run AI Prompts' button to backend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ImportVerification.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "FRONTEND INTEGRATION COMPLETE (line 678-728): Updated handleRunAllAiPrompts function to call POST /api/batches/{batch_id}/run-ai-prompts endpoint. Changes: (1) Replaced old /api/ai/suggest endpoint with new batch-based endpoint, (2) Sends single entry ID from editingRowIndex, (3) Parses response to extract suggestions for all 4 prompt types (grammar, fraud, gdpr, verification), (4) Maps results to aiProcessResults state for display, (5) Auto-expands all result tiles, (6) Shows success toast with message 'AI processing complete! All 4 prompts executed.', (7) Error handling with detailed error messages. The 'Run All AI Prompts' button is now fully connected to backend and ready for E2E testing."
+
+agent_communication:
+    - agent: "main"
+      message: "FRONTEND INTEGRATION COMPLETE! Updated ImportVerification.js to connect 'Run AI Prompts' button to the new backend endpoint POST /api/batches/{batch_id}/run-ai-prompts. The button now: (1) Gets the current editing row's entry ID, (2) Calls backend with batch_id and entry_ids array, (3) Receives AI suggestions for all 4 prompts (grammar, fraud, gdpr, verification), (4) Displays results in the existing AI modal for user review. The flow is: User clicks row → Edit modal opens → User clicks 'Run All AI Prompts' → AI processes all 4 prompts consecutively → Results display in expandable tiles. Ready for end-to-end testing with real batch data. NOTE: Processing takes ~90-120 seconds due to 4 consecutive AI calls."
+
