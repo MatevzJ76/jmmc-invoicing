@@ -1978,6 +1978,7 @@ const ImportVerification = () => {
                   <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Porabljene ure</th>
                   <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Value (€)</th>
                   <th className="px-3 py-3 text-right text-xs font-semibold text-slate-700">Total</th>
+                  <th className="px-3 py-3 text-center text-xs font-semibold text-slate-700" title="Entry Source">Src</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Št.računa</th>
                 </tr>
               </thead>
@@ -1990,6 +1991,7 @@ const ImportVerification = () => {
                     const isAiCorrected = aiCorrectedRows.has(originalIndex);
                     const isManuallyEdited = manuallyEditedRows.has(originalIndex);
                     const rowStatus = row.status || 'uninvoiced';
+                    const entrySource = row.entrySource || 'imported';  // Get entry source
                     
                     // Debug tariff highlighting
                     if (displayIndex < 3 && originalValues[originalIndex]) {
