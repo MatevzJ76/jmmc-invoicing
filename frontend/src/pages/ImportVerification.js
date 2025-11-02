@@ -378,11 +378,6 @@ const ImportVerification = () => {
       );
     }
     
-    // Project filter
-    if (projectFilter !== 'all') {
-      filtered = filtered.filter(row => row.project === projectFilter);
-    }
-    
     // Customer filter
     if (customerFilter !== 'all') {
       filtered = filtered.filter(row => row.customer === customerFilter);
