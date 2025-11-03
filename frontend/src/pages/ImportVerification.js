@@ -545,54 +545,40 @@ const ImportVerification = () => {
     loadCustomerData(prevCustomer.id);
   };
 
-  // Initialize with first customer when allCustomers loads
+  // Initialize and manage customer selection for Customer Analytics tile
   useEffect(() => {
     console.log('Customer initialization check:', {
       hasCustomers: allCustomers && allCustomers.length > 0,
       customersCount: allCustomers?.length,
       selectedCustomer: selectedCustomerForAnalytics,
       firstCustomerName: allCustomers?.[0]?.name,
-      verificationDataExists: !!verificationData
+      verificationDataExists: !!verificationData,
+      customerSettingsLoaded: !!customerSettings
     });
     
-    // Always ensure a customer is selected when customers are available
-    if (allCustomers && allCustomers.length > 0) {
-      // Check if selected customer exists in the active/new list
-      const selectedExists = selectedCustomerForAnalytics && 
-        allCustomers.some(c => c.id === selectedCustomerForAnalytics);
-      
-      if (!selectedExists) {
-        // Auto-select first customer alphabetically (always when no valid selection exists)
-        const firstCustomer = allCustomers[0];
-        console.log('✓ AUTO-SELECTING first active customer:', firstCustomer.name, firstCustomer.id);
-        setSelectedCustomerForAnalytics(firstCustomer.id);
-        // Load customer data immediately if verificationData is available
-        if (verificationData) {
-          console.log('✓ Loading customer data for:', firstCustomer.name);
-          loadCustomerData(firstCustomer.id);
-        } else {
-          console.log('⚠️  VerificationData not yet available, will load customer data when ready');
-        }
-      } else if (verificationData && selectedCustomerForAnalytics && !customerSettings) {
-        // Load data for existing selection only if not already loaded
-        console.log('✓ Selected customer exists, loading its data:', selectedCustomerForAnalytics);
-        loadCustomerData(selectedCustomerForAnalytics);
-      }
-    } else {
-      console.log('⚠️  No customers available yet or empty customer list');
+    // Only proceed if we have customers and verification data
+    if (!allCustomers || allCustomers.length === 0 || !verificationData) {
+      console.log('⚠️  Waiting for customers or verification data...');
+      return;
     }
-  }, [allCustomers, verificationData, loadCustomerData]);
-  
-  // Separate effect to handle customer data loading when customer is selected
-  useEffect(() => {
-    if (selectedCustomerForAnalytics && allCustomers && allCustomers.length > 0 && verificationData) {
+    
+    // Check if selected customer exists in the active/new list
+    const selectedExists = selectedCustomerForAnalytics && 
+      allCustomers.some(c => c.id === selectedCustomerForAnalytics);
+    
+    if (!selectedExists) {
+      // Auto-select first customer alphabetically
+      const firstCustomer = allCustomers[0];
+      console.log('✓ AUTO-SELECTING first active customer:', firstCustomer.name, firstCustomer.id);
+      setSelectedCustomerForAnalytics(firstCustomer.id);
+      loadCustomerData(firstCustomer.id);
+    } else if (selectedCustomerForAnalytics) {
+      // Customer is selected, ensure data is loaded
       const customer = allCustomers.find(c => c.id === selectedCustomerForAnalytics);
-      if (customer && !customerSettings) {
-        console.log('✓ Customer selected but data not loaded, loading now:', customer.name);
-        loadCustomerData(selectedCustomerForAnalytics);
-      }
+      console.log('✓ Customer selected, loading data:', customer?.name || selectedCustomerForAnalytics);
+      loadCustomerData(selectedCustomerForAnalytics);
     }
-  }, [selectedCustomerForAnalytics, allCustomers, verificationData, customerSettings, loadCustomerData]);
+  }, [allCustomers, verificationData, selectedCustomerForAnalytics]);
 
 
   const handleProceedClick = () => {
