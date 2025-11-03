@@ -2147,17 +2147,18 @@ class TestInvoiceCompositionBillableStatuses:
             invoice_id = customer_invoice.get("id")
             print(f"\nFound invoice for customer: {invoice_id}")
             
-            # Get invoice lines
-            lines_response = requests.get(
-                f"{BACKEND_URL}/invoices/{invoice_id}/lines",
+            # Get invoice details with lines
+            invoice_detail_response = requests.get(
+                f"{BACKEND_URL}/invoices/{invoice_id}",
                 headers=self.get_headers()
             )
             
-            if lines_response.status_code != 200:
-                print(f"❌ Failed to get invoice lines: {lines_response.text}")
+            if invoice_detail_response.status_code != 200:
+                print(f"❌ Failed to get invoice details: {invoice_detail_response.text}")
                 return False
             
-            lines = lines_response.json()
+            invoice_detail = invoice_detail_response.json()
+            lines = invoice_detail.get("lines", [])
             
             print(f"\nInvoice has {len(lines)} line items")
             
