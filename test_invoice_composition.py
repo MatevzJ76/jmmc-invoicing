@@ -426,6 +426,199 @@ class TestInvoiceComposition:
         print("\n✅ Status filter implementation verified")
         return True
     
+    def test_regular_compose_endpoint(self) -> bool:
+        """
+        TEST SCENARIO 5: Test regular POST /api/invoices/compose endpoint
+        - Should also only include uninvoiced and ready entries
+        - Should exclude forfait, internal, free entries
+        """
+        print("\n" + "="*80)
+        print("TEST 5: POST /api/invoices/compose - Verify Status Filter")
+        print("="*80)
+        
+        try:
+            # Create a new batch for this test
+            print("\n--- Step 1: Create New Test Batch for Regular Compose ---")
+            
+            # Find an existing batch to use
+            response = requests.get(
+                f"{BACKEND_URL}/batches",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Failed to get batches: {response.status_code}")
+                return False
+            
+            batches = response.json()
+            test_batch = None
+            
+            # Find an 'imported' batch
+            for batch in batches:
+                if batch.get("status") == "imported":
+                    test_batch = batch
+                    break
+            
+            if not test_batch:
+                print("❌ No 'imported' batch found for testing")
+                return False
+            
+            test_batch_id = test_batch["id"]
+            print(f"✅ Using batch: {test_batch['title']} (ID: {test_batch_id})")
+            
+            # Create test entries with mixed statuses
+            print("\n--- Step 2: Create Test Entries ---")
+            
+            entries_to_create = [
+                {"status": "uninvoiced", "hours": 5.0, "notes": "Regular Compose - Uninvoiced 1"},
+                {"status": "uninvoiced", "hours": 3.0, "notes": "Regular Compose - Uninvoiced 2"},
+                {"status": "ready", "hours": 2.0, "notes": "Regular Compose - Ready"},
+                {"status": "forfait", "hours": 4.0, "notes": "Regular Compose - Forfait"},
+                {"status": "internal", "hours": 1.5, "notes": "Regular Compose - Internal"},
+            ]
+            
+            created_entry_ids = []
+            for entry_data in entries_to_create:
+                entry_payload = {
+                    "customerId": self.test_customer_id,
+                    "employeeName": "Test Employee",
+                    "date": datetime.now().strftime("%Y-%m-%d"),
+                    "hours": entry_data["hours"],
+                    "tariff": "001 - Računovodstvo",
+                    "notes": entry_data["notes"],
+                    "status": entry_data["status"],
+                    "entrySource": "manual"
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/batches/{test_batch_id}/manual-entry",
+                    headers=self.get_headers(),
+                    json=entry_payload
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    entry_id = result.get("entryId")
+                    created_entry_ids.append(entry_id)
+                    print(f"✅ Created: {entry_data['notes']} (Status: {entry_data['status']})")
+            
+            print(f"\n✅ Created {len(created_entry_ids)} test entries")
+            
+            # Call regular compose endpoint
+            print("\n--- Step 3: Call POST /api/invoices/compose ---")
+            
+            response = requests.post(
+                f"{BACKEND_URL}/invoices/compose?batchId={test_batch_id}",
+                headers=self.get_headers()
+            )
+            
+            print(f"   Response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                print(f"❌ Compose failed: {response.text}")
+                return False
+            
+            result = response.json()
+            invoice_ids = result.get("invoiceIds", [])
+            print(f"✅ Compose successful")
+            print(f"   Created {len(invoice_ids)} invoice(s)")
+            
+            # Verify invoice line items
+            print("\n--- Step 4: Verify Invoice Line Items ---")
+            
+            total_line_items = 0
+            included_entry_ids = []
+            
+            for invoice_id in invoice_ids:
+                response = requests.get(
+                    f"{BACKEND_URL}/invoices/{invoice_id}",
+                    headers=self.get_headers()
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    invoice = data.get('invoice', {})
+                    lines = data.get('lines', [])
+                    
+                    print(f"\n   Invoice ID: {invoice_id}")
+                    print(f"   Customer: {invoice.get('customerName')}")
+                    print(f"   Total: €{invoice.get('total', 0):.2f}")
+                    print(f"   Line items: {len(lines)}")
+                    
+                    for line in lines:
+                        entry_id = line.get("timeEntryId")
+                        if entry_id and entry_id in created_entry_ids:
+                            included_entry_ids.append(entry_id)
+                            total_line_items += 1
+                            print(f"      - {line.get('description')}")
+            
+            # Get the created entries to verify their statuses
+            response = requests.get(
+                f"{BACKEND_URL}/batches/{test_batch_id}/time-entries",
+                headers=self.get_headers()
+            )
+            
+            if response.status_code == 200:
+                all_entries = response.json()
+                test_entries = [e for e in all_entries if e["id"] in created_entry_ids]
+                
+                included_entries = [e for e in test_entries if e["id"] in included_entry_ids]
+                excluded_entries = [e for e in test_entries if e["id"] not in included_entry_ids]
+                
+                print(f"\n--- Verification Results ---")
+                print(f"   Total test entries created: {len(test_entries)}")
+                print(f"   Entries included in invoice: {len(included_entries)}")
+                print(f"   Entries excluded from invoice: {len(excluded_entries)}")
+                
+                print(f"\n--- Included Entries ---")
+                for entry in included_entries:
+                    print(f"   ✅ {entry.get('notes')} (Status: {entry.get('status')})")
+                
+                print(f"\n--- Excluded Entries ---")
+                for entry in excluded_entries:
+                    print(f"   ✅ {entry.get('notes')} (Status: {entry.get('status')})")
+                
+                # Verify correctness
+                success = True
+                
+                # All included should be uninvoiced or ready
+                for entry in included_entries:
+                    if entry.get("status") not in ["uninvoiced", "ready", "invoiced"]:  # invoiced because they were marked after compose
+                        print(f"❌ FAILED: Entry with status '{entry.get('status')}' was included")
+                        success = False
+                
+                # All excluded should be forfait or internal
+                for entry in excluded_entries:
+                    if entry.get("status") not in ["forfait", "internal"]:
+                        print(f"❌ FAILED: Entry with status '{entry.get('status')}' was excluded")
+                        success = False
+                
+                # Check forfait is excluded
+                forfait_included = any(e.get("status") == "forfait" for e in included_entries)
+                if forfait_included:
+                    print(f"❌ FAILED: Forfait entries were included")
+                    success = False
+                else:
+                    print(f"\n✅ PASSED: Forfait entries are EXCLUDED")
+                
+                # Check internal is excluded
+                internal_included = any(e.get("status") == "internal" for e in included_entries)
+                if internal_included:
+                    print(f"❌ FAILED: Internal entries were included")
+                    success = False
+                else:
+                    print(f"✅ PASSED: Internal entries are EXCLUDED")
+                
+                return success
+            
+            return False
+            
+        except Exception as e:
+            print(f"❌ Error testing regular compose: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
     def run_all_tests(self):
         """Run all test scenarios"""
         print("\n" + "="*80)
@@ -454,6 +647,10 @@ class TestInvoiceComposition:
         # Test 4: Verify status filter
         filter_result = self.verify_status_filter_in_code()
         results.append(("Status Filter Verification", filter_result))
+        
+        # Test 5: Test regular compose endpoint
+        regular_compose_result = self.test_regular_compose_endpoint()
+        results.append(("Regular Compose Endpoint", regular_compose_result))
         
         # Print summary
         print("\n" + "="*80)
