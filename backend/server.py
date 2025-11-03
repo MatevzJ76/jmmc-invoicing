@@ -3247,6 +3247,11 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         # Get forfait entries for this customer for linking
         customer_forfait_entries = forfait_by_customer.get(customer_id, [])
         
+        # Debug logging for line creation
+        print(f"DEBUG: Creating lines for customer {customer['name']}")
+        print(f"  - Customer entries to process: {len(customer_entries)}")
+        print(f"  - Forfait entries for linking: {len(customer_forfait_entries)}")
+        
         for entry in customer_entries:
             line_id = str(uuid.uuid4())
             project = await db.projects.find_one({"id": entry["projectId"]})
