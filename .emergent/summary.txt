@@ -1,85 +1,96 @@
 <analysis>
-The AI engineer systematically enhanced the JMMC Invoicing application. Initially, work focused on security, user management,  support, and a comprehensive Import Verification page with AI-powered data validation. This included detailed customer settings, invoice table refinements, and batch list improvements.
-
-The recent trajectory involved significant updates to the Customer Settings Detail page. The engineer implemented dynamic display of  and a new  field based on  (Fixed, Hourly, Hybrid), integrated these into the Invoicing Settings tile, and fixed a frontend bug for Hourly Rate visibility. Subsequently, backend logic was updated in  to auto-populate these invoicing settings directly from historical XLSX imports by analyzing Article 000001 entries. To apply this to existing data, a new backend endpoint was created, triggered by Refresh Invoicing Settings buttons with double confirmation modals on both the Customer List and Customer Detail pages. The UI for Invoicing Settings was further reorganized into three distinct, highlighted tiles: Customer Data, Invoicing Period, and Address Service, with the Company dropdown text finally made bold. Throughout, backend tests passed, and frontend UI changes were verified where possible despite recurring screenshot and login issues.
+The previous AI engineer significantly enhanced the JMMC Invoicing application, primarily focusing on  page features and overall customer management. Key additions include a  tile for navigating customer data alphabetically, displaying detailed customer settings, and historical invoices. A robust customer status system (Active/Inactive/New) was introduced, with automatic New status assignment during XLSX imports, visible indicators, and comprehensive filtering. An  modal was implemented to provide feedback after XLSX uploads, highlighting new customers. Furthermore, manual entry of job rows was enabled, complete with an entry source tracking (Imported/Manual) and a dedicated Forfait status for flexible invoicing. Throughout, the engineer demonstrated strong debugging skills, addressing UI/UX inconsistencies, authentication issues, and data mapping errors through careful analysis of frontend and backend logs and persistent verification.
 </analysis>
 
 <product_requirements>
-The JMMC Invoicing application manages monthly invoicing with user authentication, XLSX/XLS import/validation, a three-phase workflow (Import, Edit, Review & Post), and audit logging.
+The JMMC Invoicing application streamlines monthly invoicing via authenticated XLSX/XLS imports, encompassing Import, Edit, Review, and Post phases. Initial enhancements covered data accuracy, UI renaming, AI model integration (OpenAI GPT-5 variants, 4 AI agent prompts with individual model selection), batch/invoice management (conditional delete, unarchive, hard-delete with cascading updates), and UI layout refinements.
 
-**Key features developed/enhanced during the trajectory:**
-*   **Customer Settings Detail Page (Invoicing Settings):**
-    *   Moved  and  dropdown into the  tile.
-    *   Implemented dynamic pricing fields:  (for Fixed Forfait and Hybrid invoicing types) and  (for By Hours Spent and Hybrid). Both linked to Article 000001 - Računovodstvo.
-    *   Preserved European number formatting (1.000,00) and editability for these fields.
-    *   Visually separated Customer Data within Invoicing Settings with a light blue background.
-    *   Auto-population logic in backend for , , and  from latest historical XLSX import rows (Article 000001 analysis).
-    *   Trigger buttons on  list and  pages to update all customer invoicing settings with double confirmation warnings.
-    *   Reorganized Invoicing Settings into three distinct tiles: Customer Data, Invoicing Period, and Address Service.
-    *   Made the Company dropdown text bold.
-*   **Customer Management:** Improved historical invoices table with article codes and enhanced description display. Added statistics and sorting to the customer list.
-*   **Import Verification:** Enhanced workflow with pre-import review, filtering, dynamic totals, and AI validation. Added auto-save and original file download.
-*   **Batch List:** Added a Total column to display the sum of all invoice values per batch.
-*   **User Management & Security:** Implemented user profile and admin user management, removed exposed credentials, and added avatar support.
+Recent development focused on :
+-   **Customer Analytics Tile:** A new tile was added between Hours by Employee and filters. It allows navigation (next/previous) through customers, displays customer settings (e.g., Hourly Rate, Invoicing Type), and expands to show 12 months of historical invoices with a matching layout from customer settings.
+-   **Customer Status Management:** Implemented // statuses for customers. New status is auto-assigned during XLSX imports. Statuses are reflected on the  page, in the  table (with icons), and via a dedicated filter. Inactive customers are excluded from  navigation.
+-   **Import Summary Modal:** A pop-up modal now displays import statistics and newly created customers post-XLSX upload, highlighting new customers and prompting for settings configuration.
+-   **Manual Job Row Entry:** A + icon in the  filters tile allows manual entry of job rows via the existing Edit Row Values modal, including employee and date fields.
+-   **Entry Source Tracking:** Time entries are marked as imported or manual in the database, with a visual icon in the  table.
+-   **Forfait Status:** A new Forfait status was added, settable in the edit modal and via status buttons, displayed with an icon in the table, and excluded from invoicing.
 </product_requirements>
 
 <key_technical_concepts>
--   **FastAPI:** Python backend for API development.
--   **React:** Frontend library, utilizing Shadcn UI components.
--   **MongoDB:** NoSQL database, with Motor for async Python.
--   **OpenPyXL/xlrd:** Python libraries for XLSX/XLS parsing.
--   **emergentintegrations:** Library for LLM (AI) integration.
+-   **FastAPI**: Python framework for backend APIs.
+-   **React**: Frontend library (, ,  for state/effects/memoization), Shadcn UI components.
+-   **MongoDB**: NoSQL database for data storage (UUIDs for IDs).
+-   **Pydantic**: Data validation for API models.
+-   **emergentintegrations.llm.chat.LlmChat**: LLM integration library (used in previous context).
+-   **Axios**: HTTP client for API requests.
 </key_technical_concepts>
 
 <code_architecture>
-The application uses a standard full-stack structure with a FastAPI backend and a React frontend.
-
 
 
 -   ****:
-    -   **Importance:** Lists Python dependencies.
-    -   **Changes Made:** Added .
--   ****:
-    -   **Importance:** Core FastAPI application with API endpoints.
+    -   **Importance:** Core FastAPI application, handling API routes and database interactions.
     -   **Changes Made:**
-        -    schema updated to include .
-        -    updated to parse  (Šifra art.) and auto-populate , ,  based on Article 000001 logic from XLSX data.
-        -   New endpoint  added to apply auto-population logic to existing customers.
-        -   Other changes (User/Auth, XLS/XLSX Import, Invoice/Batch, Import Verification AI/Progress, Time Entry, Customer Management) as previously summarized.
+        -   Modified  (previous work) for  and .
+        -   Updated  to default new customers to active status.
+        -   Modified  to default  to active if missing.
+        -   Enhanced  to track and return  and set  for all new time entries.
+        -   Added  endpoint for creating individual manual time entries.
+        -   Updated  to allow forfait as a valid status.
 -   ****:
-    -   **Importance:** Defines frontend routes.
-    -   **Changes Made:** Added routes for , , and .
+    -   **Importance:** Temporary script to update existing customer documents in MongoDB with a default  and add  field.
+    -   **Changes Made:** New file created and executed once.
 -   ****:
-    -   **Importance:** Displays customer list.
-    -   **Changes Made:** Added a Refresh Invoicing Settings button with double confirmation modals to the header for bulk updates.
+    -   **Importance:** Temporary script to update existing  documents in MongoDB with .
+    -   **Changes Made:** New file created and executed once.
 -   ****:
-    -   **Importance:** Displays and manages detailed customer information and invoicing settings.
+    -   **Importance:** Central page for time entry review and editing.
     -   **Changes Made:**
-        -    state added and implemented for display.
-        -   Moved Default Unit Price and Company fields into the Invoicing Settings tile.
-        -   Implemented dynamic display logic for  and  based on .
-        -   Fixed a bug where the  field was not showing when  was 'by-hours' due to undefined initial state.
-        -   Restructured Invoicing Settings into three distinct blue-tinted tiles: Customer Data, Invoicing Period, and Address Service.
-        -   Added a Refresh Invoicing Settings button with double confirmation modals.
-        -   Made the Company dropdown text bold.
+        -   Added  tile: displays customer details, navigation buttons, and historical invoices.
+        -   Implemented customer filtering for active and new statuses in the  dropdown.
+        -   Integrated  with  and  for efficient customer data loading and display.
+        -   Improved initial customer selection logic to auto-select the first active/new customer alphabetically upon page load, especially after an import.
+        -   Refactored historical invoices display to match  Individual Transactions style, including month totals and fixing data mapping (, , ).
+        -   Added  icon button in filters for manual entry, which opens the edit modal.
+        -   Modified edit modal to handle new manual entries, including Employee Name and Date fields, and setting .
+        -   Replaced Employee text input with a dropdown in the manual entry modal.
+        -   Added Src column in the table with I (imported) or M (manual) badges.
+        -   Introduced Forfait status: added to status buttons, filter, table icon (briefcase), and Entry Details display.
 -   ****:
-    -   **Importance:** Displays monthly batch list.
-    -   **Changes Made:** Added a Total column displaying the sum of all invoice values per batch.
+    -   **Importance:** Page for viewing and editing individual customer settings.
+    -   **Changes Made:**
+        -   Replaced Historical Entries tile with a prominent  tile (active/inactive/new).
+        -   Added  field and a status selector in the  section.
+        -   Styled the status display to be more prominent and match the overall UI theme.
+        -   Removed the IMPORTANT badge from the customer status field.
 -   ****:
-    -   **Importance:** Reusable UI component for avatars.
-    -   **Changes Made:** New file created.
+    -   **Importance:** Lists all customers and provides management actions.
+    -   **Changes Made:**
+        -   Added  logic and UI dropdown for filtering customers by active, inactive, or new status.
+        -   Added a  column (before ) in the customer table, displaying the customer's status with an icon.
+        -   Updated  to handle sorting by status.
+-   ****:
+    -   **Importance:** Handles XLSX/XLS file uploads for new batches.
+    -   **Changes Made:**
+        -   Rewrote  to first upload the file to the backend, then receive an import summary.
+        -   Implemented an  to display import statistics and a list of  with a call to action to configure their settings, before navigating to .
 </code_architecture>
 
 <pending_tasks>
 -   Visually verify the frontend display of the automatically populated and read-only invoice number after posting a new invoice to e-računi.
+-   Integrate the Run 2xDTM button functionality in the  modal with its backend logic.
+-   Complete frontend integration for batch unarchive functionality (backend endpoint is created, but UI interaction not fully verified).
 </pending_tasks>
 
 <current_work>
-Immediately before this summary, the AI engineer completed the user's request to enhance the visual presentation of the Company dropdown text within the Customer Data subsection of the Invoicing Settings tile on the Customer Detail page ().
+The most recent work involved fixing the initialization logic for the  tile on the  page. Previously, after an XLSX import, the tile would sometimes display No customer selected because the customer chosen from preferences was either invalid or the  list hadn't fully loaded and filtered before the initial selection was attempted.
 
-Specifically, the  component used for the Company field was modified to ensure its displayed text is bold, aligning with the user's explicit request for visual emphasis based on the UI's color scheme. This change was implemented by adding appropriate styling to the component's structure. Following this modification, the frontend service was restarted, and a screenshot attempt was made to verify the change, though recurring customer loading issues persisted for screenshot verification. The core styling change, however, was successfully applied.
+The AI engineer addressed this by:
+1.  **Refining  dependencies:** Ensuring that  from preferences doesn't prematurely override the initial selection before  is available and filtered.
+2.  **Robust First Customer Selection:** Modifying the initialization logic in  to always prioritize selecting the first alphabetically sorted active or new customer from the filtered list, especially when a  from preferences is stale or no longer valid (e.g., if it points to an inactive customer).
+3.  **Preventing Premature Data Loading:** Adjusting  to avoid loading customer-specific data from preferences that could interfere with the correct initialization of the  tile.
+
+This ensures that upon navigating to , particularly after a new import, a valid, active/new customer is always displayed in the  tile by default, providing a consistent and expected user experience. The last action was a successful frontend restart and verification via console logs and a screenshot, confirming that the  tile correctly auto-selects the first active/new customer, like 123 HIŠKA d.o.o., and displays its associated data.
 </current_work>
 
 <optional_next_step>
-Address the pending task to visually verify the frontend display of the automatically populated and read-only invoice number after posting a new invoice to e-računi.
+Verify the remaining pending tasks, starting with the visual verification of the invoice number display.
 </optional_next_step>
