@@ -2190,8 +2190,8 @@ const ImportVerification = () => {
                           }
                         }}
                         title={
-                          rowStatus === 'invoiced'
-                            ? 'Invoiced - click to change status'
+                          isPostedToInvoice
+                            ? 'Posted to invoice - click to edit'
                             : rowStatus === 'ready'
                             ? 'Ready - verified and approved'
                             : rowStatus === 'internal'
