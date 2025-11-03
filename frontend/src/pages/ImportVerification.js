@@ -573,15 +573,26 @@ const ImportVerification = () => {
         } else {
           console.log('⚠️  VerificationData not yet available, will load customer data when ready');
         }
-      } else if (verificationData && selectedCustomerForAnalytics) {
-        // Load data for existing selection only if verificationData is available
+      } else if (verificationData && selectedCustomerForAnalytics && !customerSettings) {
+        // Load data for existing selection only if not already loaded
         console.log('✓ Selected customer exists, loading its data:', selectedCustomerForAnalytics);
         loadCustomerData(selectedCustomerForAnalytics);
       }
     } else {
       console.log('⚠️  No customers available yet or empty customer list');
     }
-  }, [allCustomers, verificationData, selectedCustomerForAnalytics, loadCustomerData]);
+  }, [allCustomers, verificationData, loadCustomerData]);
+  
+  // Separate effect to handle customer data loading when customer is selected
+  useEffect(() => {
+    if (selectedCustomerForAnalytics && allCustomers && allCustomers.length > 0 && verificationData) {
+      const customer = allCustomers.find(c => c.id === selectedCustomerForAnalytics);
+      if (customer && !customerSettings) {
+        console.log('✓ Customer selected but data not loaded, loading now:', customer.name);
+        loadCustomerData(selectedCustomerForAnalytics);
+      }
+    }
+  }, [selectedCustomerForAnalytics, allCustomers, verificationData, customerSettings, loadCustomerData]);
 
 
   const handleProceedClick = () => {
