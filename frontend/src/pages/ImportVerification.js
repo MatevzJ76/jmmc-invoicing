@@ -578,7 +578,7 @@ const ImportVerification = () => {
         date: verificationData.metadata.periodTo, // Last day of invoicing period
         hours: 1,
         tariff: '001 - Računovodstvo',
-        notes: 'Pavšal', // Description for forfait entries
+        notes: 'Forfait', // Description for forfait entries
         status: 'uninvoiced',
         entrySource: 'forfait_batch', // New source type
         forfaitBatchParentId: null, // For future: will be used to link to parent
