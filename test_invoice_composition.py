@@ -133,8 +133,13 @@ class TestInvoiceComposition:
                         break
             
             if not self.test_batch_id:
-                print("❌ No suitable batch found. Please create a batch first.")
-                return False
+                print("⚠️  No suitable batch found. Creating entries in first available batch.")
+                if batches:
+                    self.test_batch_id = batches[0]["id"]
+                    print(f"✅ Using batch: {batches[0]['title']} (ID: {self.test_batch_id})")
+                else:
+                    print("❌ No batches available. Please create a batch first.")
+                    return False
             
             # Now create manual entries with different statuses
             entries_to_create = [
