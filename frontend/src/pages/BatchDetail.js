@@ -1298,6 +1298,8 @@ const BatchDetail = () => {
               </div>
             )}
           </div>
+            </div>
+          )}
         </div>
 
         {/* Invoices List */}
