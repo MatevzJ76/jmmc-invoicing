@@ -3018,7 +3018,7 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
             "periodFrom": batch["periodFrom"],
             "periodTo": batch["periodTo"],
             "dueDate": batch["dueDate"],
-            "status": "imported",
+            "status": "draft",
             "total": sum(e["value"] for e in customer_entries),
             "createdAt": datetime.now(timezone.utc).isoformat()
         }
