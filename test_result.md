@@ -586,6 +586,19 @@ agent_communication:
     - agent: "testing"
       message: "✅ ARTICLES API TESTING COMPLETE! ALL 2 TESTS PASSED (2/2). Test Results: (1) ✅ GET /api/articles - Successfully retrieved 45 articles. Each article has all required fields: code, description, unitMeasure, priceWithoutVAT, vatPercentage, tariffCode. No _id field in response (correctly excluded). First 3 articles verified: Article 000001 (Računovodstvo - Contabilita`, €45.00, VAT 22%), Article 000002 (Najem sedeža - Sede legale, €50.00, VAT 22%), Article 000003 (Uporaba programa - Utilizzo gestionale, €15.00, VAT 22%). (2) ✅ Database Verification - Confirmed articles collection has 45 documents with correct structure. All articles properly seeded via seed_articles.py script (fixed to use correct DB_NAME from environment). CONCLUSION: Articles API is PRODUCTION-READY. Endpoint implementation correct (lines 3002-3006 in server.py), authentication working, response format correct with _id excluded. NO ISSUES FOUND."
 
+  - task: "POST /api/invoices/compose and compose-filtered - Set invoice status to 'draft' instead of 'imported'"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "BUG FIX: Changed invoice status assignment from 'imported' to 'draft' when composing invoices from Import Verification page. Changed line 3021 in POST /api/invoices/compose endpoint and line 3129 in POST /api/invoices/compose-filtered endpoint. Both endpoints now set invoice status to 'draft' instead of 'imported'. This ensures that newly composed invoices have the correct initial status matching user expectations. Backend service restarted successfully. Ready for testing."
+
+
 backend:
   - task: "POST /api/invoices/compose-filtered - Filtered invoice composition"
     implemented: true
