@@ -92,26 +92,35 @@ class TestInvoiceComposition:
             print(f"✅ Using customer: {test_customer['name']} (ID: {self.test_customer_id})")
             
             # Create a test batch
-            print("\n--- Step 2: Create Test Batch ---")
-            today = datetime.now()
-            batch_data = {
-                "id": f"test-batch-{int(datetime.now().timestamp())}",
-                "title": f"Test Batch - Invoice Composition - {today.strftime('%Y-%m-%d %H:%M:%S')}",
-                "filename": "test_composition.xlsx",
-                "periodFrom": (today - timedelta(days=30)).strftime("%Y-%m-%d"),
-                "periodTo": today.strftime("%Y-%m-%d"),
-                "invoiceDate": today.strftime("%Y-%m-%d"),
-                "dueDate": (today + timedelta(days=15)).strftime("%Y-%m-%d"),
-                "status": "imported",
-                "createdBy": ADMIN_EMAIL,
-                "createdAt": datetime.now().isoformat()
-            }
+            print("\n--- Step 2: Find Existing Batch ---")
             
-            # Insert batch directly via MongoDB (we'll use the batch endpoint)
-            # Since we can't directly insert, we'll create entries and associate them
-            self.test_batch_id = batch_data["id"]
+            # Get existing batches
+            response = requests.get(
+                f"{BACKEND_URL}/batches",
+                headers=self.get_headers()
+            )
             
-            print(f"✅ Test batch ID: {self.test_batch_id}")
+            if response.status_code != 200:
+                print(f"❌ Failed to get batches: {response.status_code}")
+                return False
+            
+            batches = response.json()
+            
+            # Find an 'imported' or 'in progress' batch
+            for batch in batches:
+                if batch.get("status") in ["imported", "in progress"]:
+                    self.test_batch_id = batch["id"]
+                    print(f"✅ Using existing batch: {batch['title']} (ID: {self.test_batch_id})")
+                    break
+            
+            if not self.test_batch_id:
+                print("⚠️  No suitable batch found. Using first available batch.")
+                if batches:
+                    self.test_batch_id = batches[0]["id"]
+                    print(f"✅ Using batch: {batches[0]['title']} (ID: {self.test_batch_id})")
+                else:
+                    print("❌ No batches available. Please create a batch first.")
+                    return False
             
             # Create time entries with different statuses
             print("\n--- Step 3: Create Time Entries with Mixed Statuses ---")
