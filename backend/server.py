@@ -3126,7 +3126,7 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
             "periodFrom": batch["periodFrom"],
             "periodTo": batch["periodTo"],
             "dueDate": batch["dueDate"],
-            "status": "imported",
+            "status": "draft",
             "total": sum(e["value"] for e in customer_entries),
             "createdAt": datetime.now(timezone.utc).isoformat()
         }
