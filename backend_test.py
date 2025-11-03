@@ -4121,11 +4121,11 @@ class TestCustomerUpdate:
             print(f"\n⚠️  {total - passed} test(s) failed")
 
 if __name__ == "__main__":
-    # Run Filtered Invoice Composition tests
+    # Run Invoice Composition Billable Statuses tests
     print("\n" + "=" * 80)
-    print("RUNNING FILTERED INVOICE COMPOSITION TESTS")
+    print("RUNNING INVOICE COMPOSITION BILLABLE STATUSES TESTS")
     print("=" * 80)
     
-    tester = TestFilteredInvoiceComposition()
+    tester = TestInvoiceCompositionBillableStatuses()
     tester.run_all_tests()
 
