@@ -168,6 +168,21 @@ backend:
 frontend:
   - task: "InvoiceDetail.js - Add forfait details text box between description and hours"
     implemented: true
+
+
+frontend:
+  - task: "ImportVerification.js - Move Row Status icon to replace edited (hand/pen) icon"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ImportVerification.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "UI CHANGE: Moved Row Status icons to replace the 'manually edited' icon (✍️ hand with pen). Changes at lines 2206-2227: (1) Removed the first status icon span block before row number. (2) Removed manually edited icon (✍️) from the icon group. (3) Added all row status icons (✓, OK, 🏢, 🎁, 💼, F, ○) to the same position where manually edited icon was. (4) Kept warning icon (⚠️) and AI corrected icon (🤖) in same position. RESULT: Status icons now appear in the column where the edited icon used to be. No separate 'status edited' indicator needed. Ready for visual verification."
+
     working: "NA"
     file: "/app/frontend/src/pages/InvoiceDetail.js"
     stuck_count: 0
