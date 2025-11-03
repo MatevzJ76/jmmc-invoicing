@@ -310,7 +310,10 @@ const Batches = () => {
           hourlyRate: entry.hourlyRate || 0,  // Add hourlyRate from backend
           value: entry.value || 0,
           invoiceNumber: entry.invoiceNumber || '',
-          status: entry.status || 'uninvoiced'  // Row status
+          invoiceStatus: entry.invoiceStatus || '',  // Add invoice status from backend
+          invoiceId: entry.invoiceId || '',  // Add invoice ID from backend
+          status: entry.status || 'uninvoiced',  // Row status
+          entrySource: entry.entrySource || 'imported'  // Entry source: imported or manual
         };
       });
       
