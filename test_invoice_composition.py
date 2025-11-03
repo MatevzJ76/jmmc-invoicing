@@ -122,35 +122,8 @@ class TestInvoiceComposition:
                     print("❌ No batches available. Please create a batch first.")
                     return False
             
-            # Create time entries with different statuses
-            print("\n--- Step 3: Create Time Entries with Mixed Statuses ---")
-            
-            # We need to create entries via the manual entry endpoint
-            # But first, let's check if we can find an existing batch to work with
-            response = requests.get(
-                f"{BACKEND_URL}/batches",
-                headers=self.get_headers()
-            )
-            
-            if response.status_code == 200:
-                batches = response.json()
-                # Find an 'imported' or 'in progress' batch
-                for batch in batches:
-                    if batch.get("status") in ["imported", "in progress"]:
-                        self.test_batch_id = batch["id"]
-                        print(f"✅ Using existing batch: {batch['title']} (ID: {self.test_batch_id})")
-                        break
-            
-            if not self.test_batch_id:
-                print("⚠️  No suitable batch found. Creating entries in first available batch.")
-                if batches:
-                    self.test_batch_id = batches[0]["id"]
-                    print(f"✅ Using batch: {batches[0]['title']} (ID: {self.test_batch_id})")
-                else:
-                    print("❌ No batches available. Please create a batch first.")
-                    return False
-            
             # Now create manual entries with different statuses
+            print("\n--- Step 3: Create Time Entries with Mixed Statuses ---")
             entries_to_create = [
                 {"status": "uninvoiced", "hours": 8.0, "notes": "Entry 1 - Uninvoiced"},
                 {"status": "uninvoiced", "hours": 4.5, "notes": "Entry 2 - Uninvoiced"},
