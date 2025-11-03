@@ -3350,8 +3350,9 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         {"$set": {"status": "composed"}}
     )
     
-    # Calculate total entries processed (regular + forfait_batch + linked forfait)
-    total_processed = len(entries) + len(forfait_batch_entries) + len(forfait_entries)
+    # Calculate total entries processed (ONLY billable line items: regular + forfait_batch)
+    # Forfait entries are NOT counted as they don't create separate line items
+    total_processed = len(entries) + len(forfait_batch_entries)
     
     return {"invoiceIds": invoice_ids, "entriesProcessed": total_processed}
 
