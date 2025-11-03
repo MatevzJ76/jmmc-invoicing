@@ -105,6 +105,32 @@
 user_problem_statement: "DEBUG & FIX: Value column shows correct values after import but becomes €0,00 after navigating back to monthly batches and re-entering. Frontend not mapping hourlyRate field when loading batch data."
 
 backend:
+  - task: "POST /api/invoices/compose - Restrict to uninvoiced and ready statuses only"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "ENHANCEMENT: Updated invoice composition logic to ONLY include entries with status 'uninvoiced' or 'ready'. USER REQUIREMENT: Changed from including [uninvoiced, ready, forfait] to ONLY [uninvoiced, ready]. This excludes forfait entries from automatic invoice posting. Changes: (1) Updated POST /api/invoices/compose endpoint at line 3029 - changed status filter from {\"$in\": [\"uninvoiced\", \"ready\", \"forfait\"]} to {\"$in\": [\"uninvoiced\", \"ready\"]}. (2) Updated POST /api/invoices/compose-filtered endpoint at line 3134 - same change. (3) Frontend button renamed from 'Proceed to Import' to 'DoTheInvoice' in ImportVerification.js line 1515. RESULT: Entries are posted 1:1 to invoice rows. Only entries with status uninvoiced or ready are included in invoices. Forfait, internal, free, and already invoiced entries are excluded. Ready for comprehensive testing."
+
+frontend:
+  - task: "ImportVerification.js - Rename 'Proceed to Import' button to 'DoTheInvoice'"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ImportVerification.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "BUTTON RENAME: Changed button text from 'Proceed to Import' to 'DoTheInvoice' at line 1515 in ImportVerification.js. This button triggers invoice composition from the import verification page. The button calls handleProceedClick → handleConfirmProceed → handleProceed which posts to /api/invoices/compose-filtered endpoint. Ready for testing."
+
+backend:
   - task: "POST /api/imports - Calculate value from tariff rates (ignore Excel Vrednost column)"
     implemented: true
     working: true
