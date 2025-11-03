@@ -3116,6 +3116,11 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
     """
     Compose invoices only for specified time entry IDs (filtered rows).
     Accepts: { batchId, entryIds: [list of time entry IDs] }
+    
+    Enhanced with forfait linking logic:
+    - Rows with status "uninvoiced" or "ready" are posted 1:1
+    - Rows with status "forfait" (and src != "forfait_batch") are linked to forfait_batch rows
+    - Validation: Each customer can have only 1 forfait_batch row with tariff "001 - Računovodstvo"
     """
     batch_id = request.get('batchId')
     entry_ids = request.get('entryIds', [])
@@ -3134,12 +3139,63 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         "status": {"$in": ["uninvoiced", "ready"]}  # Include only uninvoiced and ready (exclude forfait, internal, free, already invoiced)
     }).to_list(10000)
     
-    if not entries:
+    # ALSO get forfait entries (status="forfait", src != "forfait_batch") for linking
+    forfait_entries = await db.timeEntries.find({
+        "batchId": batch_id,
+        "id": {"$in": entry_ids},
+        "status": "forfait",
+        "entrySource": {"$ne": "forfait_batch"}  # Exclude forfait_batch entries
+    }).to_list(10000)
+    
+    # Get all forfait_batch entries (src="forfait_batch") for validation
+    forfait_batch_entries = await db.timeEntries.find({
+        "batchId": batch_id,
+        "id": {"$in": entry_ids},
+        "entrySource": "forfait_batch"
+    }).to_list(10000)
+    
+    if not entries and not forfait_batch_entries:
         raise HTTPException(status_code=400, detail="No matching time entries found")
     
-    # Group by customer
+    # VALIDATION: Check forfait logic for each customer
+    # Group forfait entries and forfait_batch entries by customer
+    forfait_by_customer = defaultdict(list)
+    for entry in forfait_entries:
+        forfait_by_customer[entry["customerId"]].append(entry)
+    
+    forfait_batch_by_customer = defaultdict(list)
+    for entry in forfait_batch_entries:
+        forfait_batch_by_customer[entry["customerId"]].append(entry)
+    
+    # Validate forfait logic for customers with forfait entries
+    for customer_id, customer_forfait_entries in forfait_by_customer.items():
+        customer = await db.customers.find_one({"id": customer_id})
+        customer_name = customer.get("name", "Unknown") if customer else "Unknown"
+        
+        # Find forfait_batch entries with tariff "001 - Računovodstvo"
+        forfait_batch_001 = []
+        if customer_id in forfait_batch_by_customer:
+            for fb_entry in forfait_batch_by_customer[customer_id]:
+                tariff_code = fb_entry.get("tariff", "")
+                if "001" in tariff_code and "Računovodstvo" in tariff_code:
+                    forfait_batch_001.append(fb_entry)
+        
+        # Check: Must have exactly 1 forfait_batch with tariff 001
+        if len(forfait_batch_001) == 0:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot create invoice - Customer '{customer_name}' has forfait entries but no forfait batch entry with tariff 001 - Računovodstvo."
+            )
+        elif len(forfait_batch_001) > 1:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot create invoice - Customer '{customer_name}' has multiple forfait batch entries with tariff 001 - Računovodstvo. Only 1 is allowed."
+            )
+    
+    # Group by customer (include both regular entries and forfait_batch entries)
+    all_billable_entries = entries + forfait_batch_entries
     customer_groups = defaultdict(list)
-    for entry in entries:
+    for entry in all_billable_entries:
         customer_groups[entry["customerId"]].append(entry)
     
     # Create invoices
