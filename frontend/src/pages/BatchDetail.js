@@ -319,6 +319,11 @@ const BatchDetail = () => {
       });
       setBatch(batchResponse.data);
       setEditedBatch(batchResponse.data);
+      
+      // Load verification tile expanded state from batch preferences
+      if (batchResponse.data.filterPreferences?.verificationTileExpanded !== undefined) {
+        setVerificationTileExpanded(batchResponse.data.filterPreferences.verificationTileExpanded);
+      }
 
       // Load invoices for this batch
       const invoicesResponse = await axios.get(`${BACKEND_URL}/api/batches/${id}/invoices`, {
