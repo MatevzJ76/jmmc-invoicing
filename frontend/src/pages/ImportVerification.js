@@ -555,23 +555,28 @@ const ImportVerification = () => {
       verificationDataExists: !!verificationData
     });
     
-    if (allCustomers && allCustomers.length > 0 && verificationData) {
+    // Always ensure a customer is selected when customers are available
+    if (allCustomers && allCustomers.length > 0) {
       // Check if selected customer exists in the active/new list
       const selectedExists = selectedCustomerForAnalytics && 
         allCustomers.some(c => c.id === selectedCustomerForAnalytics);
       
       if (!selectedExists) {
-        // Auto-select first customer alphabetically (always for fresh imports)
+        // Auto-select first customer alphabetically (always when no valid selection exists)
         const firstCustomer = allCustomers[0];
         console.log('Auto-selecting first active/new customer alphabetically:', firstCustomer.name, firstCustomer.id);
         setSelectedCustomerForAnalytics(firstCustomer.id);
-        loadCustomerData(firstCustomer.id);
-      } else {
+        // Load customer data immediately
+        if (verificationData) {
+          loadCustomerData(firstCustomer.id);
+        }
+      } else if (verificationData) {
+        // Load data for existing selection only if verificationData is available
         console.log('Selected customer exists in active/new list, loading its data');
         loadCustomerData(selectedCustomerForAnalytics);
       }
     }
-  }, [allCustomers, verificationData]);
+  }, [allCustomers, verificationData, selectedCustomerForAnalytics, loadCustomerData]);
 
 
   const handleProceedClick = () => {
