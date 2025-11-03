@@ -410,7 +410,7 @@ class TestForfaitLinking:
         if not self.login():
             return False
         
-        if not self.find_test_batch():
+        if not self.find_or_create_test_batch():
             return False
         
         if not self.find_test_customer():
