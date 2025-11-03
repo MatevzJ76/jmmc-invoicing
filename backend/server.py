@@ -3329,32 +3329,10 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
                 {"$set": {"total": line_total}}
             )
         
-        # Mark all entries in this invoice as "invoiced"
-        # BUT preserve the original status in a new field 'originalStatus' for UI display
-        entry_ids_to_mark = [entry["id"] for entry in customer_entries]
         
-        # Also mark linked forfait entries as "invoiced"
-        if customer_id in forfait_by_customer:
-            forfait_entry_ids = [f_entry["id"] for f_entry in forfait_by_customer[customer_id]]
-            entry_ids_to_mark.extend(forfait_entry_ids)
-        
-        # First, preserve original status for each entry
-        for entry_id in entry_ids_to_mark:
-            entry = await db.timeEntries.find_one({"id": entry_id})
-            if entry:
-                original_status = entry.get("status")
-                # Only set originalStatus if not already set (preserve first-time status)
-                if not entry.get("originalStatus"):
-                    await db.timeEntries.update_one(
-                        {"id": entry_id},
-                        {"$set": {"originalStatus": original_status}}
-                    )
-        
-        # Then update status to 'invoiced'
-        await db.timeEntries.update_many(
-            {"id": {"$in": entry_ids_to_mark}},
-            {"$set": {"status": "invoiced"}}
-        )
+        # DO NOT change row statuses after posting - keep them as set by user
+        # Rows should maintain their original status (uninvoiced, ready, internal, free, forfait)
+        # No status update needed - statuses remain as user configured them
         
         invoice_ids.append(invoice_id)
     
