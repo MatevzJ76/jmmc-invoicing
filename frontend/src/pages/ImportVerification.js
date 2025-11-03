@@ -2094,7 +2094,8 @@ const ImportVerification = () => {
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">#</th>
-                  <th className="px-3 py-3 text-center text-xs font-semibold text-slate-700">Status</th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-slate-700" title="Posting Status">S</th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-slate-700" title="Row Status">St</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Stranka</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Datum</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-700">Tarifa</th>
