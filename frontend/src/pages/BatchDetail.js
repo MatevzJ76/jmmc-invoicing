@@ -54,6 +54,7 @@ const BatchDetail = () => {
     noClient: false,
     extra: false
   });
+  const [verificationTileExpanded, setVerificationTileExpanded] = useState(true); // Verification tile expanded by default
   const [aiVerifying, setAiVerifying] = useState(false);
   const [aiResults, setAiResults] = useState({});
   const [showAiWarnings, setShowAiWarnings] = useState(false);
