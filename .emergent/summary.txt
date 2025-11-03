@@ -1,26 +1,39 @@
 <analysis>
-The previous AI engineer significantly enhanced the JMMC Invoicing application, primarily focusing on  page features and overall customer management. Key additions include a  tile for navigating customer data alphabetically, displaying detailed customer settings, and historical invoices. A robust customer status system (Active/Inactive/New) was introduced, with automatic New status assignment during XLSX imports, visible indicators, and comprehensive filtering. An  modal was implemented to provide feedback after XLSX uploads, highlighting new customers. Furthermore, manual entry of job rows was enabled, complete with an entry source tracking (Imported/Manual) and a dedicated Forfait status for flexible invoicing. Throughout, the engineer demonstrated strong debugging skills, addressing UI/UX inconsistencies, authentication issues, and data mapping errors through careful analysis of frontend and backend logs and persistent verification.
+The AI engineer's work primarily focused on enhancing the JMMC Invoicing application's  and  pages. Key accomplishments include implementing dynamic invoice status assignment (from imported to draft), enriching time entry data with invoice details, and significantly improving the  tile's reliability and usability. The engineer also introduced a robust Add Forfait feature for manual entry of fixed-value services, including its UI integration, backend logic, and distinct visual representation. Debugging efforts involved resolving issues with customer auto-selection, data flow between frontend components, and ensuring correct display logic, often leveraging console logs and  for complex problems. The work concluded with styling improvements for forfait rows, making them visually distinct.
 </analysis>
 
 <product_requirements>
-The JMMC Invoicing application streamlines monthly invoicing via authenticated XLSX/XLS imports, encompassing Import, Edit, Review, and Post phases. Initial enhancements covered data accuracy, UI renaming, AI model integration (OpenAI GPT-5 variants, 4 AI agent prompts with individual model selection), batch/invoice management (conditional delete, unarchive, hard-delete with cascading updates), and UI layout refinements.
+The JMMC Invoicing app streamlines monthly invoicing via authenticated XLSX/XLS imports, covering Import, Edit, Review, and Post phases. Initial features included data accuracy, UI renaming, AI model integration, batch/invoice management, and UI refinements.
 
-Recent development focused on :
--   **Customer Analytics Tile:** A new tile was added between Hours by Employee and filters. It allows navigation (next/previous) through customers, displays customer settings (e.g., Hourly Rate, Invoicing Type), and expands to show 12 months of historical invoices with a matching layout from customer settings.
--   **Customer Status Management:** Implemented // statuses for customers. New status is auto-assigned during XLSX imports. Statuses are reflected on the  page, in the  table (with icons), and via a dedicated filter. Inactive customers are excluded from  navigation.
--   **Import Summary Modal:** A pop-up modal now displays import statistics and newly created customers post-XLSX upload, highlighting new customers and prompting for settings configuration.
--   **Manual Job Row Entry:** A + icon in the  filters tile allows manual entry of job rows via the existing Edit Row Values modal, including employee and date fields.
--   **Entry Source Tracking:** Time entries are marked as imported or manual in the database, with a visual icon in the  table.
--   **Forfait Status:** A new Forfait status was added, settable in the edit modal and via status buttons, displayed with an icon in the table, and excluded from invoicing.
+Recent work focused on :
+-   **Customer Analytics Tile:** Navigate customers, display settings, and historical invoices.
+-   **Customer Status Management:** // statuses with auto-assignment and filtering.
+-   **Import Summary Modal:** Displays import statistics and new customers post-XLSX upload.
+-   **Manual Job Row Entry:** Add job rows via a + icon, including employee and date.
+-   **Entry Source Tracking:** Mark entries as imported or manual with visual icons.
+-   **Forfait Status:** New status for entries, settable via edit modal and excluded from invoicing.
+
+**Recent enhancements:**
+-   Invoice status set to Draft when posted from Import Verification.
+-   Display invoice status/number in Št. računa column in Import Verification table.
+-   Ensure Customer Analytics tile always selects the first active customer alphabetically.
+-   Customer Analytics tile updates when a customer is selected in filters.
+-   Add Add Forfait button to Customer Analytics tile for fixed-forfait/hybrid customers.
+    -   Creates new row with specific default values, Forfait description, and F icon.
+    -   Forfait entries should appear at the top of the table.
+    -   Forfait entries should have a distinctive background color.
+-   Display Src (entry source) in the Edit Row Values - Entry Details modal.
+-   Make Verification tile on Invoices and Verification page expandable/collapsible, saving state.
+-   Remove AI Check button from Verification tile.
 </product_requirements>
 
 <key_technical_concepts>
 -   **FastAPI**: Python framework for backend APIs.
--   **React**: Frontend library (, ,  for state/effects/memoization), Shadcn UI components.
+-   **React**: Frontend library (useState, useEffect, useCallback for state/effects/memoization), Shadcn UI components.
 -   **MongoDB**: NoSQL database for data storage (UUIDs for IDs).
 -   **Pydantic**: Data validation for API models.
--   **emergentintegrations.llm.chat.LlmChat**: LLM integration library (used in previous context).
 -   **Axios**: HTTP client for API requests.
+-   **Tailwind CSS**: For UI styling and responsiveness.
 </key_technical_concepts>
 
 <code_architecture>
@@ -29,68 +42,48 @@ Recent development focused on :
 -   ****:
     -   **Importance:** Core FastAPI application, handling API routes and database interactions.
     -   **Changes Made:**
-        -   Modified  (previous work) for  and .
-        -   Updated  to default new customers to active status.
-        -   Modified  to default  to active if missing.
-        -   Enhanced  to track and return  and set  for all new time entries.
-        -   Added  endpoint for creating individual manual time entries.
-        -   Updated  to allow forfait as a valid status.
--   ****:
-    -   **Importance:** Temporary script to update existing customer documents in MongoDB with a default  and add  field.
-    -   **Changes Made:** New file created and executed once.
--   ****:
-    -   **Importance:** Temporary script to update existing  documents in MongoDB with .
-    -   **Changes Made:** New file created and executed once.
+        -   Updated  and  to set invoice  instead of imported.
+        -   Modified  to include , , and  in time entry data.
+        -   Updated  to handle  entries with Forfait description and use  for value calculation.
+        -   Expanded the invoice composition logic to include more billable entry statuses (e.g., forfait) when querying for time entries.
+
 -   ****:
     -   **Importance:** Central page for time entry review and editing.
     -   **Changes Made:**
-        -   Added  tile: displays customer details, navigation buttons, and historical invoices.
-        -   Implemented customer filtering for active and new statuses in the  dropdown.
-        -   Integrated  with  and  for efficient customer data loading and display.
-        -   Improved initial customer selection logic to auto-select the first active/new customer alphabetically upon page load, especially after an import.
-        -   Refactored historical invoices display to match  Individual Transactions style, including month totals and fixing data mapping (, , ).
-        -   Added  icon button in filters for manual entry, which opens the edit modal.
-        -   Modified edit modal to handle new manual entries, including Employee Name and Date fields, and setting .
-        -   Replaced Employee text input with a dropdown in the manual entry modal.
-        -   Added Src column in the table with I (imported) or M (manual) badges.
-        -   Introduced Forfait status: added to status buttons, filter, table icon (briefcase), and Entry Details display.
+        -   Updated  to map , ,  from backend.
+        -   Modified table rendering for Št. računa column to display ,  (Draft), or - accordingly.
+        -   Refined  for customer analytics to ensure consistent auto-selection of active/new customers.
+        -   Added logic to update  tile when customer is selected in the filter dropdown.
+        -   Implemented  function to create new forfait entries, passing Forfait as description.
+        -   Added Add Forfait button as a tile in the  grid.
+        -   Added sorting logic to  and  for filtering to display  entries at the top of the table.
+        -   Added distinctive purple background and left border styling for  rows.
+        -   Added  field display (with F icon) in the Edit Row Values - Entry Details modal.
+
 -   ****:
-    -   **Importance:** Page for viewing and editing individual customer settings.
+    -   **Importance:** Lists all batches and provides navigation.
     -   **Changes Made:**
-        -   Replaced Historical Entries tile with a prominent  tile (active/inactive/new).
-        -   Added  field and a status selector in the  section.
-        -   Styled the status display to be more prominent and match the overall UI theme.
-        -   Removed the IMPORTANT badge from the customer status field.
+        -   Modified  to ensure  and  are passed in  when navigating to .
+
 -   ****:
-    -   **Importance:** Lists all customers and provides management actions.
+    -   **Importance:** Page for viewing details of a specific batch and its invoices.
     -   **Changes Made:**
-        -   Added  logic and UI dropdown for filtering customers by active, inactive, or new status.
-        -   Added a  column (before ) in the customer table, displaying the customer's status with an icon.
-        -   Updated  to handle sorting by status.
--   ****:
-    -   **Importance:** Handles XLSX/XLS file uploads for new batches.
-    -   **Changes Made:**
-        -   Rewrote  to first upload the file to the backend, then receive an import summary.
-        -   Implemented an  to display import statistics and a list of  with a call to action to configure their settings, before navigating to .
+        -   Implemented expandable/collapsible Verification tile, saving its state () in batch preferences.
+        -   Removed the AI Check button from the Verification tile header.
 </code_architecture>
 
 <pending_tasks>
--   Visually verify the frontend display of the automatically populated and read-only invoice number after posting a new invoice to e-računi.
--   Integrate the Run 2xDTM button functionality in the  modal with its backend logic.
--   Complete frontend integration for batch unarchive functionality (backend endpoint is created, but UI interaction not fully verified).
+- Visually verify the frontend display of the automatically populated and read-only invoice number after posting a new invoice to e-računi.
+- Integrate the Run 2xDTM button functionality in the  modal with its backend logic.
+- Complete frontend integration for batch unarchive functionality (backend endpoint is created, but UI interaction not fully verified).
 </pending_tasks>
 
 <current_work>
-The most recent work involved fixing the initialization logic for the  tile on the  page. Previously, after an XLSX import, the tile would sometimes display No customer selected because the customer chosen from preferences was either invalid or the  list hadn't fully loaded and filtered before the initial selection was attempted.
+The most recent work involved styling the  entries in the  table. The previous AI engineer added a distinctive background color and left border to these rows, making them stand out visually from other entry types. Specifically, a purple/violet gradient background (from-purple-50 to-violet-50) and a purple left border were applied to rows where . This was implemented in  within the table rendering logic.
 
-The AI engineer addressed this by:
-1.  **Refining  dependencies:** Ensuring that  from preferences doesn't prematurely override the initial selection before  is available and filtered.
-2.  **Robust First Customer Selection:** Modifying the initialization logic in  to always prioritize selecting the first alphabetically sorted active or new customer from the filtered list, especially when a  from preferences is stale or no longer valid (e.g., if it points to an inactive customer).
-3.  **Preventing Premature Data Loading:** Adjusting  to avoid loading customer-specific data from preferences that could interfere with the correct initialization of the  tile.
-
-This ensures that upon navigating to , particularly after a new import, a valid, active/new customer is always displayed in the  tile by default, providing a consistent and expected user experience. The last action was a successful frontend restart and verification via console logs and a screenshot, confirming that the  tile correctly auto-selects the first active/new customer, like 123 HIŠKA d.o.o., and displays its associated data.
+Before this, the engineer ensured that Add Forfait button worked, created new entries with Forfait description, inserted them at the top of the table, and displayed their source (F icon) in the Edit Row Values modal. The Verification tile on the Invoices and Verification page was made collapsible/expandable with state persistence, and its AI Check button was removed. Invoice composition status was correctly set to Draft, and the Št. računa column displayed relevant invoice information. The  tile now consistently auto-selects the first active customer and updates when filtering. All recent features have been tested and verified via screenshots and console logs.
 </current_work>
 
 <optional_next_step>
-Verify the remaining pending tasks, starting with the visual verification of the invoice number display.
+The next step is to visually verify the frontend display of the automatically populated and read-only invoice number after posting a new invoice to e-računi.
 </optional_next_step>

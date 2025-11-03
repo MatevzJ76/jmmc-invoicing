@@ -1,6 +1,6 @@
 import requests
 
-BACKEND_URL = "https://invoice-workflow-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://timentry-manager.preview.emergentagent.com/api"
 
 # Login
 login_response = requests.post(f"{BACKEND_URL}/auth/login", json={

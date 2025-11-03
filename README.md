@@ -4,7 +4,7 @@ Monthly invoicing system for time tracking & invoice management with AI-powered 
 
 ## Quick Start
 
-**Live URL**: https://invoice-workflow-2.preview.emergentagent.com
+**Live URL**: https://timentry-manager.preview.emergentagent.com
 
 **Default Credentials**:
 - Admin: `admin@local` / `Admin2025!`
