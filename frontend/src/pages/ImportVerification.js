@@ -2205,23 +2205,22 @@ const ImportVerification = () => {
                       >
                         <td className="px-3 py-2 text-slate-600 align-middle">
                           <div className="flex items-center gap-2">
-                            <span>
-                              {rowStatus === 'invoiced' && <span className="text-green-600 font-bold text-lg" title={statusTitle}>✓</span>}
-                              {rowStatus === 'ready' && (
-                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-[10px] font-bold" title={statusTitle}>
-                                  OK
-                                </span>
-                              )}
-                              {rowStatus === 'internal' && <span className="text-blue-600 text-lg" title={statusTitle}>🏢</span>}
-                              {rowStatus === 'free' && <span className="text-yellow-600 text-lg" title={statusTitle}>🎁</span>}
-                              {rowStatus === 'forfait' && <span className="text-purple-600 text-lg" title={statusTitle}>💼</span>}
-                              {rowStatus === 'uninvoiced' && <span className="text-slate-300 text-sm" title={statusTitle}>○</span>}
-                            </span>
                             <span className="font-medium">{displayIndex + 1}</span>
                             <span>
                               {isFlagged && <span className="text-amber-600">⚠️</span>}
                               {isAiCorrected && <span className="text-purple-600" title="AI corrections applied">🤖</span>}
-                              {isManuallyEdited && !isAiCorrected && <span className="text-blue-600" title="Manually edited">✍️</span>}
+                              {/* Row Status Icon - Replacing manually edited icon */}
+                              {rowStatus === 'invoiced' && <span className="text-green-600 font-bold text-lg" title="Already invoiced">✓</span>}
+                              {rowStatus === 'ready' && (
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-[10px] font-bold" title="Ready - verified and approved">
+                                  OK
+                                </span>
+                              )}
+                              {rowStatus === 'internal' && <span className="text-blue-600 text-lg" title="Internal - not for invoicing">🏢</span>}
+                              {rowStatus === 'free' && <span className="text-yellow-600 text-lg" title="Free - will not be charged">🎁</span>}
+                              {rowStatus === 'forfait' && <span className="text-purple-600 text-lg" title="Forfait work">💼</span>}
+                              {entrySource === 'forfait_batch' && <span className="text-purple-600 text-lg" title="Forfait batch entry">F</span>}
+                              {rowStatus === 'uninvoiced' && !entrySource.includes('forfait') && <span className="text-slate-300 text-sm" title="Not invoiced">○</span>}
                             </span>
                           </div>
                         </td>
