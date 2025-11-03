@@ -3023,10 +3023,10 @@ async def compose_invoices(batchId: str, current_user: User = Depends(get_curren
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
     
-    # Get only BILLABLE time entries (uninvoiced, ready, forfait - exclude internal, free, and already invoiced)
+    # Get only BILLABLE time entries (uninvoiced, ready - exclude forfait, internal, free, and already invoiced)
     entries = await db.timeEntries.find({
         "batchId": batchId, 
-        "status": {"$in": ["uninvoiced", "ready", "forfait"]}
+        "status": {"$in": ["uninvoiced", "ready"]}
     }).to_list(10000)
     
     # Group by customer
