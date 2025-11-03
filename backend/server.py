@@ -3223,9 +3223,44 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         lines = []
         customer_unit_price = customer.get("unitPrice", 0)
         
+        # Get forfait entries for this customer for linking
+        customer_forfait_entries = forfait_by_customer.get(customer_id, [])
+        
         for entry in customer_entries:
             line_id = str(uuid.uuid4())
             project = await db.projects.find_one({"id": entry["projectId"]})
+            
+            # Check if this is a forfait_batch entry with tariff 001 - Računovodstvo
+            is_forfait_batch_001 = False
+            forfait_details_text = ""
+            
+            if entry.get("entrySource") == "forfait_batch":
+                tariff_code = entry.get("tariff", "")
+                if "001" in tariff_code and "Računovodstvo" in tariff_code:
+                    is_forfait_batch_001 = True
+                    
+                    # Build forfait details text from linked forfait entries
+                    # Format: dd.mm.yyyy | description | X.Xh (one per line)
+                    forfait_details_lines = []
+                    for f_entry in customer_forfait_entries:
+                        # Convert date to EU format (dd.mm.yyyy)
+                        entry_date = f_entry.get("date", "")
+                        try:
+                            from datetime import datetime
+                            if entry_date:
+                                date_obj = datetime.fromisoformat(entry_date) if isinstance(entry_date, str) else entry_date
+                                eu_date = date_obj.strftime("%d.%m.%Y")
+                            else:
+                                eu_date = ""
+                        except:
+                            eu_date = entry_date
+                        
+                        description = f_entry.get("notes", "") or f_entry.get("description", "")
+                        hours = f_entry.get("hours", 0)
+                        
+                        forfait_details_lines.append(f"{eu_date} | {description} | {hours}h")
+                    
+                    forfait_details_text = "\n".join(forfait_details_lines)
             
             # Determine unit price
             if customer_unit_price > 0 and entry["hours"] > 0:
@@ -3235,15 +3270,25 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
                 unit_price = entry["value"] / entry["hours"] if entry["hours"] > 0 else 0
                 amount = entry["value"]
             
+            # Build description
+            base_description = f"{project['name']} - {entry['employeeName']} - {entry['notes'] or ''}"
+            
+            # For forfait_batch with 001, prepend forfait details
+            if is_forfait_batch_001 and forfait_details_text:
+                description = f"{forfait_details_text}\n\n{base_description}"
+            else:
+                description = base_description
+            
             line_doc = {
                 "id": line_id,
                 "invoiceId": invoice_id,
                 "timeEntryId": entry["id"],
-                "description": f"{project['name']} - {entry['employeeName']} - {entry['notes'] or ''}",
+                "description": description,
                 "quantity": entry["hours"],
                 "unitPrice": unit_price,
                 "amount": amount,
-                "taxCode": None
+                "taxCode": None,
+                "forfaitDetails": forfait_details_text if is_forfait_batch_001 else None  # Store separately for frontend rendering
             }
             lines.append(line_doc)
         
@@ -3259,6 +3304,12 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         
         # Mark all entries in this invoice as "invoiced" (change status to 'invoiced')
         entry_ids_to_mark = [entry["id"] for entry in customer_entries]
+        
+        # Also mark linked forfait entries as "invoiced"
+        if customer_id in forfait_by_customer:
+            forfait_entry_ids = [f_entry["id"] for f_entry in forfait_by_customer[customer_id]]
+            entry_ids_to_mark.extend(forfait_entry_ids)
+        
         await db.timeEntries.update_many(
             {"id": {"$in": entry_ids_to_mark}},
             {"$set": {"status": "invoiced"}}
