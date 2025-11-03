@@ -3206,11 +3206,18 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
                 detail=f"Cannot create invoice - Customer '{customer_name}' has forfait entries but no forfait batch entry with tariff 001 - Računovodstvo."
             )
     
-    # Group by customer (include both regular entries and forfait_batch entries)
+    # Group by customer (include ONLY regular entries and forfait_batch entries)
+    # Forfait entries are EXCLUDED from line items - they are only used for linking
     all_billable_entries = entries + forfait_batch_entries
     customer_groups = defaultdict(list)
     for entry in all_billable_entries:
         customer_groups[entry["customerId"]].append(entry)
+    
+    # Debug logging
+    print(f"DEBUG: Total billable entries for invoice lines: {len(all_billable_entries)}")
+    print(f"  - Regular entries (uninvoiced/ready): {len(entries)}")
+    print(f"  - Forfait_batch entries: {len(forfait_batch_entries)}")
+    print(f"  - Forfait entries (linked only, NOT line items): {len(forfait_entries)}")
     
     # Create invoices
     invoice_ids = []
