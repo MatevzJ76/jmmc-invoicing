@@ -518,12 +518,30 @@ const ImportVerification = () => {
     }
   }, []);
 
-  // Refresh Customer Analytics - reload customers and select first one
+  // Refresh Customer Analytics - reload customers and select appropriate customer
   const handleRefreshCustomerAnalytics = async () => {
     console.log('🔄 Refreshing Customer Analytics...');
+    console.log('Current customerFilter:', customerFilter);
+    
     // Reload all customers
     await loadAllCustomers();
-    // The useEffect will automatically select the first customer once allCustomers is updated
+    
+    // If a customer is selected in the filter, use that customer
+    if (customerFilter && customerFilter !== 'all') {
+      console.log('✓ Customer filter active, loading filtered customer:', customerFilter);
+      const filteredCustomer = allCustomers.find(c => c.name === customerFilter);
+      if (filteredCustomer) {
+        console.log('✓ Found filtered customer:', filteredCustomer.name, filteredCustomer.id);
+        setSelectedCustomerForAnalytics(filteredCustomer.id);
+        loadCustomerData(filteredCustomer.id);
+      } else {
+        console.log('⚠️  Filtered customer not found in allCustomers, will auto-select first customer');
+        // The useEffect will automatically select the first customer
+      }
+    } else {
+      console.log('✓ No customer filter, will auto-select first active customer');
+      // The useEffect will automatically select the first customer once allCustomers is updated
+    }
   };
 
   // Navigate to next customer
