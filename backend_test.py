@@ -5553,12 +5553,12 @@ class TestHourlyRatePersistence:
         print("=" * 80)
 
 if __name__ == "__main__":
-    # Run hourlyRate Persistence tests
+    # Run Invoice Composition Status tests
     print("\n" + "=" * 80)
-    print("RUNNING HOURLY RATE FIELD PERSISTENCE TESTS")
+    print("RUNNING INVOICE COMPOSITION STATUS TESTS")
     print("=" * 80)
     
-    tester = TestHourlyRatePersistence()
+    tester = TestInvoiceCompositionStatus()
     tester.run_all_tests()
 
 
