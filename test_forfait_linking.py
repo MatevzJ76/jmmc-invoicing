@@ -46,10 +46,10 @@ class TestForfaitLinking:
         """Get authorization headers"""
         return {"Authorization": f"Bearer {self.token}"}
     
-    def find_test_batch(self) -> bool:
-        """Find an existing batch with 'in progress' or 'imported' status"""
+    def find_or_create_test_batch(self) -> bool:
+        """Find an existing batch with 'in progress' or 'imported' status, or create one"""
         print("\n" + "="*80)
-        print("STEP 2: FIND TEST BATCH")
+        print("STEP 2: FIND OR CREATE TEST BATCH")
         print("="*80)
         try:
             response = requests.get(
@@ -67,19 +67,52 @@ class TestForfaitLinking:
                     status = batch.get("status", "")
                     if status in ["in progress", "imported"]:
                         self.test_batch_id = batch.get("id")
-                        print(f"✅ Found test batch: {batch.get('title')}")
+                        print(f"✅ Found existing test batch: {batch.get('title')}")
                         print(f"   Batch ID: {self.test_batch_id}")
                         print(f"   Status: {status}")
                         print(f"   Period: {batch.get('periodFrom')} to {batch.get('periodTo')}")
                         return True
                 
-                print("❌ No batch with 'in progress' or 'imported' status found")
-                return False
+                print("No batch with 'in progress' or 'imported' status found")
+                print("Creating a new test batch...")
+                
+                # Create a new batch with 'imported' status
+                import io
+                from datetime import datetime
+                
+                # Create a minimal Excel file for import
+                # We'll use the imports/from-verification endpoint instead
+                batch_data = {
+                    "title": f"Test Forfait Batch {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                    "invoiceDate": "2025-10-31",
+                    "periodFrom": "2025-10-01",
+                    "periodTo": "2025-10-31",
+                    "dueDate": "2025-11-15",
+                    "rows": [],
+                    "filename": "test_forfait.xlsx"
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/imports/from-verification",
+                    headers=self.get_headers(),
+                    json=batch_data
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    self.test_batch_id = result.get("batchId")
+                    print(f"✅ Created new test batch")
+                    print(f"   Batch ID: {self.test_batch_id}")
+                    print(f"   Status: imported")
+                    return True
+                else:
+                    print(f"❌ Failed to create batch: {response.text}")
+                    return False
             else:
                 print(f"❌ Failed to get batches: {response.text}")
                 return False
         except Exception as e:
-            print(f"❌ Error getting batches: {str(e)}")
+            print(f"❌ Error finding/creating batch: {str(e)}")
             return False
     
     def find_test_customer(self) -> bool:
