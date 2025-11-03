@@ -518,6 +518,14 @@ const ImportVerification = () => {
     }
   }, []);
 
+  // Refresh Customer Analytics - reload customers and select first one
+  const handleRefreshCustomerAnalytics = async () => {
+    console.log('🔄 Refreshing Customer Analytics...');
+    // Reload all customers
+    await loadAllCustomers();
+    // The useEffect will automatically select the first customer once allCustomers is updated
+  };
+
   // Navigate to next customer
   const handleNextCustomer = () => {
     if (!allCustomers || allCustomers.length === 0) return;
