@@ -2244,9 +2244,17 @@ const ImportVerification = () => {
                             <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-bold ${
                               entrySource === 'manual' 
                                 ? 'bg-green-600' 
+                                : entrySource === 'forfait_batch'
+                                ? 'bg-purple-600'
                                 : 'bg-blue-600'
-                            }`} title={entrySource === 'manual' ? 'Manual Entry' : 'Imported from File'}>
-                              {entrySource === 'manual' ? 'M' : 'I'}
+                            }`} title={
+                              entrySource === 'manual' 
+                                ? 'Manual Entry' 
+                                : entrySource === 'forfait_batch'
+                                ? 'Forfait Batch Entry'
+                                : 'Imported from File'
+                            }>
+                              {entrySource === 'manual' ? 'M' : entrySource === 'forfait_batch' ? 'F' : 'I'}
                             </span>
                           </div>
                         </td>
