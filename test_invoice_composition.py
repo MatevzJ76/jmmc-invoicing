@@ -293,27 +293,22 @@ class TestInvoiceComposition:
             included_entry_ids = []
             
             for invoice_id in invoice_ids:
-                # Get invoice details
+                # Get invoice details and lines (single endpoint returns both)
                 response = requests.get(
                     f"{BACKEND_URL}/invoices/{invoice_id}",
                     headers=self.get_headers()
                 )
                 
                 if response.status_code == 200:
-                    invoice = response.json()
+                    data = response.json()
+                    invoice = data.get('invoice', {})
+                    lines = data.get('lines', [])
+                    
                     print(f"\n   Invoice ID: {invoice_id}")
                     print(f"   Customer: {invoice.get('customerName')}")
                     print(f"   Total: €{invoice.get('total', 0):.2f}")
                     print(f"   Status: {invoice.get('status')}")
-                
-                # Get invoice lines
-                response = requests.get(
-                    f"{BACKEND_URL}/invoices/{invoice_id}/lines",
-                    headers=self.get_headers()
-                )
-                
-                if response.status_code == 200:
-                    lines = response.json()
+                    
                     total_line_items += len(lines)
                     print(f"   Line items: {len(lines)}")
                     
@@ -322,6 +317,8 @@ class TestInvoiceComposition:
                         if entry_id:
                             included_entry_ids.append(entry_id)
                         print(f"      - {line.get('description')} (Qty: {line.get('quantity')}, Amount: €{line.get('amount', 0):.2f})")
+                else:
+                    print(f"   ❌ Failed to get invoice: {response.status_code} - {response.text}")
             
             print(f"\n--- CRITICAL VERIFICATION ---")
             print(f"   Total line items created: {total_line_items}")
