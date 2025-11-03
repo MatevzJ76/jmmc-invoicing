@@ -150,6 +150,34 @@ backend:
           agent: "main"
           comment: "MAJOR ENHANCEMENT: Implemented forfait linking logic for DoTheInvoice feature. REQUIREMENTS: (1) Rows with status 'uninvoiced' or 'ready' are posted 1:1 to invoice rows. (2) Rows with status='forfait' AND entrySource != 'forfait_batch' are linked to forfait_batch rows with tariff '001 - Računovodstvo'. (3) VALIDATION per customer: Must have exactly 1 forfait_batch row with tariff '001 - Računovodstvo' (if 0 or >1, interrupt with error). (4) On posting: Copy date, description, hours from linked forfait rows into forfait_batch invoice line description with EU date format (dd.mm.yyyy | description | Xh). (5) Mark all linked forfait entries as 'invoiced'. IMPLEMENTATION: (1) Added forfait entry retrieval (status='forfait', src != 'forfait_batch'). (2) Added forfait_batch entry retrieval (src='forfait_batch'). (3) Added validation logic per customer - checks for exactly 1 forfait_batch with tariff 001. (4) Added forfait details text generation with EU date format. (5) Store forfaitDetails field in invoice line for frontend rendering. (6) Mark all linked forfait entries as invoiced. ERROR MESSAGES: 'Cannot create invoice - Customer {name} has multiple forfait batch entries with tariff 001 - Računovodstvo. Only 1 is allowed.' or 'Cannot create invoice - Customer {name} has forfait entries but no forfait batch entry with tariff 001 - Računovodstvo.' Ready for comprehensive testing."
         - working: true
+
+
+backend:
+  - task: "POST /api/invoices/compose-filtered - Fix row count and add forfait details UI"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py, /app/frontend/src/pages/InvoiceDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "BUG FIX & UI ENHANCEMENT: (1) Fixed row count calculation - now counts ONLY billable line items (entries + forfait_batch), NOT linked forfait entries. Changed line 3354 from 'len(entries) + len(forfait_batch_entries) + len(forfait_entries)' to 'len(entries) + len(forfait_batch_entries)'. (2) Invoice total calculation already correct - uses only customer_entries value (line 3240), which excludes forfait entries. (3) Added forfait details text box in InvoiceDetail.js between description and hours fields. Text box appears only when line.forfaitDetails exists, has purple background (bg-purple-50), 3 rows, and displays linked forfait entry details. Ready for testing."
+
+frontend:
+  - task: "InvoiceDetail.js - Add forfait details text box between description and hours"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/InvoiceDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "UI ENHANCEMENT: Added forfait details text box in invoice line items. Placement: After description field, before quantity/hours field. Text box only shows when line.forfaitDetails exists. Styling: 3 rows, purple background (bg-purple-50), purple border (border-purple-200), disabled when invoice is not editable. Content: Shows linked forfait entry details in format 'dd.mm.yyyy | description | X.Xh' (one per line). Ready for visual verification and testing."
+
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETE - ALL 6 TESTS PASSED (6/6). CRITICAL BUG FOUND AND FIXED: Forfait_batch entries were being double-counted (included in both uninvoiced/ready query AND forfait_batch query). FIX: Added 'entrySource': {'$ne': 'forfait_batch'} filter at line 3141 to prevent double-counting. Test Results: (1) ✅ Created 6 test entries: 2 uninvoiced (5.0h, 3.5h), 1 ready (2.0h), 2 forfait (1.5h, 2.5h), 1 forfait_batch (tariff 001, 100h). (2) ✅ Invoice composition successful (HTTP 200, 6 entries processed). (3) ✅ Debug logs show correct counts: Regular entries=3 (NOT 4), Forfait_batch=1, Forfait for linking=2, Total billable=4. (4) ✅ Exactly 4 invoice line items created (NOT 5). (5) ✅ Forfait entries do NOT create separate line items. (6) ✅ Only 1 line with forfaitDetails field. (7) ✅ All 6 entries marked as 'invoiced'. (8) ✅ EU date format in forfait details (dd.mm.yyyy | description | X.Xh). SUCCESS CRITERIA MET: Exactly 4 invoice line items (2 uninvoiced + 1 ready + 1 forfait_batch with linked forfait details), forfait entries excluded from line items, all entries marked as invoiced. CONCLUSION: Forfait linking feature is PRODUCTION-READY and working exactly as designed."
         - working: false
