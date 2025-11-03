@@ -312,15 +312,16 @@ class TestForfaitLinking:
             
             # Get invoice lines
             response = requests.get(
-                f"{BACKEND_URL}/invoices/{invoice_id}/lines",
+                f"{BACKEND_URL}/invoices/{invoice_id}",
                 headers=self.get_headers()
             )
             
             if response.status_code != 200:
-                print(f"❌ Failed to get invoice lines: {response.text}")
+                print(f"❌ Failed to get invoice details: {response.text}")
                 return False
             
-            lines = response.json()
+            invoice_data = response.json()
+            lines = invoice_data.get("lines", [])
             line_count = len(lines)
             
             print(f"\n{'='*80}")
