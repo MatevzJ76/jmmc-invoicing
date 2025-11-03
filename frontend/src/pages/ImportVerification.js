@@ -2204,32 +2204,35 @@ const ImportVerification = () => {
                               : 'Click to edit this row'
                         }
                       >
+                        {/* # Column - Row number with edit/AI indicators */}
                         <td className="px-3 py-2 text-slate-600 align-middle">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{displayIndex + 1}</span>
                             <span className="flex items-center gap-1">
                               {isFlagged && <span className="text-amber-600">⚠️</span>}
                               {isAiCorrected && <span className="text-purple-600" title="AI corrections applied">🤖</span>}
-                              
-                              {/* Row Status Icons - Always show status for every row */}
-                              {rowStatus === 'invoiced' && <span className="text-green-600 font-bold text-lg" title="Already invoiced">✓</span>}
-                              {rowStatus === 'ready' && (
-                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-[10px] font-bold" title="Ready - verified and approved">
-                                  OK
-                                </span>
-                              )}
-                              {rowStatus === 'internal' && <span className="text-blue-600 text-lg" title="Internal - not for invoicing">🏢</span>}
-                              {rowStatus === 'free' && <span className="text-yellow-600 text-lg" title="Free - will not be charged">🎁</span>}
-                              {rowStatus === 'forfait' && <span className="text-purple-600 text-lg" title="Forfait work">💼</span>}
-                              {rowStatus === 'uninvoiced' && <span className="text-slate-400 font-medium text-sm" title="Not invoiced">○</span>}
-                              {!rowStatus && <span className="text-slate-400 font-medium text-sm" title="Not invoiced">○</span>}
-                              
-                              {/* Entry Source Markers - Show alongside status */}
                               {entrySource === 'forfait_batch' && <span className="text-purple-600 font-bold text-sm" title="Forfait batch entry">F</span>}
                               {entrySource === 'manual' && !entrySource.includes('forfait') && rowStatus !== 'invoiced' && <span className="text-blue-500 text-xs" title="Manual entry">M</span>}
                             </span>
                           </div>
                         </td>
+                        
+                        {/* Status Column - Dedicated column for row status icons */}
+                        <td className="px-3 py-2 text-center align-middle">
+                          {rowStatus === 'invoiced' && <span className="text-green-600 font-bold text-lg" title="Already invoiced">✓</span>}
+                          {rowStatus === 'ready' && (
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-[10px] font-bold" title="Ready - verified and approved">
+                              OK
+                            </span>
+                          )}
+                          {rowStatus === 'internal' && <span className="text-blue-600 text-lg" title="Internal - not for invoicing">🏢</span>}
+                          {rowStatus === 'free' && <span className="text-yellow-600 text-lg" title="Free - will not be charged">🎁</span>}
+                          {rowStatus === 'forfait' && <span className="text-purple-600 text-lg" title="Forfait work">💼</span>}
+                          {rowStatus === 'uninvoiced' && <span className="text-slate-400 font-medium text-sm" title="Not invoiced">○</span>}
+                          {!rowStatus && <span className="text-slate-400 font-medium text-sm" title="Not invoiced">○</span>}
+                        </td>
+                        
+                        {/* Stranka (Customer) Column */}
                         <td className={`px-3 py-2 font-medium ${
                           originalValues[originalIndex] && 
                           originalValues[originalIndex].customerId && 
