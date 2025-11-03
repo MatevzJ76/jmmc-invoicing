@@ -140,15 +140,18 @@ frontend:
 backend:
   - task: "POST /api/invoices/compose-filtered - Enhanced forfait linking logic"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "MAJOR ENHANCEMENT: Implemented forfait linking logic for DoTheInvoice feature. REQUIREMENTS: (1) Rows with status 'uninvoiced' or 'ready' are posted 1:1 to invoice rows. (2) Rows with status='forfait' AND entrySource != 'forfait_batch' are linked to forfait_batch rows with tariff '001 - Računovodstvo'. (3) VALIDATION per customer: Must have exactly 1 forfait_batch row with tariff '001 - Računovodstvo' (if 0 or >1, interrupt with error). (4) On posting: Copy date, description, hours from linked forfait rows into forfait_batch invoice line description with EU date format (dd.mm.yyyy | description | Xh). (5) Mark all linked forfait entries as 'invoiced'. IMPLEMENTATION: (1) Added forfait entry retrieval (status='forfait', src != 'forfait_batch'). (2) Added forfait_batch entry retrieval (src='forfait_batch'). (3) Added validation logic per customer - checks for exactly 1 forfait_batch with tariff 001. (4) Added forfait details text generation with EU date format. (5) Store forfaitDetails field in invoice line for frontend rendering. (6) Mark all linked forfait entries as invoiced. ERROR MESSAGES: 'Cannot create invoice - Customer {name} has multiple forfait batch entries with tariff 001 - Računovodstvo. Only 1 is allowed.' or 'Cannot create invoice - Customer {name} has forfait entries but no forfait batch entry with tariff 001 - Računovodstvo.' Ready for comprehensive testing."
+        - working: false
+          agent: "testing"
+          comment: "COMPREHENSIVE TESTING COMPLETED - CRITICAL ISSUES FOUND (3/6 tests passed). FIXED ISSUE: Fixed UnboundLocalError in server.py line 3249 - removed duplicate 'from datetime import datetime' import that was shadowing the module-level datetime import. TEST RESULTS: (1) ✅ Test 1 PASSED - Created test batch with 6 mixed entries (2 uninvoiced, 1 ready, 2 forfait manual, 1 forfait_batch with tariff 001). (2) ❌ Test 2 FAILED - Valid forfait linking: Invoice created successfully BUT expected 4 line items, got 5 line items. The forfait linking logic appears to be creating an extra line item. Need to investigate why 5 lines instead of 4 (should be: 2 uninvoiced + 1 ready + 1 forfait_batch = 4 lines). (3) ❌ Test 3 FAILED - Multiple forfait_batch validation: Expected HTTP 400 error but got HTTP 200 success. The validation for multiple forfait_batch entries with tariff 001 is NOT working. Root cause: Validation only runs when there are forfait entries (status='forfait') to link (line 3171 in server.py). When creating 2 forfait_batch entries without forfait entries, the validation is bypassed. (4) ❌ Test 4 FAILED - Missing forfait_batch validation: Expected specific error message about missing forfait_batch but got generic 'No matching time entries found'. The validation is not triggered because the test only includes forfait entries without any uninvoiced/ready entries. CRITICAL BUGS IDENTIFIED: (1) Validation logic only checks forfait_batch count when there are forfait entries to link - should validate forfait_batch count independently. (2) Line item count is incorrect (5 instead of 4) - possible duplicate or incorrect grouping. (3) Test customer has empty name which may cause issues. RECOMMENDATION: Main agent needs to fix validation logic to check forfait_batch entries independently of forfait entries, and investigate the line item count issue."
 
 backend:
   - task: "POST /api/imports - Calculate value from tariff rates (ignore Excel Vrednost column)"
