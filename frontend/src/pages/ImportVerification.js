@@ -481,13 +481,16 @@ const ImportVerification = () => {
 
   // Load customer data (settings + historical invoices)
   const loadCustomerData = useCallback(async (customerId) => {
+    console.log('🔄 loadCustomerData called for customer ID:', customerId);
     setLoadingCustomerData(true);
     try {
       const token = localStorage.getItem('access_token');
+      console.log('📡 Fetching customer data from API...');
       const response = await axios.get(`${BACKEND_URL}/api/customers/${customerId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('✅ Customer data received:', response.data?.name);
       setCustomerSettings(response.data);
       
       // Filter historical invoices to last 12 months
@@ -503,13 +506,15 @@ const ImportVerification = () => {
         .sort((a, b) => new Date(b.date) - new Date(a.date));
       
       setHistoricalInvoices(recentInvoices);
+      console.log('✅ Customer settings state updated successfully');
     } catch (error) {
-      console.error('Failed to load customer data:', error);
+      console.error('❌ Failed to load customer data:', error);
       toast.error('Failed to load customer data');
       setCustomerSettings(null);
       setHistoricalInvoices([]);
     } finally {
       setLoadingCustomerData(false);
+      console.log('✅ loadCustomerData complete');
     }
   }, []);
 
