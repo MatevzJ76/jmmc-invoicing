@@ -140,7 +140,7 @@ frontend:
 backend:
   - task: "POST /api/invoices/compose-filtered - Enhanced forfait linking logic"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -155,6 +155,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "RE-TEST COMPLETED - ROOT CAUSE IDENTIFIED! Created comprehensive test scenario with 6 entries: 2 uninvoiced (manual), 1 ready (manual), 2 forfait (manual for linking), 1 forfait_batch (tariff 001). TEST RESULTS: ❌ FAILED - Invoice created with 5 line items instead of expected 4. DEBUG LOGS ANALYSIS: Backend logs show 'Total billable entries: 5' with 'Regular entries (uninvoiced/ready): 4' and 'Forfait_batch entries: 1'. ROOT CAUSE FOUND: The forfait_batch entry is being counted TWICE! (1) First query (lines 3136-3140) retrieves entries with status='uninvoiced' OR status='ready' - this returns 2 uninvoiced + 1 ready + 1 forfait_batch (because forfait_batch has status='uninvoiced') = 4 entries. (2) Second query (lines 3150-3155) retrieves entries with entrySource='forfait_batch' - this returns 1 forfait_batch entry. (3) Combined: all_billable_entries = 4 + 1 = 5 entries (DUPLICATE!). CRITICAL BUG: The first query at lines 3136-3140 should EXCLUDE entrySource='forfait_batch' to prevent double-counting. FIX REQUIRED: Add filter 'entrySource': {'$ne': 'forfait_batch'} to the first query. This will ensure forfait_batch entries are ONLY retrieved by the second query. INVOICE LINE VERIFICATION: Found 2 lines with forfaitDetails (should be 1), confirming the duplicate forfait_batch line. RECOMMENDATION: Main agent must add entrySource filter to prevent double-counting of forfait_batch entries."
+        - working: true
+          agent: "testing"
+          comment: "✅ FINAL VERIFICATION TEST PASSED - ALL 6/6 TESTS SUCCESSFUL! Test Scenario: Created exactly 6 entries (Entry 1: uninvoiced/manual/5.0h, Entry 2: uninvoiced/manual/3.5h, Entry 3: ready/manual/2.0h, Entry 4: forfait/manual/1.5h, Entry 5: forfait/manual/2.5h, Entry 6: forfait_batch/tariff 001/100h). Called POST /api/invoices/compose-filtered with all 6 entry IDs. TEST RESULTS: (1) ✅ Invoice composition successful - HTTP 200, 6 entries processed. (2) ✅ All 6 entries marked as 'invoiced' - Verified all entries have status='invoiced' after composition. (3) ✅ Debug logs show CORRECT counts: Regular entries (uninvoiced/ready): 3 (NOT 4), Forfait_batch entries: 1, Forfait entries for linking: 2, Total billable: 4. (4) ✅ Exactly 4 invoice line items created (NOT 5) - The double-counting bug has been FIXED. (5) ✅ Forfait entries do NOT create separate line items - Only used for linking to forfait_batch entry. (6) ✅ Only 1 line with forfaitDetails field - Forfait_batch entry contains linked forfait details. CRITICAL FIX VERIFIED: The entrySource filter 'entrySource': {'$ne': 'forfait_batch'} at line 3141 in server.py successfully prevents double-counting of forfait_batch entries. The first query now correctly returns ONLY regular entries (uninvoiced/ready) excluding forfait_batch, and the second query retrieves forfait_batch entries separately. CONCLUSION: Forfait linking feature is PRODUCTION-READY and working exactly as designed. All success criteria met: 4 line items (2 uninvoiced + 1 ready + 1 forfait_batch), forfait entries linked correctly, all 6 entries marked as invoiced, EU date format in forfait details."
 
 backend:
   - task: "POST /api/imports - Calculate value from tariff rates (ignore Excel Vrednost column)"
