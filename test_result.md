@@ -136,6 +136,20 @@ frontend:
           agent: "main"
           comment: "✅ VISUAL VERIFICATION COMPLETE. Screenshot taken of Import Verification page showing the renamed button. The green action button on the right now displays 'DoTheInvoice' with subtitle 'Create invoices'. Button is visible and correctly styled in the UI. Button functionality tested via backend testing agent - invoices are created correctly with proper status filtering. CONCLUSION: Button rename complete and working as expected."
 
+
+backend:
+  - task: "POST /api/invoices/compose-filtered - Enhanced forfait linking logic"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "MAJOR ENHANCEMENT: Implemented forfait linking logic for DoTheInvoice feature. REQUIREMENTS: (1) Rows with status 'uninvoiced' or 'ready' are posted 1:1 to invoice rows. (2) Rows with status='forfait' AND entrySource != 'forfait_batch' are linked to forfait_batch rows with tariff '001 - Računovodstvo'. (3) VALIDATION per customer: Must have exactly 1 forfait_batch row with tariff '001 - Računovodstvo' (if 0 or >1, interrupt with error). (4) On posting: Copy date, description, hours from linked forfait rows into forfait_batch invoice line description with EU date format (dd.mm.yyyy | description | Xh). (5) Mark all linked forfait entries as 'invoiced'. IMPLEMENTATION: (1) Added forfait entry retrieval (status='forfait', src != 'forfait_batch'). (2) Added forfait_batch entry retrieval (src='forfait_batch'). (3) Added validation logic per customer - checks for exactly 1 forfait_batch with tariff 001. (4) Added forfait details text generation with EU date format. (5) Store forfaitDetails field in invoice line for frontend rendering. (6) Mark all linked forfait entries as invoiced. ERROR MESSAGES: 'Cannot create invoice - Customer {name} has multiple forfait batch entries with tariff 001 - Računovodstvo. Only 1 is allowed.' or 'Cannot create invoice - Customer {name} has forfait entries but no forfait batch entry with tariff 001 - Računovodstvo.' Ready for comprehensive testing."
+
 backend:
   - task: "POST /api/imports - Calculate value from tariff rates (ignore Excel Vrednost column)"
     implemented: true
