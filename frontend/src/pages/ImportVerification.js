@@ -1752,6 +1752,22 @@ const ImportVerification = () => {
                       </div>
                     )}
                     
+                    {/* Add Forfait Tile - Show only for forfait or hybrid invoicing types */}
+                    {(customerSettings.invoicingType === 'fixed-forfait' || customerSettings.invoicingType === 'hybrid') && (
+                      <button
+                        onClick={handleAddForfait}
+                        className="bg-green-50 hover:bg-green-100 rounded-lg p-3 border border-green-300 transition-colors cursor-pointer text-left"
+                      >
+                        <p className="text-xs text-green-600 mb-1">Action</p>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <p className="text-sm font-semibold text-green-900">Add Forfait</p>
+                        </div>
+                      </button>
+                    )}
+                    
                     {/* Address Service */}
                     {customerSettings.offersAddress && (
                       <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
