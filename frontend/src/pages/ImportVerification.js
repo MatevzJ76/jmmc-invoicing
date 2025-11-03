@@ -337,6 +337,7 @@ const ImportVerification = () => {
           invoiceStatus: entry.invoiceStatus || '',  // Add invoice status from backend
           invoiceId: entry.invoiceId || '',  // Add invoice ID from backend
           status: entry.status || 'uninvoiced',  // Row status: uninvoiced, invoiced, internal, free
+          originalStatus: entry.originalStatus || entry.status || 'uninvoiced',  // Preserve original status before posting
           entrySource: entry.entrySource || 'imported'  // Entry source: imported or manual
         };
       });
