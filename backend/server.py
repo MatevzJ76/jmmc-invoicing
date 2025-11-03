@@ -3133,10 +3133,12 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         raise HTTPException(status_code=404, detail="Batch not found")
     
     # Get ONLY the specified time entries that are billable (uninvoiced, ready)
+    # EXCLUDE forfait_batch entries here (they are retrieved separately)
     entries = await db.timeEntries.find({
         "batchId": batch_id,
         "id": {"$in": entry_ids},
-        "status": {"$in": ["uninvoiced", "ready"]}  # Include only uninvoiced and ready (exclude forfait, internal, free, already invoiced)
+        "status": {"$in": ["uninvoiced", "ready"]},
+        "entrySource": {"$ne": "forfait_batch"}  # CRITICAL: Exclude forfait_batch to prevent double-counting
     }).to_list(10000)
     
     # ALSO get forfait entries (status="forfait", src != "forfait_batch") for linking
