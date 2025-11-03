@@ -800,7 +800,7 @@ async def get_batch_time_entries(batch_id: str, current_user: User = Depends(get
     # Get all time entries for this batch
     entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
     
-    # Add customer names and project names to entries
+    # Add customer names, project names, and invoice information to entries
     for entry in entries:
         # Get current customer name (handle null customerId for "No Client" entries)
         if entry.get("customerId"):
@@ -817,6 +817,18 @@ async def get_batch_time_entries(batch_id: str, current_user: User = Depends(get
         # Get project name
         project = await db.projects.find_one({"id": entry["projectId"]})
         entry["projectName"] = project["name"] if project else ""
+        
+        # Get invoice information if time entry is invoiced
+        if entry.get("status") == "invoiced":
+            # Find invoice line that contains this time entry
+            invoice_line = await db.invoiceLines.find_one({"timeEntryId": entry["id"]})
+            if invoice_line:
+                # Get invoice details
+                invoice = await db.invoices.find_one({"id": invoice_line["invoiceId"]})
+                if invoice:
+                    entry["invoiceStatus"] = invoice.get("status", "")
+                    entry["invoiceNumber"] = invoice.get("invoiceNumber", "")
+                    entry["invoiceId"] = invoice.get("id", "")
     
     return entries
 
