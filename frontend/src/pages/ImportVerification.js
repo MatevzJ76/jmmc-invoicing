@@ -544,6 +544,46 @@ const ImportVerification = () => {
     }
   };
 
+  // Add Forfait batch entry
+  const handleAddForfait = () => {
+    if (!customerSettings || !verificationData) return;
+    
+    console.log('➕ Adding forfait batch entry for customer:', customerSettings.name);
+    
+    // Create new forfait batch row
+    const newRow = {
+      project: '001 - Računovodstvo',
+      customer: customerSettings.name,
+      customerId: selectedCustomerForAnalytics,
+      date: verificationData.metadata.periodTo, // Last day of invoicing period
+      tariff: '001 - Računovodstvo',
+      employee: '', // Empty
+      comments: '', // Empty
+      hours: 1,
+      hourlyRate: customerSettings.fixedForfaitValue || 0,
+      value: customerSettings.fixedForfaitValue || 0,
+      invoiceNumber: '',
+      invoiceStatus: '',
+      invoiceId: '',
+      status: 'uninvoiced',
+      entrySource: 'forfait_batch', // New source type
+      _originalIndex: verificationData.rows.length // Assign next index
+    };
+    
+    // Add row to verification data
+    const updatedData = {
+      ...verificationData,
+      rows: [...verificationData.rows, newRow]
+    };
+    
+    setVerificationData(updatedData);
+    sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
+    setHasChanges(true);
+    
+    toast.success(`Forfait batch entry added for ${customerSettings.name}`);
+    console.log('✅ Forfait batch entry added:', newRow);
+  };
+
   // Navigate to next customer
   const handleNextCustomer = () => {
     if (!allCustomers || allCustomers.length === 0) return;
