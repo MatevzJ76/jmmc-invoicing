@@ -237,6 +237,26 @@ const BatchDetail = () => {
       [category]: !expandedCategories[category]
     });
   };
+  
+  const toggleVerificationTile = async () => {
+    const newState = !verificationTileExpanded;
+    setVerificationTileExpanded(newState);
+    
+    // Save to backend
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(`${BACKEND_URL}/api/batches/${id}`, {
+        filterPreferences: {
+          ...batch.filterPreferences,
+          verificationTileExpanded: newState
+        }
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('Failed to save verification tile state:', error);
+    }
+  };
 
   const handleAIVerification = async () => {
     setAiVerifying(true);
