@@ -3246,7 +3246,6 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
                         # Convert date to EU format (dd.mm.yyyy)
                         entry_date = f_entry.get("date", "")
                         try:
-                            from datetime import datetime
                             if entry_date:
                                 date_obj = datetime.fromisoformat(entry_date) if isinstance(entry_date, str) else entry_date
                                 eu_date = date_obj.strftime("%d.%m.%Y")
