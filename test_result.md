@@ -590,15 +590,18 @@ agent_communication:
 backend:
   - task: "POST /api/batches/{batch_id}/manual-entry - Support forfait_batch entry source"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "ENHANCEMENT: Updated manual entry endpoint to support forfait_batch entries. Changes: (1) Added entry_source parameter support for 'manual' or 'forfait_batch'. (2) For forfait_batch entries, value is set to customer's fixedForfaitValue instead of calculated from tariff. (3) Added forfaitBatchParentId field (nullable) for future correlation with imported rows. (4) Added forfaitBatchSubRows field (array) for future linking of sub-rows. (5) Project name set to 'Forfait Batch' for forfait entries vs 'Manual Entry' for manual entries. Ready for testing."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TESTING COMPLETED - ALL TESTS PASSED (5/5). Test Results: (1) ✅ Login - Successfully authenticated as admin@local with ADMIN role. (2) ✅ Customer Verification - Found customer '123 HIŠKA d.o.o.' (ID: 290cf431-a8c1-4dca-bc5c-e06fa66ad926) with fixedForfaitValue=€220.0 and invoicingType='fixed-forfait'. Customer data correct. (3) ✅ Find October Batch - Found 21 October 2025 batches, selected 'in progress' batch (ID: df5ff0ba-ead1-45b5-96eb-d58043f3dabc) as preferred. (4) ✅ Create Forfait Entry - Successfully created forfait batch entry via POST /api/batches/{batch_id}/manual-entry with entrySource='forfait_batch'. API returned HTTP 200 with message 'Forfait Batch added successfully' and entryId. (5) ✅ Verify Forfait Entry - Retrieved created entry from batch and verified ALL 9 required fields: entrySource='forfait_batch' ✅, hourlyRate=€220.0 (customer's fixedForfaitValue) ✅, value=€220.0 (customer's fixedForfaitValue, NOT €45.0 from tariff) ✅, projectName='Forfait Batch' ✅, employeeName='' (empty) ✅, notes='' (empty) ✅, forfaitBatchParentId field exists (null) ✅, forfaitBatchSubRows field exists ([]) ✅, customerName='123 HIŠKA d.o.o.' ✅. CRITICAL VERIFICATION: The value is correctly set to €220.00 from customer's fixedForfaitValue, NOT calculated from tariff rate (which would be €45.00 for '001 - Računovodstvo'). This confirms the forfait_batch logic is working correctly (lines 956-959 in server.py). CONCLUSION: Forfait batch entry feature is FULLY FUNCTIONAL and PRODUCTION-READY. All success criteria met: forfait entry created successfully, value=€220.00 (customer's fixedForfaitValue), all forfait-specific fields present and correct."
 
 frontend:
   - task: "ImportVerification.js - Add Forfait button in Customer Analytics"
