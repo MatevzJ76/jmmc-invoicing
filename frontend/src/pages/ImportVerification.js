@@ -2118,7 +2118,9 @@ const ImportVerification = () => {
                     const isAiCorrected = aiCorrectedRows.has(originalIndex);
                     const isManuallyEdited = manuallyEditedRows.has(originalIndex);
                     const rowStatus = row.status || 'uninvoiced';  // Current status (changes to 'invoiced' after posting)
-                    const displayStatus = row.originalStatus || row.status || 'uninvoiced';  // Status to display in St column (preserved)
+                    // displayStatus: Use originalStatus if available, otherwise use current status
+                    // For already-invoiced rows without originalStatus, default to 'uninvoiced'
+                    const displayStatus = row.originalStatus || (rowStatus === 'invoiced' ? 'uninvoiced' : rowStatus);
                     const entrySource = row.entrySource || 'imported';  // Get entry source
                     
                     // Debug tariff highlighting
