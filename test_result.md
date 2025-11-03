@@ -586,6 +586,33 @@ agent_communication:
     - agent: "testing"
       message: "✅ ARTICLES API TESTING COMPLETE! ALL 2 TESTS PASSED (2/2). Test Results: (1) ✅ GET /api/articles - Successfully retrieved 45 articles. Each article has all required fields: code, description, unitMeasure, priceWithoutVAT, vatPercentage, tariffCode. No _id field in response (correctly excluded). First 3 articles verified: Article 000001 (Računovodstvo - Contabilita`, €45.00, VAT 22%), Article 000002 (Najem sedeža - Sede legale, €50.00, VAT 22%), Article 000003 (Uporaba programa - Utilizzo gestionale, €15.00, VAT 22%). (2) ✅ Database Verification - Confirmed articles collection has 45 documents with correct structure. All articles properly seeded via seed_articles.py script (fixed to use correct DB_NAME from environment). CONCLUSION: Articles API is PRODUCTION-READY. Endpoint implementation correct (lines 3002-3006 in server.py), authentication working, response format correct with _id excluded. NO ISSUES FOUND."
 
+
+backend:
+  - task: "POST /api/batches/{batch_id}/manual-entry - Support forfait_batch entry source"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "ENHANCEMENT: Updated manual entry endpoint to support forfait_batch entries. Changes: (1) Added entry_source parameter support for 'manual' or 'forfait_batch'. (2) For forfait_batch entries, value is set to customer's fixedForfaitValue instead of calculated from tariff. (3) Added forfaitBatchParentId field (nullable) for future correlation with imported rows. (4) Added forfaitBatchSubRows field (array) for future linking of sub-rows. (5) Project name set to 'Forfait Batch' for forfait entries vs 'Manual Entry' for manual entries. Ready for testing."
+
+frontend:
+  - task: "ImportVerification.js - Add Forfait button in Customer Analytics"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ImportVerification.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW FEATURE: Added 'Add Forfait' button in Customer Analytics tile for customers with forfait or hybrid invoicing types. Button creates a new forfait batch entry with: (1) entrySource='forfait_batch', (2) Customer from Customer Analytics, (3) Date = last day of batch period, (4) Tariff = '001 - Računovodstvo', (5) Employee = empty, (6) Description = empty, (7) Hours = 1, (8) Value = customer's Fixed Forfait Value. Added purple 'F' icon in Src column for forfait_batch entries. Button only shows when invoicingType is 'fixed-forfait' or 'hybrid'. Calls backend API and reloads batch data. Ready for testing."
+
   - task: "POST /api/invoices/compose and compose-filtered - Set invoice status to 'draft' instead of 'imported'"
     implemented: true
     working: true
