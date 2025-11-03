@@ -451,7 +451,15 @@ const ImportVerification = () => {
       filtered = filtered.filter(row => row.status === statusFilter);
     }
     
-    setFilteredRows(filtered);
+    // Sort filtered rows: forfait_batch first, then manual, then imported
+    const sortedFiltered = filtered.sort((a, b) => {
+      const sourceOrder = { 'forfait_batch': 0, 'manual': 1, 'imported': 2 };
+      const orderA = sourceOrder[a.entrySource] ?? 2;
+      const orderB = sourceOrder[b.entrySource] ?? 2;
+      return orderA - orderB;
+    });
+    
+    setFilteredRows(sortedFiltered);
   }, [verificationData, searchTerm, customerFilter, employeeFilter, tariffFilter, statusFilter]);
 
   // Save filter preferences whenever they change (debounced)
