@@ -3167,7 +3167,26 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
     for entry in forfait_batch_entries:
         forfait_batch_by_customer[entry["customerId"]].append(entry)
     
-    # Validate forfait logic for customers with forfait entries
+    # VALIDATION 1: For ALL customers with forfait_batch entries, ensure only 1 with tariff "001 - Računovodstvo"
+    for customer_id, customer_fb_entries in forfait_batch_by_customer.items():
+        customer = await db.customers.find_one({"id": customer_id})
+        customer_name = customer.get("name", "Unknown") if customer else "Unknown"
+        
+        # Count forfait_batch entries with tariff "001 - Računovodstvo"
+        forfait_batch_001 = []
+        for fb_entry in customer_fb_entries:
+            tariff_code = fb_entry.get("tariff", "")
+            if "001" in tariff_code and "Računovodstvo" in tariff_code:
+                forfait_batch_001.append(fb_entry)
+        
+        # Check: Maximum 1 forfait_batch with tariff 001 allowed per customer
+        if len(forfait_batch_001) > 1:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot create invoice - Customer '{customer_name}' has multiple forfait batch entries with tariff 001 - Računovodstvo. Only 1 is allowed."
+            )
+    
+    # VALIDATION 2: For customers with forfait entries, ensure they have exactly 1 forfait_batch with tariff "001 - Računovodstvo"
     for customer_id, customer_forfait_entries in forfait_by_customer.items():
         customer = await db.customers.find_one({"id": customer_id})
         customer_name = customer.get("name", "Unknown") if customer else "Unknown"
@@ -3180,16 +3199,11 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
                 if "001" in tariff_code and "Računovodstvo" in tariff_code:
                     forfait_batch_001.append(fb_entry)
         
-        # Check: Must have exactly 1 forfait_batch with tariff 001
+        # Check: Must have exactly 1 forfait_batch with tariff 001 to link forfait entries
         if len(forfait_batch_001) == 0:
             raise HTTPException(
                 status_code=400, 
                 detail=f"Cannot create invoice - Customer '{customer_name}' has forfait entries but no forfait batch entry with tariff 001 - Računovodstvo."
-            )
-        elif len(forfait_batch_001) > 1:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Cannot create invoice - Customer '{customer_name}' has multiple forfait batch entries with tariff 001 - Računovodstvo. Only 1 is allowed."
             )
     
     # Group by customer (include both regular entries and forfait_batch entries)
