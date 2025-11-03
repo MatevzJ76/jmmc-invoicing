@@ -958,27 +958,33 @@ async def add_manual_entry(
         if customer:
             customer_name = customer.get("name", "")
     
+    # Create manual entry
+    entry_source = entry_data.get("entrySource", "manual")  # Support "manual" or "forfait_batch"
+    
+    # For forfait batch entries, use "Forfait Batch" as project name
+    project_name = "Forfait Batch" if entry_source == "forfait_batch" else "Manual Entry"
+    
     # Find or create project
-    project = await db.projects.find_one({"name": "Manual Entry", "customerId": entry_data.get("customerId")})
+    project = await db.projects.find_one({"name": project_name, "customerId": entry_data.get("customerId")})
     if not project:
         project_id = str(uuid.uuid4())
         await db.projects.insert_one({
             "id": project_id,
-            "name": "Manual Entry",
+            "name": project_name,
             "customerId": entry_data.get("customerId")
         })
     else:
         project_id = project["id"]
     
-    # Create manual entry
+    # Create entry with forfait correlation support
     manual_entry = {
         "id": str(uuid.uuid4()),
         "batchId": batch_id,
         "projectId": project_id,
-        "projectName": "Manual Entry",
+        "projectName": project_name,
         "customerId": entry_data.get("customerId"),
         "customerName": customer_name,
-        "employeeName": entry_data.get("employeeName", "Manual Entry"),
+        "employeeName": entry_data.get("employeeName", ""),
         "date": entry_data.get("date"),
         "hours": hours,
         "tariff": entry_data.get("tariff", ""),
@@ -992,12 +998,14 @@ async def add_manual_entry(
         "originalCustomerId": None,
         "originalTariff": None,
         "status": entry_data.get("status", "uninvoiced"),
-        "entrySource": "manual"  # Mark as manually entered
+        "entrySource": entry_source,  # "manual" or "forfait_batch"
+        "forfaitBatchParentId": entry_data.get("forfaitBatchParentId"),  # For future: link to forfait parent
+        "forfaitBatchSubRows": entry_data.get("forfaitBatchSubRows", [])  # For future: list of sub-row IDs
     }
     
     await db.timeEntries.insert_one(manual_entry)
     
-    return {"message": "Manual entry added successfully", "entryId": manual_entry["id"]}
+    return {"message": f"{project_name} added successfully", "entryId": manual_entry["id"]}
 
 @api_router.get("/batches/{batch_id}/verification")
 async def get_batch_verification(batch_id: str, current_user: User = Depends(get_current_user)):
