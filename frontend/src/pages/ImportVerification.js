@@ -2127,12 +2127,17 @@ const ImportVerification = () => {
                       });
                     }
                     
-                    // Determine row background color based on status
+                    // Determine row background color based on status and entry source
                     let rowBgClass = '';
                     let statusIcon = '';
                     let statusTitle = '';
                     
-                    if (rowStatus === 'invoiced') {
+                    // Priority 1: Forfait batch entries get distinctive background
+                    if (entrySource === 'forfait_batch') {
+                      rowBgClass = 'bg-gradient-to-r from-purple-50 to-violet-50 border-l-4 border-purple-400';
+                      statusIcon = '○';
+                      statusTitle = 'Forfait batch entry';
+                    } else if (rowStatus === 'invoiced') {
                       rowBgClass = 'bg-gradient-to-r from-green-100 to-emerald-100 border-l-4 border-green-500 opacity-85';
                       statusIcon = '✓';
                       statusTitle = 'Already invoiced';
