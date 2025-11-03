@@ -2141,7 +2141,15 @@ const ImportVerification = () => {
                           </div>
                         </td>
                         
-                        <td className="px-3 py-2 text-slate-600">{row.invoiceNumber || '-'}</td>
+                        {/* Invoice Number / Status Column */}
+                        <td className="px-3 py-2 text-slate-600">
+                          {row.invoiceNumber && row.invoiceNumber !== '' 
+                            ? row.invoiceNumber  // Show invoice number if posted to e-računi
+                            : row.invoiceStatus && row.invoiceStatus !== ''
+                            ? row.invoiceStatus.charAt(0).toUpperCase() + row.invoiceStatus.slice(1)  // Show status (Draft, Issued) if invoice exists
+                            : '-'  // Show dash if no invoice
+                          }
+                        </td>
                       </tr>
                     );
                   })
