@@ -2667,6 +2667,24 @@ const ImportVerification = () => {
                                 {currentRowStatus.charAt(0).toUpperCase() + currentRowStatus.slice(1)}
                               </span>
                             </div>
+                            <div>
+                              <span className="font-semibold">Src:</span>{' '}
+                              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-bold ml-2 ${
+                                verificationData.rows[editingRowIndex].entrySource === 'manual' 
+                                  ? 'bg-green-600' 
+                                  : verificationData.rows[editingRowIndex].entrySource === 'forfait_batch'
+                                  ? 'bg-purple-600'
+                                  : 'bg-blue-600'
+                              }`} title={
+                                verificationData.rows[editingRowIndex].entrySource === 'manual' 
+                                  ? 'Manual Entry' 
+                                  : verificationData.rows[editingRowIndex].entrySource === 'forfait_batch'
+                                  ? 'Forfait Batch Entry'
+                                  : 'Imported from File'
+                              }>
+                                {verificationData.rows[editingRowIndex].entrySource === 'manual' ? 'M' : verificationData.rows[editingRowIndex].entrySource === 'forfait_batch' ? 'F' : 'I'}
+                              </span>
+                            </div>
                           </>
                         )}
                       </div>
