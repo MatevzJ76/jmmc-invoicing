@@ -1891,33 +1891,8 @@ class TestInvoiceCompositionStatus:
             print("  3. Verify both endpoints set status='draft' not 'imported'")
             print("  4. Check backend logs for any errors")
 
-            print(f"Status: {response.status_code}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.token = data.get("access_token")
-                print(f"✅ Login successful")
-                print(f"User: {data.get('user', {}).get('email')}")
-                print(f"Role: {data.get('user', {}).get('role')}")
-                return True
-            else:
-                print(f"❌ Login failed: {response.text}")
-                return False
-        except Exception as e:
-            print(f"❌ Login error: {str(e)}")
-            return False
-    
-    def get_headers(self) -> Dict[str, str]:
-        """Get authorization headers"""
-        return {"Authorization": f"Bearer {self.token}"}
-    
-    def test_get_articles(self) -> bool:
-        """Test GET /api/articles endpoint"""
-        print("\n=== Test 1: GET /api/articles - List all articles ===")
-        try:
-            response = requests.get(
-                f"{BACKEND_URL}/articles",
-                headers=self.get_headers()
+
+class TestFilteredInvoiceComposition:
             )
             print(f"Status: {response.status_code}")
             
