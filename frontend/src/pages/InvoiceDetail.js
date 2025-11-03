@@ -106,6 +106,21 @@ const SortableLineItem = ({
           />
         </div>
         
+        {/* Forfait Details Text Box - Only show if forfaitDetails exists */}
+        {line.forfaitDetails && (
+          <div className="flex-1 ml-2">
+            <Textarea
+              value={line.forfaitDetails}
+              onChange={(e) => updateLine(index, 'forfaitDetails', e.target.value)}
+              placeholder="Forfait details"
+              rows={3}
+              disabled={!isEditingAllowed}
+              className="text-sm resize-none bg-purple-50 border-purple-200"
+              title="Forfait linked entries details"
+            />
+          </div>
+        )}
+        
         {/* AI Button - Smaller */}
         {aiEnabled && isEditingAllowed && (
           <Button
