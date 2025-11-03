@@ -545,43 +545,45 @@ const ImportVerification = () => {
   };
 
   // Add Forfait batch entry
-  const handleAddForfait = () => {
+  const handleAddForfait = async () => {
     if (!customerSettings || !verificationData) return;
     
     console.log('➕ Adding forfait batch entry for customer:', customerSettings.name);
     
-    // Create new forfait batch row
-    const newRow = {
-      project: '001 - Računovodstvo',
-      customer: customerSettings.name,
-      customerId: selectedCustomerForAnalytics,
-      date: verificationData.metadata.periodTo, // Last day of invoicing period
-      tariff: '001 - Računovodstvo',
-      employee: '', // Empty
-      comments: '', // Empty
-      hours: 1,
-      hourlyRate: customerSettings.fixedForfaitValue || 0,
-      value: customerSettings.fixedForfaitValue || 0,
-      invoiceNumber: '',
-      invoiceStatus: '',
-      invoiceId: '',
-      status: 'uninvoiced',
-      entrySource: 'forfait_batch', // New source type
-      _originalIndex: verificationData.rows.length // Assign next index
-    };
-    
-    // Add row to verification data
-    const updatedData = {
-      ...verificationData,
-      rows: [...verificationData.rows, newRow]
-    };
-    
-    setVerificationData(updatedData);
-    sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
-    setHasChanges(true);
-    
-    toast.success(`Forfait batch entry added for ${customerSettings.name}`);
-    console.log('✅ Forfait batch entry added:', newRow);
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      // Prepare forfait entry data
+      const forfaitEntry = {
+        customerId: selectedCustomerForAnalytics,
+        employeeName: '', // Empty as requested
+        date: verificationData.metadata.periodTo, // Last day of invoicing period
+        hours: 1,
+        tariff: '001 - Računovodstvo',
+        notes: '', // Empty as requested
+        status: 'uninvoiced',
+        entrySource: 'forfait_batch', // New source type
+        forfaitBatchParentId: null, // For future: will be used to link to parent
+        forfaitBatchSubRows: [] // For future: will contain sub-row IDs
+      };
+      
+      // Call backend API to create forfait entry
+      const response = await axios.post(
+        `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries/manual`,
+        forfaitEntry,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      console.log('✅ Forfait entry created in database:', response.data.entryId);
+      
+      // Reload batch data to get the new entry
+      await loadBatchDataForVerification(verificationData.batchId);
+      
+      toast.success(`Forfait batch entry added for ${customerSettings.name}`);
+    } catch (error) {
+      console.error('❌ Failed to add forfait entry:', error);
+      toast.error('Failed to add forfait batch entry');
+    }
   };
 
   // Navigate to next customer
