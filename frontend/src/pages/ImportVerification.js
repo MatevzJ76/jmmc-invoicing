@@ -1574,11 +1574,10 @@ const ImportVerification = () => {
           
           {customerAnalyticsExpanded && (
             <div className="px-4 pb-4">
-              {/* Navigation Buttons */}
+              {/* Navigation Buttons - ALWAYS ACTIVE */}
               <div className="flex gap-2 mb-4">
                 <Button
                   onClick={handlePreviousCustomer}
-                  disabled={!allCustomers || allCustomers.length === 0}
                   size="sm"
                   variant="outline"
                   className="flex items-center gap-1"
@@ -1590,7 +1589,6 @@ const ImportVerification = () => {
                 </Button>
                 <Button
                   onClick={handleNextCustomer}
-                  disabled={!allCustomers || allCustomers.length === 0}
                   size="sm"
                   variant="outline"
                   className="flex items-center gap-1"
