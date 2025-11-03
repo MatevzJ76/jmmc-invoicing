@@ -589,6 +589,23 @@ agent_communication:
       message: "✅ FORFAIT BATCH ENTRY FEATURE TESTING COMPLETE! ALL 5 TESTS PASSED (5/5). Test Results: (1) ✅ Login - Successfully authenticated as admin@local with ADMIN role. (2) ✅ Customer Verification - Found customer '123 HIŠKA d.o.o.' (ID: 290cf431-a8c1-4dca-bc5c-e06fa66ad926) with fixedForfaitValue=€220.0 and invoicingType='fixed-forfait'. (3) ✅ Find October Batch - Found 21 October 2025 batches, selected 'in progress' batch (ID: df5ff0ba-ead1-45b5-96eb-d58043f3dabc). (4) ✅ Create Forfait Entry - Successfully created forfait batch entry via POST /api/batches/{batch_id}/manual-entry with entrySource='forfait_batch'. API returned HTTP 200 with message 'Forfait Batch added successfully'. (5) ✅ Verify Forfait Entry - Retrieved created entry and verified ALL 9 required fields: entrySource='forfait_batch' ✅, hourlyRate=€220.0 (customer's fixedForfaitValue) ✅, value=€220.0 (customer's fixedForfaitValue, NOT €45.0 from tariff) ✅, projectName='Forfait Batch' ✅, employeeName='' (empty) ✅, notes='' (empty) ✅, forfaitBatchParentId field exists (null) ✅, forfaitBatchSubRows field exists ([]) ✅, customerName='123 HIŠKA d.o.o.' ✅. CRITICAL VERIFICATION: The value is correctly set to €220.00 from customer's fixedForfaitValue, NOT calculated from tariff rate (which would be €45.00 for '001 - Računovodstvo'). This confirms the forfait_batch logic is working correctly (lines 956-959 in server.py). CONCLUSION: Forfait batch entry feature is FULLY FUNCTIONAL and PRODUCTION-READY. All success criteria met. Main agent should summarize and finish."
 
 
+
+backend:
+  - task: "POST /api/invoices/compose - Include all billable statuses (uninvoiced, ready, forfait)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "ENHANCEMENT: Updated invoice composition to include all billable entries. USER ISSUE: Only 2 of 4 rows for customer 'ALEN ŠUTIĆ S.P.' were included in invoice. ROOT CAUSE: Compose endpoint was only including entries with status='uninvoiced', missing entries with status='ready' and status='forfait'. FIX: Changed MongoDB query filter at line 3029 from \"status\": \"uninvoiced\" to \"status\": {\"$in\": [\"uninvoiced\", \"ready\", \"forfait\"]}. Also updated compose-filtered endpoint at line 3134 with same change. This ensures all billable entries (uninvoiced, ready, forfait) are included in invoices, while excluding non-billable entries (internal, free, already invoiced). Ready for comprehensive testing."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TESTING COMPLETED - ALL TESTS PASSED (2/2). Test Results: (1) ✅ Create test batch with mixed statuses: Created test batch with 6 time entries for customer 'ALEN ŠUTIĆ S.P.' with different statuses: 2 uninvoiced, 1 ready, 1 forfait, 1 internal, 1 free. Successfully updated entry statuses via PUT /api/batches/{batch_id}/time-entries. All entries have correct status values. (2) ✅ Compose includes all billable entries: Called POST /api/invoices/compose for the test batch. Invoice created successfully with 4 line items (2 uninvoiced + 1 ready + 1 forfait = 4 total). Verified each entry: Entry 0 (uninvoiced) INCLUDED ✅, Entry 1 (uninvoiced) INCLUDED ✅, Entry 2 (ready) INCLUDED ✅, Entry 3 (forfait) INCLUDED ✅, Entry 4 (internal) EXCLUDED ✅, Entry 5 (free) EXCLUDED ✅. CONCLUSION: Invoice composition enhancement is FULLY FUNCTIONAL and PRODUCTION-READY. The status filter at line 3029 correctly includes all billable statuses [uninvoiced, ready, forfait] and excludes non-billable statuses [internal, free]. USER ISSUE RESOLVED: All billable entries for a customer are now included in invoices, not just uninvoiced entries."
+
 backend:
   - task: "POST /api/batches/{batch_id}/manual-entry - Support forfait_batch entry source"
     implemented: true
