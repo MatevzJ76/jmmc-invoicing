@@ -756,8 +756,11 @@ const BatchDetail = () => {
         </div>
 
         {/* Verification Tile */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200 mb-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 mb-6">
+          <button
+            onClick={toggleVerificationTile}
+            className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors rounded-t-2xl"
+          >
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-orange-600" />
               <h3 className="text-lg font-semibold text-slate-800">Verification</h3>
@@ -765,19 +768,34 @@ const BatchDetail = () => {
                 ({verificationData.jmmcHP.length + verificationData.jmmcFinance.length + verificationData.noClient.length + verificationData.extra.length} items need review)
               </span>
             </div>
-            <Button
-              onClick={handleAIVerification}
-              disabled={aiVerifying}
-              variant="outline"
-              size="sm"
-              className="rounded-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {aiVerifying ? 'Checking...' : 'AI Check'}
-            </Button>
-          </div>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAIVerification();
+                }}
+                disabled={aiVerifying}
+                variant="outline"
+                size="sm"
+                className="rounded-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {aiVerifying ? 'Checking...' : 'AI Check'}
+              </Button>
+              <svg 
+                className={`w-5 h-5 text-slate-600 transition-transform ${verificationTileExpanded ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
 
-          {/* JMMC HP d.o.o. */}
+          {verificationTileExpanded && (
+            <div className="px-6 pb-6">
+              {/* JMMC HP d.o.o. */}
           <div className="mb-4">
             <button
               onClick={() => toggleCategory('jmmcHP')}
