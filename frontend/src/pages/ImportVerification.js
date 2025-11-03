@@ -2225,18 +2225,18 @@ const ImportVerification = () => {
                           {rowStatus === 'invoiced' && <span className="text-green-600 font-bold text-xl" title="Posted to invoice">✓</span>}
                         </td>
                         
-                        {/* St Column - Row Status Icons (always visible) */}
+                        {/* St Column - Row Status Icons (uses originalStatus, always visible) */}
                         <td className="px-2 py-2 text-center align-middle">
-                          {rowStatus === 'ready' && (
+                          {displayStatus === 'ready' && (
                             <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-[10px] font-bold" title="Ready - verified and approved">
                               OK
                             </span>
                           )}
-                          {rowStatus === 'internal' && <span className="text-blue-600 text-lg" title="Internal - not for invoicing">🏢</span>}
-                          {rowStatus === 'free' && <span className="text-yellow-600 text-lg" title="Free - will not be charged">🎁</span>}
-                          {rowStatus === 'forfait' && <span className="text-purple-600 text-lg" title="Forfait work">💼</span>}
-                          {(rowStatus === 'uninvoiced' || rowStatus === 'invoiced') && <span className="text-slate-400 font-medium text-sm" title="Uninvoiced">○</span>}
-                          {!rowStatus && <span className="text-slate-400 font-medium text-sm" title="Uninvoiced">○</span>}
+                          {displayStatus === 'internal' && <span className="text-blue-600 text-lg" title="Internal - not for invoicing">🏢</span>}
+                          {displayStatus === 'free' && <span className="text-yellow-600 text-lg" title="Free - will not be charged">🎁</span>}
+                          {displayStatus === 'forfait' && <span className="text-purple-600 text-lg" title="Forfait work">💼</span>}
+                          {displayStatus === 'uninvoiced' && <span className="text-slate-400 font-medium text-sm" title="Uninvoiced">○</span>}
+                          {!displayStatus && <span className="text-slate-400 font-medium text-sm" title="Uninvoiced">○</span>}
                         </td>
                         
                         {/* Stranka (Customer) Column */}
