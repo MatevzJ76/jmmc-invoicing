@@ -124,6 +124,8 @@ class TestInvoiceComposition:
             
             # Now create manual entries with different statuses
             print("\n--- Step 3: Create Time Entries with Mixed Statuses ---")
+            
+            today = datetime.now()
             entries_to_create = [
                 {"status": "uninvoiced", "hours": 8.0, "notes": "Entry 1 - Uninvoiced"},
                 {"status": "uninvoiced", "hours": 4.5, "notes": "Entry 2 - Uninvoiced"},
