@@ -3323,7 +3323,10 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         {"$set": {"status": "composed"}}
     )
     
-    return {"invoiceIds": invoice_ids, "entriesProcessed": len(entries)}
+    # Calculate total entries processed (regular + forfait_batch + linked forfait)
+    total_processed = len(entries) + len(forfait_batch_entries) + len(forfait_entries)
+    
+    return {"invoiceIds": invoice_ids, "entriesProcessed": total_processed}
 
 
 @api_router.get("/invoices/{invoice_id}", response_model=Dict[str, Any])
