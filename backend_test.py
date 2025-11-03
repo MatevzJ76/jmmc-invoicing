@@ -1898,6 +1898,373 @@ class TestFilteredInvoiceComposition:
                     print(f"  Status: {status}")
                     
                     # Verify total is > 0
+
+
+class TestInvoiceCompositionBillableStatuses:
+    """Test enhanced invoice composition to include all billable entries (uninvoiced, ready, forfait)"""
+    
+    def __init__(self):
+        self.token = None
+        self.batch_id = None
+        self.customer_id = None
+        self.test_entries = []
+        
+    def login(self) -> bool:
+        """Login as admin and get auth token"""
+        print("\n=== Testing Login ===")
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+            )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                print(f"✅ Login successful")
+                print(f"User: {data.get('user', {}).get('email')}")
+                print(f"Role: {data.get('user', {}).get('role')}")
+                return True
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
+    
+    def get_headers(self) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.token}"}
+    
+    def create_test_batch_with_mixed_statuses(self) -> bool:
+        """Create a test batch with entries having different statuses"""
+        print("\n=== Creating Test Batch with Mixed Statuses ===")
+        
+        try:
+            import openpyxl
+            from datetime import datetime
+            
+            # Create workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            
+            # Add headers
+            headers = ["Projekt", "Stranka", "Datum", "Tarifa", "Delavec", "Opombe", "Porabljene ure", "Vrednost", "Št. računa"]
+            ws.append(headers)
+            
+            # Add test data rows - all for the same customer
+            test_customer_name = "ALEN ŠUTIĆ S.P."
+            test_rows = [
+                ["Project A", test_customer_name, datetime(2025, 10, 1), "001 - Računovodstvo", "John Doe", "Uninvoiced entry 1", 2.0, 90.0, ""],
+                ["Project B", test_customer_name, datetime(2025, 10, 2), "001 - Računovodstvo", "Jane Smith", "Uninvoiced entry 2", 3.0, 135.0, ""],
+                ["Project C", test_customer_name, datetime(2025, 10, 3), "001 - Računovodstvo", "Bob Johnson", "Ready entry", 1.5, 67.5, ""],
+                ["Project D", test_customer_name, datetime(2025, 10, 4), "001 - Računovodstvo", "Alice Brown", "Forfait entry", 2.5, 112.5, ""],
+                ["Project E", test_customer_name, datetime(2025, 10, 5), "001 - Računovodstvo", "Charlie Wilson", "Internal entry", 1.0, 45.0, ""],
+                ["Project F", test_customer_name, datetime(2025, 10, 6), "001 - Računovodstvo", "Diana Prince", "Free entry", 1.0, 45.0, ""],
+            ]
+            
+            for row in test_rows:
+                ws.append(row)
+            
+            # Save to temp file
+            test_file_path = "/tmp/test_billable_statuses.xlsx"
+            wb.save(test_file_path)
+            print(f"✅ Created test XLSX file: {test_file_path}")
+            
+            # Upload the file
+            with open(test_file_path, 'rb') as f:
+                files = {'file': ('test_billable_statuses.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                data = {
+                    'title': 'Billable Statuses Test Batch',
+                    'invoiceDate': '2025-10-31',
+                    'periodFrom': '2025-10-01',
+                    'periodTo': '2025-10-31',
+                    'dueDate': '2025-11-15'
+                }
+                
+                response = requests.post(
+                    f"{BACKEND_URL}/imports",
+                    headers=self.get_headers(),
+                    files=files,
+                    data=data
+                )
+            
+            print(f"Import Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.batch_id = result.get("batchId")
+                row_count = result.get("rowCount")
+                
+                print(f"✅ Import successful")
+                print(f"  Batch ID: {self.batch_id}")
+                print(f"  Row Count: {row_count}")
+                
+                # Get time entries
+                response = requests.get(
+                    f"{BACKEND_URL}/batches/{self.batch_id}/time-entries",
+                    headers=self.get_headers()
+                )
+                
+                if response.status_code == 200:
+                    self.test_entries = response.json()
+                    print(f"✅ Retrieved {len(self.test_entries)} time entries")
+                    
+                    # Get customer ID from first entry
+                    if self.test_entries:
+                        self.customer_id = self.test_entries[0].get("customerId")
+                        print(f"  Customer ID: {self.customer_id}")
+                    
+                    # Now update entries to have different statuses
+                    # Entry 0, 1: uninvoiced (default)
+                    # Entry 2: ready
+                    # Entry 3: forfait
+                    # Entry 4: internal
+                    # Entry 5: free
+                    
+                    updates = [
+                        {"index": 2, "status": "ready"},
+                        {"index": 3, "status": "forfait"},
+                        {"index": 4, "status": "internal"},
+                        {"index": 5, "status": "free"}
+                    ]
+                    
+                    update_response = requests.put(
+                        f"{BACKEND_URL}/batches/{self.batch_id}/time-entries",
+                        headers=self.get_headers(),
+                        json=updates
+                    )
+                    
+                    print(f"\nUpdate Status: {update_response.status_code}")
+                    
+                    if update_response.status_code == 200:
+                        print(f"✅ Updated entry statuses")
+                        
+                        # Verify the updates
+                        response = requests.get(
+                            f"{BACKEND_URL}/batches/{self.batch_id}/time-entries",
+                            headers=self.get_headers()
+                        )
+                        
+                        if response.status_code == 200:
+                            self.test_entries = response.json()
+                            
+                            print(f"\nEntry statuses:")
+                            for idx, entry in enumerate(self.test_entries):
+                                status = entry.get("status", "unknown")
+                                notes = entry.get("notes", "")
+                                print(f"  Entry {idx}: status={status}, notes={notes}")
+                            
+                            return True
+                        else:
+                            print(f"❌ Failed to verify updates: {response.text}")
+                            return False
+                    else:
+                        print(f"❌ Failed to update statuses: {update_response.text}")
+                        return False
+                else:
+                    print(f"❌ Failed to get time entries: {response.text}")
+                    return False
+            else:
+                print(f"❌ Import failed: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error creating test batch: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def test_compose_includes_all_billable(self) -> bool:
+        """Test that compose includes uninvoiced, ready, and forfait entries"""
+        print("\n=== Testing Compose Includes All Billable Entries ===")
+        
+        if not self.batch_id or not self.customer_id:
+            print("❌ No batch or customer ID available")
+            return False
+        
+        try:
+            # Compose invoices
+            print(f"\nComposing invoices for batch {self.batch_id}...")
+            compose_response = requests.post(
+                f"{BACKEND_URL}/invoices/compose",
+                headers=self.get_headers(),
+                params={"batchId": self.batch_id}
+            )
+            
+            print(f"Compose Status: {compose_response.status_code}")
+            
+            if compose_response.status_code != 200:
+                print(f"❌ Failed to compose invoices: {compose_response.text}")
+                return False
+            
+            result = compose_response.json()
+            invoice_ids = result.get("invoiceIds", [])
+            
+            print(f"✅ Invoices composed successfully")
+            print(f"  Invoice IDs: {invoice_ids}")
+            
+            # Get the invoice for our test customer
+            if not invoice_ids:
+                print("❌ No invoices created")
+                return False
+            
+            # Get invoice details
+            invoice_response = requests.get(
+                f"{BACKEND_URL}/batches/{self.batch_id}/invoices",
+                headers=self.get_headers()
+            )
+            
+            if invoice_response.status_code != 200:
+                print(f"❌ Failed to get invoices: {invoice_response.text}")
+                return False
+            
+            invoices = invoice_response.json()
+            
+            # Find invoice for our customer
+            customer_invoice = None
+            for invoice in invoices:
+                if invoice.get("customerId") == self.customer_id:
+                    customer_invoice = invoice
+                    break
+            
+            if not customer_invoice:
+                print(f"❌ No invoice found for customer {self.customer_id}")
+                return False
+            
+            invoice_id = customer_invoice.get("id")
+            print(f"\nFound invoice for customer: {invoice_id}")
+            
+            # Get invoice lines
+            lines_response = requests.get(
+                f"{BACKEND_URL}/invoices/{invoice_id}/lines",
+                headers=self.get_headers()
+            )
+            
+            if lines_response.status_code != 200:
+                print(f"❌ Failed to get invoice lines: {lines_response.text}")
+                return False
+            
+            lines = lines_response.json()
+            
+            print(f"\nInvoice has {len(lines)} line items")
+            
+            # Expected: 4 line items (2 uninvoiced + 1 ready + 1 forfait)
+            # NOT included: 1 internal + 1 free
+            
+            if len(lines) != 4:
+                print(f"❌ Expected 4 line items, got {len(lines)}")
+                print(f"   Expected: 2 uninvoiced + 1 ready + 1 forfait = 4 total")
+                print(f"   Should exclude: 1 internal + 1 free")
+                return False
+            
+            print(f"✅ Invoice has correct number of line items (4)")
+            
+            # Verify which entries are included
+            line_entry_ids = [line.get("timeEntryId") for line in lines]
+            
+            print(f"\nVerifying entry inclusion:")
+            
+            # Check each test entry
+            expected_included = [0, 1, 2, 3]  # uninvoiced, uninvoiced, ready, forfait
+            expected_excluded = [4, 5]  # internal, free
+            
+            for idx in expected_included:
+                if idx < len(self.test_entries):
+                    entry = self.test_entries[idx]
+                    entry_id = entry.get("id")
+                    status = entry.get("status")
+                    notes = entry.get("notes", "")
+                    
+                    if entry_id in line_entry_ids:
+                        print(f"  ✅ Entry {idx} (status={status}) INCLUDED: {notes}")
+                    else:
+                        print(f"  ❌ Entry {idx} (status={status}) NOT INCLUDED (should be): {notes}")
+                        return False
+            
+            for idx in expected_excluded:
+                if idx < len(self.test_entries):
+                    entry = self.test_entries[idx]
+                    entry_id = entry.get("id")
+                    status = entry.get("status")
+                    notes = entry.get("notes", "")
+                    
+                    if entry_id not in line_entry_ids:
+                        print(f"  ✅ Entry {idx} (status={status}) EXCLUDED: {notes}")
+                    else:
+                        print(f"  ❌ Entry {idx} (status={status}) INCLUDED (should be excluded): {notes}")
+                        return False
+            
+            print(f"\n✅ All billable entries included, non-billable entries excluded")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error testing compose: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def run_all_tests(self):
+        """Run all invoice composition billable statuses tests"""
+        print("=" * 80)
+        print("INVOICE COMPOSITION - BILLABLE STATUSES - BACKEND TESTS")
+        print("=" * 80)
+        print("\nTesting enhanced invoice composition to include all billable entries:")
+        print("  ✅ INCLUDE: uninvoiced, ready, forfait")
+        print("  ❌ EXCLUDE: internal, free, already invoiced")
+        print("\nUSER ISSUE: Only 2 of 4 rows for customer 'ALEN ŠUTIĆ S.P.' were included")
+        print("FIX: Changed status filter from 'uninvoiced' to ['uninvoiced', 'ready', 'forfait']")
+        print("=" * 80)
+        
+        results = {}
+        
+        # 1. Login
+        if not self.login():
+            print("\n❌ CRITICAL: Login failed. Cannot proceed with tests.")
+            return
+        
+        # 2. Create test batch with mixed statuses
+        results["Create test batch with mixed statuses"] = self.create_test_batch_with_mixed_statuses()
+        
+        if not results["Create test batch with mixed statuses"]:
+            print("\n❌ CRITICAL: Failed to create test batch. Cannot proceed.")
+            return
+        
+        # 3. Test compose includes all billable entries
+        results["Compose includes all billable entries"] = self.test_compose_includes_all_billable()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for v in results.values() if v)
+        total = len(results)
+        
+        for test_name, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            print(f"{status} - {test_name}")
+        
+        print(f"\nTotal: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("\n🎉 ALL TESTS PASSED!")
+            print("\n✅ Invoice composition enhancement is working correctly:")
+            print("  - Uninvoiced entries included ✅")
+            print("  - Ready entries included ✅")
+            print("  - Forfait entries included ✅")
+            print("  - Internal entries excluded ✅")
+            print("  - Free entries excluded ✅")
+            print("\n✅ USER ISSUE RESOLVED: All billable entries for a customer are now included in invoices")
+        else:
+            print(f"\n⚠️  {total - passed} test(s) failed")
+            print("\n🔍 Debugging Hints:")
+            print("  1. Check if status filter in compose endpoint includes all billable statuses")
+            print("  2. Verify line 3029 in server.py: status: {$in: ['uninvoiced', 'ready', 'forfait']}")
+            print("  3. Check if entries have correct status values in database")
+            print("  4. Verify invoice lines are created for all billable entries")
+
                     if total <= 0:
                         print(f"  ❌ Invoice total should be > 0, got {total}")
                         return False
