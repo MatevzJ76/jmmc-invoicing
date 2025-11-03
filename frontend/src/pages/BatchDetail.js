@@ -768,29 +768,14 @@ const BatchDetail = () => {
                 ({verificationData.jmmcHP.length + verificationData.jmmcFinance.length + verificationData.noClient.length + verificationData.extra.length} items need review)
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAIVerification();
-                }}
-                disabled={aiVerifying}
-                variant="outline"
-                size="sm"
-                className="rounded-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {aiVerifying ? 'Checking...' : 'AI Check'}
-              </Button>
-              <svg 
-                className={`w-5 h-5 text-slate-600 transition-transform ${verificationTileExpanded ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            <svg 
+              className={`w-5 h-5 text-slate-600 transition-transform ${verificationTileExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
 
           {verificationTileExpanded && (
