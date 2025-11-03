@@ -935,28 +935,36 @@ async def add_manual_entry(
     entry_data: dict,
     current_user: User = Depends(get_current_user)
 ):
-    """Add a manual time entry to a batch"""
+    """Add a manual time entry or forfait batch entry to a batch"""
     batch = await db.importBatches.find_one({"id": batch_id})
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
     
-    # Get tariff rate if tariff provided
-    hourly_rate = 0
-    if entry_data.get("tariff"):
-        tariff = await db.tariffs.find_one({"code": entry_data["tariff"]})
-        if tariff:
-            hourly_rate = tariff.get("value", 0)
+    entry_source = entry_data.get("entrySource", "manual")
     
-    # Calculate value
-    hours = float(entry_data.get("hours", 0))
-    calculated_value = round(hours * hourly_rate, 2)
-    
-    # Get customer name for project linking
+    # Get customer data
     customer_name = ""
+    customer = None
     if entry_data.get("customerId"):
         customer = await db.customers.find_one({"id": entry_data["customerId"]})
         if customer:
             customer_name = customer.get("name", "")
+    
+    # Calculate value based on entry source
+    hours = float(entry_data.get("hours", 0))
+    
+    if entry_source == "forfait_batch" and customer:
+        # For forfait batch entries, use customer's fixedForfaitValue
+        hourly_rate = customer.get("fixedForfaitValue", 0)
+        calculated_value = customer.get("fixedForfaitValue", 0)  # Use fixed forfait value directly
+    else:
+        # For manual entries, calculate from tariff
+        hourly_rate = 0
+        if entry_data.get("tariff"):
+            tariff = await db.tariffs.find_one({"code": entry_data["tariff"]})
+            if tariff:
+                hourly_rate = tariff.get("value", 0)
+        calculated_value = round(hours * hourly_rate, 2)
     
     # Create manual entry
     entry_source = entry_data.get("entrySource", "manual")  # Support "manual" or "forfait_batch"
