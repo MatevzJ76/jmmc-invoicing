@@ -588,15 +588,19 @@ agent_communication:
 
   - task: "POST /api/invoices/compose and compose-filtered - Set invoice status to 'draft' instead of 'imported'"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "BUG FIX: Changed invoice status assignment from 'imported' to 'draft' when composing invoices from Import Verification page. Changed line 3021 in POST /api/invoices/compose endpoint and line 3129 in POST /api/invoices/compose-filtered endpoint. Both endpoints now set invoice status to 'draft' instead of 'imported'. This ensures that newly composed invoices have the correct initial status matching user expectations. Backend service restarted successfully. Ready for testing."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TESTING COMPLETED - ALL TESTS PASSED (2/2). Test Results: (1) ✅ POST /api/invoices/compose - Created test batch with 4 time entries (JMMC HP, JMMC Finance, Test Customer). Composed invoices successfully. Verified ALL 3 invoices have status='draft' (NOT 'imported'). Invoice 1: JMMC HP d.o.o., Total: €562.5, Status: draft ✅. Invoice 2: JMMC Finance d.o.o., Total: €270.0, Status: draft ✅. Invoice 3: Test Customer Ltd, Total: €225.0, Status: draft ✅. (2) ✅ POST /api/invoices/compose-filtered - Created new test batch with 4 time entries. Selected first 2 entries for filtered composition. Composed 1 invoice successfully (both entries for same customer). Verified invoice has status='draft' (NOT 'imported'). Invoice: JMMC HP d.o.o., Total: €562.5, Status: draft ✅. CONCLUSION: The bug fix is WORKING CORRECTLY. Both endpoints (POST /api/invoices/compose at line 3021 and POST /api/invoices/compose-filtered at line 3129) now correctly set invoice status to 'draft' instead of 'imported'. User-reported issue is FIXED: Invoices posted from Import Verification page now have status='Draft' as expected. Previously they had status='Imported' which was incorrect. NO INVOICES WITH STATUS='IMPORTED' FOUND. Feature is PRODUCTION-READY."
+
 
 
 backend:
