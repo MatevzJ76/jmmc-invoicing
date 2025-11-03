@@ -569,7 +569,7 @@ const ImportVerification = () => {
       
       // Call backend API to create forfait entry
       const response = await axios.post(
-        `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries/manual`,
+        `${BACKEND_URL}/api/batches/${verificationData.batchId}/manual-entry`,
         forfaitEntry,
         { headers: { Authorization: `Bearer ${token}` } }
       );
