@@ -2135,15 +2135,16 @@ const ImportVerification = () => {
                     let statusIcon = '';
                     let statusTitle = '';
                     
-                    // Priority 1: Forfait batch entries get distinctive background
-                    if (entrySource === 'forfait_batch') {
+                    // Priority 1: Posted to invoice - green background
+                    if (isPostedToInvoice) {
+                      rowBgClass = 'bg-gradient-to-r from-green-100 to-emerald-100 border-l-4 border-green-500 opacity-85';
+                      statusIcon = '✓';
+                      statusTitle = 'Posted to invoice';
+                    } else if (entrySource === 'forfait_batch') {
+                      // Priority 2: Forfait batch entries get distinctive background
                       rowBgClass = 'bg-gradient-to-r from-purple-50 to-violet-50 border-l-4 border-purple-400';
                       statusIcon = '○';
                       statusTitle = 'Forfait batch entry';
-                    } else if (rowStatus === 'invoiced') {
-                      rowBgClass = 'bg-gradient-to-r from-green-100 to-emerald-100 border-l-4 border-green-500 opacity-85';
-                      statusIcon = '✓';
-                      statusTitle = 'Already invoiced';
                     } else if (rowStatus === 'ready') {
                       rowBgClass = 'bg-gradient-to-r from-emerald-50 to-green-50 border-l-4 border-emerald-400';
                       statusIcon = 'OK';
