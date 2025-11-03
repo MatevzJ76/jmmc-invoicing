@@ -1506,6 +1506,19 @@ class TestArticlesAPI:
                 f"{BACKEND_URL}/auth/login",
                 json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
             )
+            print(f"Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.token = data.get("access_token")
+                print(f"✅ Login successful")
+                return True
+            else:
+                print(f"❌ Login failed: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
 
 
 class TestInvoiceCompositionStatus:
