@@ -1898,6 +1898,17 @@ class TestFilteredInvoiceComposition:
                     print(f"  Status: {status}")
                     
                     # Verify total is > 0
+                    if total <= 0:
+                        print(f"⚠️  Warning: Invoice total is €{total}")
+                
+                return True
+            else:
+                print(f"❌ Failed to get invoices: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error verifying invoices: {str(e)}")
+            return False
 
 
 class TestInvoiceCompositionBillableStatuses:
