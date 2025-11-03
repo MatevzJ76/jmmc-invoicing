@@ -1860,6 +1860,12 @@ const ImportVerification = () => {
                       onClick={() => {
                         setCustomerFilter(customer);
                         setCustomerDropdownOpen(false);
+                        // Update Customer Analytics to show the selected customer
+                        const selectedCustomer = allCustomers.find(c => c.name === customer);
+                        if (selectedCustomer) {
+                          setSelectedCustomerForAnalytics(selectedCustomer.id);
+                          loadCustomerData(selectedCustomer.id);
+                        }
                       }}
                       className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-50 ${
                         customerFilter === customer ? 'bg-blue-100 font-medium' : ''
