@@ -51,6 +51,8 @@ const Customers = () => {
   const [showRefreshSecondConfirm, setShowRefreshSecondConfirm] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showUploadTooltip, setShowUploadTooltip] = useState(false);
+  const [rowsPerPage, setRowsPerPage] = useState(100);
+  const [currentPage, setCurrentPage] = useState(1);
   const uploadBtnRef = useRef(null);
 
   useEffect(() => {
@@ -162,6 +164,7 @@ const Customers = () => {
     filtered = sortCustomers(filtered);
 
     setFilteredCustomers(filtered);
+    setCurrentPage(1);
   };
 
   const handleUnitPriceChange = async (customerId, newPrice) => {
@@ -434,6 +437,21 @@ const Customers = () => {
                 className="pl-10"
               />
             </div>
+            <div className="w-36">
+              <select
+                value={rowsPerPage}
+                onChange={(e) => { setRowsPerPage(e.target.value === 'all' ? 'all' : Number(e.target.value)); setCurrentPage(1); }}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value={10}>10 rows</option>
+                <option value={25}>25 rows</option>
+                <option value={50}>50 rows</option>
+                <option value={100}>100 rows</option>
+                <option value={250}>250 rows</option>
+                <option value={500}>500 rows</option>
+                <option value="all">All rows</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -530,7 +548,7 @@ const Customers = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredCustomers.map((customer) => (
+                  {(rowsPerPage === 'all' ? filteredCustomers : filteredCustomers.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)).map((customer) => (
                     <tr
                       key={customer.id}
                       className="hover:bg-slate-50 transition-colors cursor-pointer"
@@ -576,6 +594,47 @@ const Customers = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          {/* Pagination footer */}
+          {!loading && filteredCustomers.length > 0 && rowsPerPage !== 'all' && (
+            <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 text-sm text-slate-500">
+              <span>
+                {Math.min((currentPage - 1) * rowsPerPage + 1, filteredCustomers.length)}–{Math.min(currentPage * rowsPerPage, filteredCustomers.length)} od {filteredCustomers.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="px-2 py-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                >«</button>
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-2 py-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                >‹</button>
+                {Array.from({ length: Math.ceil(filteredCustomers.length / rowsPerPage) }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === Math.ceil(filteredCustomers.length / rowsPerPage) || Math.abs(p - currentPage) <= 1)
+                  .reduce((acc, p, idx, arr) => {
+                    if (idx > 0 && p - arr[idx - 1] > 1) acc.push('…');
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, idx) => p === '…'
+                    ? <span key={`ellipsis-${idx}`} className="px-2">…</span>
+                    : <button key={p} onClick={() => setCurrentPage(p)} className={`px-2.5 py-1 rounded ${currentPage === p ? 'bg-indigo-600 text-white font-semibold' : 'hover:bg-slate-100'}`}>{p}</button>
+                  )}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredCustomers.length / rowsPerPage), p + 1))}
+                  disabled={currentPage === Math.ceil(filteredCustomers.length / rowsPerPage)}
+                  className="px-2 py-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                >›</button>
+                <button
+                  onClick={() => setCurrentPage(Math.ceil(filteredCustomers.length / rowsPerPage))}
+                  disabled={currentPage === Math.ceil(filteredCustomers.length / rowsPerPage)}
+                  className="px-2 py-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                >»</button>
+              </div>
             </div>
           )}
         </div>
