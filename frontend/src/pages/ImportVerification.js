@@ -236,16 +236,9 @@ const ImportVerification = () => {
         }
       });
 
-      // Update verification data to mark as resuming
-      const updatedData = {
-        ...data,
-        resuming: true,
-        batchId: response.data.batchId
-      };
-      
-      setVerificationData(updatedData);
-      sessionStorage.setItem('importVerificationData', JSON.stringify(updatedData));
-      
+      // Reload batch data from DB so rows have proper id fields (needed for AI prompts etc.)
+      await loadBatchDataForVerification(response.data.batchId);
+
       toast.success('Import saved - you can review and edit data', { duration: 3000 });
     } catch (error) {
       console.error('Auto-save failed:', error);
@@ -1063,11 +1056,16 @@ const ImportVerification = () => {
 
     setAiProcessing(true);
     const rowData = verificationData.rows[editingRowIndex];
-    const entryId = rowData.id;
+    const entryId = rowData?.id;
 
     if (!entryId) {
-      toast.error('Could not find entry ID for this row. Please reload the batch.');
+      // Row IDs are loaded when batch data is fetched from DB.
+      // If missing, reload and let the user try again.
+      toast.error('Entry data not fully loaded yet. Refreshing batch data, please try again.');
       setAiProcessing(false);
+      if (verificationData.batchId) {
+        await loadBatchDataForVerification(verificationData.batchId);
+      }
       return;
     }
 
