@@ -2434,12 +2434,23 @@ async def upload_customer_history(
             if hasattr(date_val, 'isoformat'):
                 date_obj = date_val
                 date_str = date_val.isoformat()
+            elif isinstance(date_val, (int, float)):
+                # xlrd returns .xls dates as float serial numbers (e.g. 46090.0 = 2026-03-09)
+                try:
+                    date_obj = xlrd.xldate_as_datetime(date_val, 0)
+                    date_str = date_obj.strftime('%Y-%m-%d')
+                except:
+                    continue
             elif isinstance(date_val, str):
                 try:
                     date_obj = datetime.strptime(date_val, '%Y-%m-%d')
                     date_str = date_val
                 except:
-                    continue
+                    try:
+                        date_obj = datetime.strptime(date_val, '%d.%m.%Y')
+                        date_str = date_obj.strftime('%Y-%m-%d')
+                    except:
+                        continue
             else:
                 continue
             
