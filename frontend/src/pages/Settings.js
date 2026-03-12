@@ -1232,9 +1232,9 @@ const Settings = () => {
   const [testingPrompt, setTestingPrompt] = useState(null);
   
   const [settings, setSettings] = useState({
-    aiProvider: 'emergent',
+    aiProvider: 'custom',
     customApiKey: '',
-    customModel: 'gpt-5', // For testing only
+    customModel: 'gpt-4o-mini', // For testing only
     
     grammarPrompt: 'Correct any grammar errors, spelling mistakes, and improve the clarity of this time entry description. Return ONLY the corrected text without any explanations, comments, or additional formatting.',
     grammarModel: 'gpt-5-nano', // Fast, low-cost
@@ -1672,128 +1672,117 @@ ${randomFinal}`;
           <div className="space-y-6 mt-6">
             <div className="space-y-2">
               <Label htmlFor="provider">AI Provider</Label>
-              <Select value={settings.aiProvider} onValueChange={(value) => updateSetting('aiProvider', value)}>
+              <Select value={settings.aiProvider} onValueChange={(value) => {
+                updateSetting('aiProvider', value);
+                // Reset model to a sensible default for the new provider
+                if (value === 'anthropic') updateSetting('customModel', 'claude-3-5-sonnet-20241022');
+                else updateSetting('customModel', 'gpt-4o-mini');
+              }}>
                 <SelectTrigger id="provider" data-testid="ai-provider-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="emergent">Emergent LLM (Universal Key)</SelectItem>
-                  <SelectItem value="custom">Custom OpenAI API</SelectItem>
+                  <SelectItem value="custom">OpenAI</SelectItem>
+                  <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-slate-500">
-                {settings.aiProvider === 'emergent' 
-                  ? 'Uses the built-in Emergent universal key for OpenAI models'
-                  : 'Use your own OpenAI API key for custom integration'}
+                {settings.aiProvider === 'anthropic'
+                  ? 'Use your Anthropic API key to run Claude models'
+                  : 'Use your OpenAI API key to run GPT models'}
               </p>
             </div>
 
-            {settings.aiProvider === 'custom' && (
-              <>
-                {/* Credentials Reference Box */}
-                <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-bold text-purple-700">🔑 Your OpenAI Credentials:</p>
-                    <button
-                      onClick={() => setShowOpenAiCreds(!showOpenAiCreds)}
-                      className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
-                      type="button"
-                    >
-                      {showOpenAiCreds ? (
-                        <>
-                          <EyeOff className="w-4 h-4" />
-                          <span>Hide</span>
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="w-4 h-4" />
-                          <span>Show</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    <div className="bg-white p-2 rounded border border-purple-300">
-                      <div className="font-semibold text-purple-800">OpenAI API Key:</div>
-                      <div className="font-mono text-slate-700 break-all">
-                        {showOpenAiCreds 
-                          ? (settings.customApiKey || 'Not set') 
-                          : (settings.customApiKey ? '••••••••••••••••••••••••••••••••••••••••••••••••••••••••' : 'Not set')}
-                      </div>
+            {/* API Key + Model — shown for both providers */}
+            <>
+              {/* Credentials Reference Box */}
+              <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold text-purple-700">
+                    🔑 {settings.aiProvider === 'anthropic' ? 'Anthropic' : 'OpenAI'} Credentials:
+                  </p>
+                  <button
+                    onClick={() => setShowOpenAiCreds(!showOpenAiCreds)}
+                    className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                    type="button"
+                  >
+                    {showOpenAiCreds ? (
+                      <><EyeOff className="w-4 h-4" /><span>Hide</span></>
+                    ) : (
+                      <><Eye className="w-4 h-4" /><span>Show</span></>
+                    )}
+                  </button>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div className="bg-white p-2 rounded border border-purple-300">
+                    <div className="font-semibold text-purple-800">
+                      {settings.aiProvider === 'anthropic' ? 'Anthropic' : 'OpenAI'} API Key:
+                    </div>
+                    <div className="font-mono text-slate-700 break-all">
+                      {showOpenAiCreds
+                        ? (settings.customApiKey || 'Not set')
+                        : (settings.customApiKey ? '••••••••••••••••••••••••••••••••••••••••••••••••••••••••' : 'Not set')}
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">Your API key is stored securely and never shared</p>
                 </div>
+                <p className="text-xs text-slate-500 mt-2">Your API key is stored securely and never shared</p>
+              </div>
 
-                {/* API Key Input */}
-                <div className="space-y-2">
-                  <Label htmlFor="apiKey">OpenAI API Key</Label>
-                  <Input
-                    id="apiKey"
-                    type="password"
-                    value={settings.customApiKey}
-                    onChange={(e) => updateSetting('customApiKey', e.target.value)}
-                    placeholder="sk-proj-..."
-                    data-testid="custom-api-key-input"
-                  />
-                  <p className="text-xs text-slate-500">Paste your OpenAI API key here</p>
-                </div>
+              {/* API Key Input */}
+              <div className="space-y-2">
+                <Label htmlFor="apiKey">
+                  {settings.aiProvider === 'anthropic' ? 'Anthropic API Key' : 'OpenAI API Key'}
+                </Label>
+                <Input
+                  id="apiKey"
+                  type="password"
+                  value={settings.customApiKey}
+                  onChange={(e) => updateSetting('customApiKey', e.target.value)}
+                  placeholder={settings.aiProvider === 'anthropic' ? 'sk-ant-api03-...' : 'sk-proj-...'}
+                  data-testid="custom-api-key-input"
+                />
+                <p className="text-xs text-slate-500">
+                  {settings.aiProvider === 'anthropic'
+                    ? 'Get your key at console.anthropic.com'
+                    : 'Get your key at platform.openai.com'}
+                </p>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="model">Model</Label>
-                  <Select value={settings.customModel} onValueChange={(value) => updateSetting('customModel', value)}>
-                    <SelectTrigger id="model" data-testid="model-select">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gpt-5-nano">gpt-5-nano</SelectItem>
-                      <SelectItem value="gpt-5-mini">gpt-5-mini</SelectItem>
-                      <SelectItem value="gpt-5">gpt-5</SelectItem>
-                      <SelectItem value="gpt-4o-mini">gpt-4o-mini</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  {/* Model Information */}
-                  <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    {settings.customModel === 'gpt-5-nano' && (
-                      <div className="space-y-1 text-xs">
-                        <p className="font-semibold text-slate-800">GPT-5 Nano</p>
-                        <p className="text-slate-600">Ultra-fast, low-cost model for grammar/style cleanup and simple edits</p>
-                        <p className="text-slate-500">⚡ Speed: ~0.5–0.8s (typical for short prompts)</p>
-                        <p className="text-slate-500">💰 Pricing: $0.05/1M input • $0.005/1M cached • $0.40/1M output</p>
-                      </div>
+              {/* Model selector */}
+              <div className="space-y-2">
+                <Label htmlFor="model">Model (for Test Connection)</Label>
+                <Select value={settings.customModel} onValueChange={(value) => updateSetting('customModel', value)}>
+                  <SelectTrigger id="model" data-testid="model-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {settings.aiProvider === 'anthropic' ? (
+                      <>
+                        <SelectItem value="claude-3-haiku-20240307">claude-3-haiku — Fast &amp; cheap</SelectItem>
+                        <SelectItem value="claude-3-5-haiku-20241022">claude-3-5-haiku — Balanced</SelectItem>
+                        <SelectItem value="claude-3-5-sonnet-20241022">claude-3-5-sonnet — Powerful</SelectItem>
+                        <SelectItem value="claude-3-opus-20240229">claude-3-opus — Most capable</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="gpt-4o-mini">gpt-4o-mini — Fast &amp; cheap</SelectItem>
+                        <SelectItem value="gpt-4o">gpt-4o — Balanced</SelectItem>
+                        <SelectItem value="gpt-4-turbo">gpt-4-turbo — Powerful</SelectItem>
+                      </>
                     )}
-                    {settings.customModel === 'gpt-5-mini' && (
-                      <div className="space-y-1 text-xs">
-                        <p className="font-semibold text-slate-800">GPT-5 Mini</p>
-                        <p className="text-slate-600">Balanced cost/speed; great for invoice verification and fraud pre-screening</p>
-                        <p className="text-slate-500">⚡ Speed: ~0.6–1.2s (typical for short prompts)</p>
-                        <p className="text-slate-500">💰 Pricing: $0.25/1M input • $0.025/1M cached • $2.00/1M output</p>
-                      </div>
-                    )}
-                    {settings.customModel === 'gpt-5' && (
-                      <div className="space-y-1 text-xs">
-                        <p className="font-semibold text-slate-800">GPT-5</p>
-                        <p className="text-slate-600">Deep reasoning for ambiguous anomaly cases and complex cross-record checks</p>
-                        <p className="text-slate-500">⚡ Speed: ~1–3s (typical for short-to-medium prompts)</p>
-                        <p className="text-slate-500">💰 Pricing: $1.25/1M input • $0.125/1M cached • $10.00/1M output</p>
-                      </div>
-                    )}
-                    {settings.customModel === 'gpt-4o-mini' && (
-                      <div className="space-y-1 text-xs">
-                        <p className="font-semibold text-slate-800">GPT-4o mini</p>
-                        <p className="text-slate-600">Fast multimodal (text+vision) small model; ideal fallback for masking/formatting</p>
-                        <p className="text-slate-500">⚡ Speed: ~0.7–1.4s (typical for short prompts)</p>
-                        <p className="text-slate-500">💰 Pricing: $0.15/1M input • $0.60/1M output</p>
-                      </div>
-                    )}
-                    <p className="text-xs text-slate-400 mt-2 pt-2 border-t border-slate-200">
-                      Note: Speeds are approximate and vary with prompt/response size. For current pricing, see OpenAI's pricing page.
-                    </p>
-                  </div>
+                  </SelectContent>
+                </Select>
+
+                {/* Model info */}
+                <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-500">
+                  {settings.aiProvider === 'anthropic' ? (
+                    <p>Per-prompt models (grammar, fraud, GDPR, verification) are configured in the AI Prompts section below. This model is used only for Test Connection.</p>
+                  ) : (
+                    <p>Per-prompt models are configured below. This model is used only for Test Connection. For current pricing, see OpenAI's pricing page.</p>
+                  )}
                 </div>
-              </>
-            )}
+              </div>
+            </>
 
             {/* Test Connection */}
             <div className="pt-4 border-t border-slate-200">

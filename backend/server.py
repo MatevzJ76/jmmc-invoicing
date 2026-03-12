@@ -196,7 +196,7 @@ class AIRequest(BaseModel):
     feature: str  # grammar, fraud, gdpr
 
 class AISettings(BaseModel):
-    aiProvider: str = "emergent"
+    aiProvider: str = "custom"
     customApiKey: Optional[str] = None
     customModel: str = "claude-3-5-sonnet-20241022"
 
@@ -1227,15 +1227,16 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
         user_settings = AISettings().model_dump()
     
     # Determine API key and model
-    if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
+    ai_provider = user_settings.get("aiProvider", "custom")
+    if user_settings.get("customApiKey") and ai_provider in ("custom", "openai", "anthropic"):
         api_key = user_settings["customApiKey"]
-        model = user_settings.get("customModel", "gpt-5")
-    else:
-        if not EMERGENT_LLM_KEY:
-            return {"results": {}, "message": "AI not configured"}
+        model = user_settings.get("customModel", "claude-3-5-sonnet-20241022")
+    elif EMERGENT_LLM_KEY:
         api_key = EMERGENT_LLM_KEY
-        model = "gpt-5"
-    
+        model = "claude-3-5-sonnet-20241022"
+    else:
+        return {"results": {}, "message": "AI not configured. Please add an API key in Settings."}
+
     # Get entries specifically from verification categories (JMMC HP, JMMC Finance, No Client)
     # This ensures we verify the entries the user actually sees in the UI
     all_entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
@@ -1378,12 +1379,13 @@ async def run_ai_prompts_on_entries(
         user_settings = AISettings().model_dump()
     
     # Determine API key (not model - each prompt has its own model)
-    if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
+    ai_provider = user_settings.get("aiProvider", "custom")
+    if user_settings.get("customApiKey") and ai_provider in ("custom", "openai", "anthropic"):
         api_key = user_settings["customApiKey"]
-    else:
-        if not EMERGENT_LLM_KEY:
-            raise HTTPException(status_code=400, detail="AI not configured. Please configure AI settings first.")
+    elif EMERGENT_LLM_KEY:
         api_key = EMERGENT_LLM_KEY
+    else:
+        raise HTTPException(status_code=400, detail="AI not configured. Please add an API key in Settings.")
     
     # Get the prompts and their specific models from settings
     grammar_prompt = user_settings.get("grammarPrompt", "")
@@ -1586,15 +1588,16 @@ async def verify_import_preview(rows: List[dict], current_user: User = Depends(g
         user_settings = AISettings().model_dump()
     
     # Determine API key and model
-    if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
+    ai_provider = user_settings.get("aiProvider", "custom")
+    if user_settings.get("customApiKey") and ai_provider in ("custom", "openai", "anthropic"):
         api_key = user_settings["customApiKey"]
-        model = user_settings.get("customModel", "gpt-5")
-    else:
-        if not EMERGENT_LLM_KEY:
-            return {"results": {}, "message": "AI not configured"}
+        model = user_settings.get("customModel", "claude-3-5-sonnet-20241022")
+    elif EMERGENT_LLM_KEY:
         api_key = EMERGENT_LLM_KEY
-        model = "gpt-5"
-    
+        model = "claude-3-5-sonnet-20241022"
+    else:
+        return {"results": {}, "message": "AI not configured. Please add an API key in Settings."}
+
     # Process all rows (frontend handles chunking for progress)
     entries_to_check = rows
     
@@ -3901,41 +3904,27 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
     
     try:
         # LlmChat and UserMessage are now defined at top of file (litellm shim)
-        if settings.aiProvider == "emergent":
-            if not EMERGENT_LLM_KEY:
-                raise HTTPException(status_code=400, detail="Emergent LLM key not configured")
-            
-            # Determine provider based on model name
-            if "claude" in settings.customModel.lower():
-                provider = "anthropic"
-            elif "gemini" in settings.customModel.lower():
-                provider = "google"
-            else:
-                provider = "openai"
-            
-            chat = LlmChat(
-                api_key=EMERGENT_LLM_KEY,
-                session_id=f"test-{current_user.email}",
-                system_message="You are a helpful AI assistant. IMPORTANT: Always respond in the SAME LANGUAGE as the user's prompt. If the prompt is in Slovenian, respond in Slovenian. If in English, respond in English. Match the language exactly."
-            ).with_model(provider, settings.customModel)
-            
-        else:  # custom
-            if not settings.customApiKey:
-                raise HTTPException(status_code=400, detail="Custom API key required")
-            
-            # Determine provider from custom model
-            if "claude" in settings.customModel.lower():
-                provider = "anthropic"
-            elif "gemini" in settings.customModel.lower():
-                provider = "google"
-            else:
-                provider = "openai"
-            
-            chat = LlmChat(
-                api_key=settings.customApiKey,
-                session_id=f"test-{current_user.email}",
-                system_message="You are a helpful AI assistant. IMPORTANT: Always respond in the SAME LANGUAGE as the user's prompt. If the prompt is in Slovenian, respond in Slovenian. If in English, respond in English. Match the language exactly."
-            ).with_model(provider, settings.customModel)
+        # Resolve API key: custom/openai/anthropic use customApiKey, fallback to EMERGENT_LLM_KEY
+        if settings.customApiKey and settings.aiProvider in ("custom", "openai", "anthropic"):
+            api_key = settings.customApiKey
+        elif EMERGENT_LLM_KEY:
+            api_key = EMERGENT_LLM_KEY
+        else:
+            raise HTTPException(status_code=400, detail="API key required. Please configure AI settings first.")
+
+        # Determine provider based on model name
+        if "claude" in settings.customModel.lower():
+            provider = "anthropic"
+        elif "gemini" in settings.customModel.lower():
+            provider = "google"
+        else:
+            provider = "openai"
+
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"test-{current_user.email}",
+            system_message="You are a helpful AI assistant. IMPORTANT: Always respond in the SAME LANGUAGE as the user's prompt. If the prompt is in Slovenian, respond in Slovenian. If in English, respond in English. Match the language exactly."
+        ).with_model(provider, settings.customModel)
         
         # Send test message
         message = UserMessage(text=test_prompt)
@@ -4049,14 +4038,15 @@ async def ai_suggest(request: AIRequest, current_user: User = Depends(get_curren
         user_settings = AISettings().model_dump()
     
     # Determine API key and model
-    if user_settings.get("aiProvider") == "custom" and user_settings.get("customApiKey"):
+    ai_provider = user_settings.get("aiProvider", "custom")
+    if user_settings.get("customApiKey") and ai_provider in ("custom", "openai", "anthropic"):
         api_key = user_settings["customApiKey"]
-        model = user_settings.get("customModel", "gpt-5")
-    else:
-        if not EMERGENT_LLM_KEY:
-            return {"suggestion": request.text, "message": "AI not configured"}
+        model = user_settings.get("customModel", "claude-3-5-sonnet-20241022")
+    elif EMERGENT_LLM_KEY:
         api_key = EMERGENT_LLM_KEY
-        model = "gpt-5"
+        model = "claude-3-5-sonnet-20241022"
+    else:
+        return {"suggestion": request.text, "message": "AI not configured. Please add an API key in Settings."}
     
     try:
         # Determine provider based on model
