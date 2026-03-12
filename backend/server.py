@@ -525,9 +525,13 @@ async def cleanup_duplicate_customers(
             to_keep.append(c["name"])
 
     if not dry_run and to_delete:
-        ids_to_delete = [c["id"] for c in to_delete]
-        result = await db.customers.delete_many({"id": {"$in": ids_to_delete}})
+        # Use _id (native MongoDB ObjectId) for reliable deletion
+        object_ids_to_delete = [c["_id"] for c in all_customers
+                                 if not (c.get("companyId") in valid_company_ids)
+                                 and not bool(c.get("historicalInvoices"))]
+        result = await db.customers.delete_many({"_id": {"$in": object_ids_to_delete}})
         deleted = result.deleted_count
+        logger.info(f"Deleted {deleted} customers using _id query")
     else:
         deleted = 0
 
