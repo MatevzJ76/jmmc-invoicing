@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,8 @@ const Customers = () => {
   const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
   const [showRefreshSecondConfirm, setShowRefreshSecondConfirm] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showUploadTooltip, setShowUploadTooltip] = useState(false);
+  const uploadBtnRef = useRef(null);
 
   useEffect(() => {
     loadCompanies();
@@ -308,7 +311,10 @@ const Customers = () => {
               </svg>
               Add Customer
             </Button>
-            <div className="relative group">
+            <div ref={uploadBtnRef}
+              onMouseEnter={() => setShowUploadTooltip(true)}
+              onMouseLeave={() => setShowUploadTooltip(false)}
+            >
               <label className="cursor-pointer">
                 <input
                   type="file"
@@ -322,22 +328,34 @@ const Customers = () => {
                   {uploadingHistory ? 'Uploading...' : 'Upload History'}
                 </div>
               </label>
-              {/* Tooltip */}
-              <div className="absolute right-0 top-full mt-2 w-72 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <div className="bg-slate-800 text-white text-xs rounded-lg px-3 py-2.5 shadow-xl leading-relaxed">
-                  <p className="font-semibold mb-1 text-slate-200">Kako pridobiti datoteko?</p>
+            </div>
+            {/* Tooltip rendered via portal to escape nav stacking context */}
+            {showUploadTooltip && uploadBtnRef.current && createPortal(
+              <div
+                className="pointer-events-none"
+                style={{
+                  position: 'fixed',
+                  top: uploadBtnRef.current.getBoundingClientRect().bottom + 10,
+                  right: window.innerWidth - uploadBtnRef.current.getBoundingClientRect().right,
+                  zIndex: 9999,
+                  width: '288px',
+                }}
+              >
+                <div className="bg-slate-800 text-white text-xs rounded-lg px-3 py-3 shadow-2xl leading-relaxed">
+                  {/* Arrow */}
+                  <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-800 rotate-45" />
+                  <p className="font-semibold mb-1.5 text-slate-100">Kako pridobiti datoteko?</p>
                   <p className="text-slate-300">
                     V <span className="text-white font-medium">e-računih</span> pojdi na:
                   </p>
-                  <p className="mt-1 text-slate-200 font-medium">
+                  <p className="mt-1 text-white font-semibold">
                     Poročanje → Prodaja →<br />Izpis postavk po kupcih
                   </p>
-                  <p className="mt-1.5 text-slate-300">Izvozi kot <span className="text-white font-medium">.xls</span> in naloži sem.</p>
-                  {/* Arrow */}
-                  <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-800 rotate-45" />
+                  <p className="mt-2 text-slate-300">Izvozi kot <span className="text-white font-medium">.xls</span> in naloži sem.</p>
                 </div>
-              </div>
-            </div>
+              </div>,
+              document.body
+            )}
           </div>
         </div>
       </nav>
