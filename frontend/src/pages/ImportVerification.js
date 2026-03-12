@@ -690,18 +690,40 @@ const ImportVerification = () => {
     setAiVerifying(true);
     setAiResults({});
     setCancelVerification(false);
-    
-    // Use displayRows (filtered rows) instead of all rows
-    const rowsToVerify = displayRows;
+
+    // Use state variables directly to get ALL filtered rows (not page-limited displayRows)
+    const allRows = verificationData?.rows || [];
+    const hasFilters = filteredRows.length > 0 || !!(searchTerm || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' || statusFilter !== 'all');
+    const rowsToVerify = hasFilters ? filteredRows : allRows;
+
     const totalRows = rowsToVerify.length;
+    if (totalRows === 0) {
+      toast.error('No rows to verify. Adjust your filters and try again.');
+      setAiVerifying(false);
+      return;
+    }
+
+    // Pre-compute mapping: rowsToVerify[i] → index in allRows
+    // usedIndices prevents duplicate rows from mapping to the same allRows position
+    const usedIndices = new Set();
+    const displayToAllMapping = rowsToVerify.map(row => {
+      const idx = allRows.findIndex((r, j) =>
+        !usedIndices.has(j) &&
+        r.customer === row.customer && r.employee === row.employee &&
+        r.comments === row.comments && r.date === row.date
+      );
+      if (idx >= 0) usedIndices.add(idx);
+      return idx;
+    });
+
     const batchSize = 10;
     const totalBatches = Math.ceil(totalRows / batchSize);
     const startTime = Date.now();
-    
-    const filterInfo = displayRows.length !== verificationData.rows.length 
-      ? ` (${displayRows.length} filtered rows)`
+
+    const filterInfo = hasFilters
+      ? ` (${totalRows} filtered rows of ${allRows.length} total)`
       : '';
-    
+
     toast.info(`AI verification started. Processing ${totalRows} rows${filterInfo}...`);
     
     setVerificationProgress({
@@ -758,21 +780,13 @@ const ImportVerification = () => {
             console.error('Backend AI error:', response.data.message);
           }
           
-          // Merge results (adjust indices to match original row indices)
+          // Merge results (adjust indices to match original allRows indices)
           const chunkResults = response.data.results || {};
           Object.keys(chunkResults).forEach(localIdx => {
-            // Find the original index in verificationData.rows
             const chunkRowIndex = parseInt(localIdx);
-            const rowData = chunk[chunkRowIndex];
-            
-            // Find this row in original verificationData.rows
-            const originalIndex = verificationData.rows.findIndex(r => 
-              r.customer === rowData.customer && 
-              r.employee === rowData.employee && 
-              r.comments === rowData.comments &&
-              r.date === rowData.date
-            );
-            
+            const rowsToVerifyIndex = i + chunkRowIndex;
+            const originalIndex = displayToAllMapping[rowsToVerifyIndex];
+
             if (originalIndex >= 0) {
               allResults[originalIndex] = chunkResults[localIdx];
             }
@@ -1256,8 +1270,10 @@ const ImportVerification = () => {
     try {
       const token = localStorage.getItem('access_token');
       
-      // Determine which rows to import (filtered or all)
-      const rowsToImport = displayRows;
+      // Determine which rows to import — use ALL filtered rows, not page-limited displayRows
+      const allRowsNow = verificationData?.rows || [];
+      const hasActiveFilters = filteredRows.length > 0 || !!(searchTerm || customerFilter !== 'all' || employeeFilter !== 'all' || tariffFilter !== 'all' || statusFilter !== 'all');
+      const rowsToImport = hasActiveFilters ? filteredRows : allRowsNow;
       
       let importResults = {
         rowsImported: 0,
