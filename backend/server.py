@@ -2720,12 +2720,13 @@ async def upload_customer_history(
                                 hourly_rate = article_000001_rows[1]["unitPrice"]
                             logger.info(f"Auto-detected: Hybrid (forfait: €{fixed_forfait_value}, hourly: €{hourly_rate})")
                     
-                    # Keep only manual entries
+                    # Merge by month: overwrite only periods present in the new file,
+                    # preserve all existing entries (manual AND imported) for other periods
                     existing_history = target_customer.get("historicalInvoices", [])
-                    manual_entries = [entry for entry in existing_history if entry.get("source") == "manual"]
-                    
-                    # Combine manual + new imported
-                    merged_history = manual_entries + all_new_entries
+                    new_month_keys = {entry["month"] for entry in all_new_entries}
+                    preserved_entries = [e for e in existing_history if e.get("month") not in new_month_keys]
+                    merged_history = preserved_entries + all_new_entries
+                    logger.info(f"Merge: {len(existing_history)} existing → kept {len(preserved_entries)} (outside new periods) + {len(all_new_entries)} new = {len(merged_history)} total")
                     
                     # Prepare update data
                     update_data = {"historicalInvoices": merged_history}
@@ -2868,11 +2869,12 @@ async def upload_customer_history(
                 if unit_price_to_set is not None:
                     break
             
-            # Keep only manually entered rows from existing history
-            manual_entries = [entry for entry in existing_history if entry.get("source") == "manual"]
-            
-            # Combine manual entries with new imported entries
-            merged_history = manual_entries + new_entries
+            # Merge by month: overwrite only periods present in the new file,
+            # preserve all existing entries (manual AND imported) for other periods
+            new_month_keys = {entry["month"] for entry in new_entries}
+            preserved_entries = [e for e in existing_history if e.get("month") not in new_month_keys]
+            merged_history = preserved_entries + new_entries
+            logger.info(f"Merge '{customer_name}': {len(existing_history)} existing → kept {len(preserved_entries)} + {len(new_entries)} new = {len(merged_history)} total")
             
             # Prepare update data
             update_data = {"historicalInvoices": merged_history}
