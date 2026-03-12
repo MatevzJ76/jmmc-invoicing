@@ -39,23 +39,23 @@ class LlmChat:
         self._model = model
         return self
 
-    # Map Emergent-specific / invalid model names to valid Anthropic models
+    # Map only Emergent-specific / non-standard model names to valid models.
+    # Standard OpenAI names (gpt-4o, gpt-4-turbo, etc.) are NOT remapped so they
+    # are sent directly to OpenAI when the user selects the OpenAI provider.
     _MODEL_MAP = {
-        "gpt-5-nano":   "claude-3-haiku-20240307",
-        "gpt-5-mini":   "claude-3-5-haiku-20241022",
-        "gpt-5":        "claude-3-5-sonnet-20241022",
-        "gpt-4-mini":   "claude-3-5-haiku-20241022",
-        "gpt-4":        "claude-3-5-sonnet-20241022",
-        "gpt-4-turbo":  "claude-3-5-sonnet-20241022",
-        "gpt-4o":       "claude-3-5-sonnet-20241022",
-        "gpt-4o-mini":  "claude-3-5-haiku-20241022",
+        "gpt-5-nano":  "claude-3-haiku-20240307",
+        "gpt-5-mini":  "claude-3-5-haiku-20241022",
+        "gpt-5":       "claude-3-5-sonnet-20241022",
+        "gpt-4-mini":  "claude-3-5-haiku-20241022",  # not a real OpenAI name
     }
 
     async def send_message(self, message: UserMessage) -> str:
-        model = self._MODEL_MAP.get(self._model, self._model)
+        original_model = self._model
+        model = self._MODEL_MAP.get(original_model, original_model)
         provider = self._provider
-        # If model was remapped to claude, force anthropic provider
-        if model.startswith("claude"):
+        # Only force anthropic provider when the model was remapped from an
+        # Emergent-specific name — do NOT override if the user explicitly chose OpenAI.
+        if model != original_model and model.startswith("claude"):
             provider = "anthropic"
         # Map provider + model to LiteLLM model string
         if provider == "anthropic":
