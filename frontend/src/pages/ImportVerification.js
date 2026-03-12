@@ -275,16 +275,14 @@ const ImportVerification = () => {
         fieldsInFirstEntry: timeEntries[0] ? Object.keys(timeEntries[0]) : []
       });
       
-      // Fetch all customers to resolve customer names from IDs
-      const customersResponse = await axios.get(`${BACKEND_URL}/api/customers`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Build customersMap from time entries (customerName already enriched by backend)
+      // No extra API call needed — saves a full /api/customers round-trip
       const customersMap = {};
-      customersResponse.data.forEach(c => {
-        customersMap[c.id] = c.name;
+      timeEntries.forEach(e => {
+        if (e.customerId && e.customerName) customersMap[e.customerId] = e.customerName;
+        if (e.originalCustomerId && e.originalCustomerName) customersMap[e.originalCustomerId] = e.originalCustomerName;
       });
-      
-      console.log('Customers map created:', Object.keys(customersMap).length, 'customers');
+      console.log('Customers map created from time entries:', Object.keys(customersMap).length, 'customers');
       
       // Convert time entries to verification format and track corrections
       const aiCorrectedRowsArray = [];
@@ -406,7 +404,10 @@ const ImportVerification = () => {
       
       // Save to sessionStorage
       sessionStorage.setItem('importVerificationData', JSON.stringify(fullData));
-      
+
+      // Load customers for dropdowns (parallel, no await needed)
+      loadAllCustomers();
+
     } catch (error) {
       console.error('Failed to load batch data:', error);
       toast.error('Failed to load batch data');

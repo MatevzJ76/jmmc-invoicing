@@ -573,119 +573,114 @@ async def import_xlsx(
         tariff_codes = await db.tariffs.find({}, {"_id": 0}).to_list(1000)
         tariff_rates = {t["code"]: t.get("value", 0) for t in tariff_codes}
         
-        # Parse rows - Stranka (customer) appears on each data row, not as section headers
-        entries = []
+        # --- PASS 1: parse raw rows, collect unique customer/project names ---
+        raw_rows = []
         current_project = "General"
-        new_customers_created = []  # Track newly created customers
-        
+        unique_customer_names = set()
         for row in sheet.iter_rows(min_row=2, values_only=True):
-            # Skip completely empty rows
             if not row or all(cell is None or cell == '' for cell in row):
                 continue
-            
-            # Handle rows with leading # column (row numbers)
             if row[0] and (str(row[0]).endswith('.') or row[0] == '#'):
-                # Data row - skip # column
                 row_data = row[1:11]
             else:
                 row_data = row[0:10]
-            
-            # Extract values
             projekt_val = row_data[0]
-            stranka_val = row_data[1]  # Customer name
-            datum_val = row_data[2]    # Date
-            tariff = row_data[3]
-            employee = row_data[4]
-            notes = row_data[5]
-            hours_val = row_data[6]
-            value_str = row_data[7]
-            invoice_num = row_data[8]
-            
-            # Skip if no date (not a data row)
+            stranka_val = row_data[1]
+            datum_val   = row_data[2]
             if not datum_val:
                 continue
-            
-            # Determine customer name - use Stranka if available, otherwise leave empty (No Client)
-            if stranka_val and str(stranka_val).strip():
-                current_customer = str(stranka_val).strip()
-            else:
-                current_customer = None  # No client - leave empty
-            
-            # Update project if specified
             if projekt_val and str(projekt_val).strip():
                 current_project = str(projekt_val).strip()
-            
-            # Parse hours (handle text and various formats)
+            customer_name = str(stranka_val).strip() if stranka_val and str(stranka_val).strip() else None
+            if customer_name:
+                unique_customer_names.add(customer_name)
+            raw_rows.append({
+                "projekt": current_project,
+                "customer_name": customer_name,
+                "datum": datum_val,
+                "tariff": row_data[3],
+                "employee": row_data[4],
+                "notes": row_data[5],
+                "hours_val": row_data[6],
+            })
+
+        # --- PASS 2: batch-resolve customers (2 queries total) ---
+        existing_customers = await db.customers.find(
+            {"name": {"$in": list(unique_customer_names)}}, {"_id": 0, "id": 1, "name": 1}
+        ).to_list(None)
+        customer_map = {c["name"]: c["id"] for c in existing_customers}
+
+        new_customers_created = []
+        new_customer_docs = []
+        for name in unique_customer_names:
+            if name not in customer_map:
+                cid = str(uuid.uuid4())
+                customer_map[name] = cid
+                doc = {"id": cid, "name": name, "status": "new", "unitPrice": 0, "historicalInvoices": []}
+                new_customer_docs.append(doc)
+                new_customers_created.append({"id": cid, "name": name})
+        if new_customer_docs:
+            await db.customers.insert_many(new_customer_docs)
+
+        # --- PASS 3: batch-resolve projects (2 queries total) ---
+        # Build set of (project_name, customer_id) pairs needed
+        needed_projects = set()
+        for r in raw_rows:
+            cid = customer_map.get(r["customer_name"]) if r["customer_name"] else None
+            needed_projects.add((r["projekt"], cid))
+
+        project_names = list({p for p, _ in needed_projects})
+        existing_projects = await db.projects.find(
+            {"name": {"$in": project_names}}, {"_id": 0, "id": 1, "name": 1, "customerId": 1}
+        ).to_list(None)
+        project_map = {(p["name"], p.get("customerId")): p["id"] for p in existing_projects}
+
+        new_project_docs = []
+        for proj_name, cid in needed_projects:
+            if (proj_name, cid) not in project_map:
+                pid = str(uuid.uuid4())
+                project_map[(proj_name, cid)] = pid
+                new_project_docs.append({"id": pid, "name": proj_name, "customerId": cid})
+        if new_project_docs:
+            await db.projects.insert_many(new_project_docs)
+
+        # --- PASS 4: build entries using resolved maps (no DB queries) ---
+        entries = []
+        for r in raw_rows:
+            customer_name = r["customer_name"]
+            customer_id   = customer_map.get(customer_name) if customer_name else None
+            project_id    = project_map.get((r["projekt"], customer_id))
+
             try:
-                hours_raw = float(str(hours_val).replace(',', '.')) if hours_val else 0.0
-                # Round to 2 decimal places to avoid floating-point precision issues
-                hours = round(hours_raw, 2)
+                hours = round(float(str(r["hours_val"]).replace(',', '.')) if r["hours_val"] else 0.0, 2)
             except:
                 hours = 0.0
-            
-            # IGNORE value from Excel file (column I - Vrednost is irrelevant)
-            # Instead, calculate value from tariff rate × hours
-            
-            # Get tariff code and look up hourly rate from Settings
-            tariff_code = str(tariff) if tariff else "N/A"
-            hourly_rate = tariff_rates.get(tariff_code, 0)
-            
-            # Calculate value: hours × tariff rate (from Settings)
+
+            tariff_code   = str(r["tariff"]) if r["tariff"] else "N/A"
+            hourly_rate   = tariff_rates.get(tariff_code, 0)
             calculated_value = round(hours * hourly_rate, 2)
-            
-            # Find or create customer (only if customer name is provided)
-            customer_id = None
-            if current_customer:
-                customer = await db.customers.find_one({"name": current_customer})
-                if not customer:
-                    # Auto-create new customer with "new" status during import
-                    customer_id = str(uuid.uuid4())
-                    new_customer_data = {
-                        "id": customer_id, 
-                        "name": current_customer,
-                        "status": "new",  # Flag as new customer
-                        "unitPrice": 0,
-                        "historicalInvoices": []
-                    }
-                    await db.customers.insert_one(new_customer_data)
-                    # Track this new customer
-                    if current_customer not in [nc["name"] for nc in new_customers_created]:
-                        new_customers_created.append({
-                            "id": customer_id,
-                            "name": current_customer
-                        })
-                else:
-                    customer_id = customer["id"]
-            # If no customer, customer_id remains None
-            
-            # Find or create project (link to customer if available)
-            project = await db.projects.find_one({"name": current_project, "customerId": customer_id})
-            if not project:
-                project_id = str(uuid.uuid4())
-                await db.projects.insert_one({"id": project_id, "name": current_project, "customerId": customer_id})
-            else:
-                project_id = project["id"]
-            
+            datum_val     = r["datum"]
+
             entry = {
                 "id": str(uuid.uuid4()),
                 "batchId": batch_id,
                 "projectId": project_id,
                 "customerId": customer_id,
-                "employeeName": employee or "Unknown",
+                "employeeName": r["employee"] or "Unknown",
                 "date": datum_val.isoformat() if hasattr(datum_val, 'isoformat') else str(datum_val),
                 "hours": hours,
                 "tariff": tariff_code,
-                "hourlyRate": hourly_rate,  # Hourly rate from tariff code (Settings)
-                "notes": str(notes) if notes else "",
-                "value": calculated_value,  # Calculated from hours × tariff rate (NOT from Excel)
-                "aiCorrectionApplied": False,  # Track if AI corrections were applied
-                "manuallyEdited": False,  # Track if row was manually edited
-                "originalNotes": None,  # Store original notes before AI correction
-                "originalHours": None,  # Store original hours before AI correction
-                "originalCustomerId": None,  # Store original customer ID before edit
-                "originalTariff": None,  # Store original tariff before edit
-                "status": "uninvoiced",  # Row status: uninvoiced, invoiced, internal, free
-                "entrySource": "imported"  # Track if entry was imported or manually added
+                "hourlyRate": hourly_rate,
+                "notes": str(r["notes"]) if r["notes"] else "",
+                "value": calculated_value,
+                "aiCorrectionApplied": False,
+                "manuallyEdited": False,
+                "originalNotes": None,
+                "originalHours": None,
+                "originalCustomerId": None,
+                "originalTariff": None,
+                "status": "uninvoiced",
+                "entrySource": "imported"
             }
             entries.append(entry)
         
@@ -1997,34 +1992,30 @@ async def get_all_customers(company_id: Optional[str] = None, current_user: User
         query["companyId"] = company_id
     
     customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
-    
-    # Add statistics for each customer based on historical data only
+
+    # Batch-fetch all companies needed (1 query instead of N)
+    company_ids = list({c["companyId"] for c in customers if c.get("companyId")})
+    if company_ids:
+        companies = await db.companies.find({"id": {"$in": company_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(None)
+        company_name_map = {c["id"]: c.get("name", "") for c in companies}
+    else:
+        company_name_map = {}
+
     for customer in customers:
         historical_invoices = customer.get("historicalInvoices", [])
-        
-        # Calculate statistics from historical data
-        total_amount = sum(inv.get("amount", 0) for inv in historical_invoices)
+        total_amount  = sum(inv.get("amount", 0) for inv in historical_invoices)
         invoice_count = len(historical_invoices)
-        
-        customer["invoiceCount"] = invoice_count
-        customer["totalInvoiced"] = total_amount
+
+        customer["invoiceCount"]   = invoice_count
+        customer["totalInvoiced"]  = total_amount
         customer["averageInvoice"] = total_amount / invoice_count if invoice_count > 0 else 0
-        customer["unitPrice"] = customer.get("unitPrice", 0)
-        
-        # Default status to active if not set
+        customer["unitPrice"]      = customer.get("unitPrice", 0)
+        customer["companyName"]    = company_name_map.get(customer.get("companyId"), "")
+
         if "status" not in customer or customer["status"] is None:
             customer["status"] = "active"
-        
-        # Add company name if customer has companyId
-        if customer.get("companyId"):
-            company = await db.companies.find_one({"id": customer["companyId"]}, {"_id": 0})
-            customer["companyName"] = company.get("name", "") if company else ""
-        else:
-            customer["companyName"] = ""
-    
-    # Sort by name A-Z
+
     customers.sort(key=lambda x: x.get("name", "").lower())
-    
     return customers
 
 @api_router.get("/customers/{customer_id}")
@@ -3239,7 +3230,22 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
     
     if not entries and not forfait_batch_entries:
         raise HTTPException(status_code=400, detail="No matching time entries found")
-    
+
+    # --- Batch-load all customers and projects needed (2 queries) ---
+    all_entry_docs = entries + forfait_entries + forfait_batch_entries
+    needed_customer_ids = list({e["customerId"] for e in all_entry_docs if e.get("customerId")})
+    needed_project_ids  = list({e["projectId"]  for e in all_entry_docs if e.get("projectId")})
+
+    customers_bulk = await db.customers.find(
+        {"id": {"$in": needed_customer_ids}}, {"_id": 0, "id": 1, "name": 1, "unitPrice": 1}
+    ).to_list(None)
+    customer_map = {c["id"]: c for c in customers_bulk}
+
+    projects_bulk = await db.projects.find(
+        {"id": {"$in": needed_project_ids}}, {"_id": 0, "id": 1, "name": 1}
+    ).to_list(None)
+    project_map = {p["id"]: p for p in projects_bulk}
+
     # VALIDATION: Check forfait logic for each customer
     # Group forfait entries and forfait_batch entries by customer
     forfait_by_customer = defaultdict(list)
@@ -3252,7 +3258,7 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
     
     # VALIDATION 1: For ALL customers with forfait_batch entries, ensure only 1 with tariff "001 - Računovodstvo"
     for customer_id, customer_fb_entries in forfait_batch_by_customer.items():
-        customer = await db.customers.find_one({"id": customer_id})
+        customer = customer_map.get(customer_id)
         customer_name = customer.get("name", "Unknown") if customer else "Unknown"
         
         # Count forfait_batch entries with tariff "001 - Računovodstvo"
@@ -3271,7 +3277,7 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
     
     # VALIDATION 2: For customers with forfait entries, ensure they have exactly 1 forfait_batch with tariff "001 - Računovodstvo"
     for customer_id, customer_forfait_entries in forfait_by_customer.items():
-        customer = await db.customers.find_one({"id": customer_id})
+        customer = customer_map.get(customer_id)
         customer_name = customer.get("name", "Unknown") if customer else "Unknown"
         
         # Find forfait_batch entries with tariff "001 - Računovodstvo"
@@ -3301,11 +3307,11 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
     print(f"  - Regular entries (uninvoiced/ready): {len(entries)}")
     print(f"  - Forfait_batch entries: {len(forfait_batch_entries)}")
     print(f"  - Forfait entries (linked only, NOT line items): {len(forfait_entries)}")
-    
+
     # Create invoices
     invoice_ids = []
     for customer_id, customer_entries in customer_groups.items():
-        customer = await db.customers.find_one({"id": customer_id})
+        customer = customer_map.get(customer_id) or {}
         
         invoice_id = str(uuid.uuid4())
         invoice_doc = {
@@ -3334,10 +3340,10 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
         print(f"DEBUG: Creating lines for customer {customer['name']}")
         print(f"  - Customer entries to process: {len(customer_entries)}")
         print(f"  - Forfait entries for linking: {len(customer_forfait_entries)}")
-        
+
         for entry in customer_entries:
             line_id = str(uuid.uuid4())
-            project = await db.projects.find_one({"id": entry["projectId"]})
+            project = project_map.get(entry.get("projectId")) or {}
             
             # Check if this is a forfait_batch entry with tariff 001 - Računovodstvo
             is_forfait_batch_001 = False
