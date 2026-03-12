@@ -490,6 +490,55 @@ async def update_user_role(user_id: str, request: UpdateUserRoleRequest, current
     
     return {"message": f"User role updated to {request.role}"}
 
+@api_router.post("/admin/cleanup-duplicate-customers")
+async def cleanup_duplicate_customers(
+    dry_run: bool = True,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Delete customer rows that have NO assigned company (JMMC HP / JMMC Finance)
+    AND have no historicalInvoices. Pass dry_run=false to actually delete.
+    """
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    # Get all valid company IDs (JMMC HP and JMMC Finance)
+    valid_companies = await db.companies.find(
+        {"name": {"$in": ["JMMC HP d.o.o.", "JMMC Finance d.o.o."]}}
+    ).to_list(None)
+    valid_company_ids = {c["id"] for c in valid_companies}
+    logger.info(f"Valid company IDs: {valid_company_ids}")
+
+    # Find customers to delete:
+    #   - companyId not in valid set (missing, null, or unknown company)
+    #   - historicalInvoices is empty or missing
+    all_customers = await db.customers.find({}).to_list(None)
+
+    to_delete = []
+    to_keep = []
+    for c in all_customers:
+        has_valid_company = c.get("companyId") in valid_company_ids
+        has_history = bool(c.get("historicalInvoices"))
+        if not has_valid_company and not has_history:
+            to_delete.append({"id": c["id"], "name": c["name"], "companyId": c.get("companyId")})
+        else:
+            to_keep.append(c["name"])
+
+    if not dry_run and to_delete:
+        ids_to_delete = [c["id"] for c in to_delete]
+        result = await db.customers.delete_many({"id": {"$in": ids_to_delete}})
+        deleted = result.deleted_count
+    else:
+        deleted = 0
+
+    return {
+        "dry_run": dry_run,
+        "would_delete_count": len(to_delete),
+        "actually_deleted": deleted,
+        "to_delete": to_delete,
+        "kept_count": len(to_keep),
+    }
+
 # ============ IMPORT ENDPOINTS ============
 def load_excel_file(contents: bytes, filename: str):
     """Load Excel file (supports both .xls and .xlsx formats)"""
