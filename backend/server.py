@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -39,14 +39,31 @@ class LlmChat:
         self._model = model
         return self
 
+    # Map Emergent-specific / invalid model names to valid Anthropic models
+    _MODEL_MAP = {
+        "gpt-5-nano":   "claude-3-haiku-20240307",
+        "gpt-5-mini":   "claude-3-5-haiku-20241022",
+        "gpt-5":        "claude-3-5-sonnet-20241022",
+        "gpt-4-mini":   "claude-3-5-haiku-20241022",
+        "gpt-4":        "claude-3-5-sonnet-20241022",
+        "gpt-4-turbo":  "claude-3-5-sonnet-20241022",
+        "gpt-4o":       "claude-3-5-sonnet-20241022",
+        "gpt-4o-mini":  "claude-3-5-haiku-20241022",
+    }
+
     async def send_message(self, message: UserMessage) -> str:
+        model = self._MODEL_MAP.get(self._model, self._model)
+        provider = self._provider
+        # If model was remapped to claude, force anthropic provider
+        if model.startswith("claude"):
+            provider = "anthropic"
         # Map provider + model to LiteLLM model string
-        if self._provider == "anthropic":
-            litellm_model = f"anthropic/{self._model}"
-        elif self._provider == "google":
-            litellm_model = f"gemini/{self._model}"
+        if provider == "anthropic":
+            litellm_model = f"anthropic/{model}"
+        elif provider == "google":
+            litellm_model = f"gemini/{model}"
         else:
-            litellm_model = self._model  # openai models use name directly
+            litellm_model = model  # openai models use name directly
 
         msgs = []
         if self.system_message:
@@ -525,13 +542,12 @@ async def cleanup_duplicate_customers(
             to_keep.append(c["name"])
 
     if not dry_run and to_delete:
-        # Use _id (native MongoDB ObjectId) for reliable deletion
-        object_ids_to_delete = [c["_id"] for c in all_customers
-                                 if not (c.get("companyId") in valid_company_ids)
-                                 and not bool(c.get("historicalInvoices"))]
-        result = await db.customers.delete_many({"_id": {"$in": object_ids_to_delete}})
-        deleted = result.deleted_count
-        logger.info(f"Deleted {deleted} customers using _id query")
+        # Delete one by one using the custom 'id' field — most reliable approach
+        deleted = 0
+        for c in to_delete:
+            result = await db.customers.delete_one({"id": c["id"]})
+            deleted += result.deleted_count
+        logger.info(f"Deleted {deleted} / {len(to_delete)} customers")
     else:
         deleted = 0
 
@@ -1346,7 +1362,7 @@ async def verify_batch_entries(batch_id: str, current_user: User = Depends(get_c
 @api_router.post("/batches/{batch_id}/run-ai-prompts")
 async def run_ai_prompts_on_entries(
     batch_id: str,
-    entry_ids: List[str],
+    entry_ids: List[str] = Body(...),
     current_user: User = Depends(get_current_user)
 ):
     """

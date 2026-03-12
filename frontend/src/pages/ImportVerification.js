@@ -1123,23 +1123,23 @@ const ImportVerification = () => {
       let errorMsg = 'Unknown error';
       
       if (error.response?.data) {
-        // Check if it's a string or object
-        if (typeof error.response.data === 'string') {
-          errorMsg = error.response.data;
-        } else if (error.response.data.detail) {
-          errorMsg = error.response.data.detail;
-        } else if (error.response.data.message) {
-          errorMsg = error.response.data.message;
+        const data = error.response.data;
+        if (typeof data === 'string') {
+          errorMsg = data;
+        } else if (typeof data.detail === 'string') {
+          errorMsg = data.detail;
+        } else if (Array.isArray(data.detail)) {
+          // FastAPI validation error — detail is array of objects
+          errorMsg = data.detail.map(e => e.msg || JSON.stringify(e)).join('; ');
+        } else if (typeof data.message === 'string') {
+          errorMsg = data.message;
         } else {
-          // Try to stringify the object
-          try {
-            errorMsg = JSON.stringify(error.response.data);
-          } catch {
-            errorMsg = 'Server error occurred';
-          }
+          try { errorMsg = JSON.stringify(data); } catch { errorMsg = 'Server error occurred'; }
         }
-      } else if (error.message) {
+      } else if (typeof error.message === 'string') {
         errorMsg = error.message;
+      } else {
+        errorMsg = 'Unknown error';
       }
       
       console.error('Extracted error message:', errorMsg);
