@@ -337,7 +337,7 @@ const Customers = () => {
                   position: 'fixed',
                   top: uploadBtnRef.current.getBoundingClientRect().bottom + 10,
                   right: window.innerWidth - uploadBtnRef.current.getBoundingClientRect().right,
-                  zIndex: 9999,
+                  zIndex: 2147483647,
                   width: '288px',
                 }}
               >
@@ -360,7 +360,7 @@ const Customers = () => {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="relative z-0 max-w-7xl mx-auto px-4 py-8">
         {/* Statistics Tiles */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200">
