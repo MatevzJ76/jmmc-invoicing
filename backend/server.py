@@ -17,7 +17,48 @@ from collections import defaultdict
 import openpyxl
 import xlrd
 from io import BytesIO
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+import litellm
+litellm.drop_params = True  # ignore unsupported params silently
+
+class UserMessage:
+    """Compatibility shim replacing emergentintegrations.llm.chat.UserMessage"""
+    def __init__(self, text: str):
+        self.text = text
+
+class LlmChat:
+    """Compatibility shim replacing emergentintegrations.llm.chat.LlmChat"""
+    def __init__(self, api_key: str, session_id: str = "", system_message: str = ""):
+        self.api_key = api_key
+        self.session_id = session_id
+        self.system_message = system_message
+        self._provider = "anthropic"
+        self._model = "claude-3-5-sonnet-20241022"
+
+    def with_model(self, provider: str, model: str) -> "LlmChat":
+        self._provider = provider
+        self._model = model
+        return self
+
+    async def send_message(self, message: UserMessage) -> str:
+        # Map provider + model to LiteLLM model string
+        if self._provider == "anthropic":
+            litellm_model = f"anthropic/{self._model}"
+        elif self._provider == "google":
+            litellm_model = f"gemini/{self._model}"
+        else:
+            litellm_model = self._model  # openai models use name directly
+
+        msgs = []
+        if self.system_message:
+            msgs.append({"role": "system", "content": self.system_message})
+        msgs.append({"role": "user", "content": message.text})
+
+        response = await litellm.acompletion(
+            model=litellm_model,
+            messages=msgs,
+            api_key=self.api_key,
+        )
+        return response.choices[0].message.content or ""
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -3731,8 +3772,7 @@ async def test_ai_connection(settings: AISettings, current_user: User = Depends(
     test_prompt = getattr(settings, 'testPrompt', None) or "Hello, this is a connection test. Please respond with 'OK'."
     
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        
+        # LlmChat and UserMessage are now defined at top of file (litellm shim)
         if settings.aiProvider == "emergent":
             if not EMERGENT_LLM_KEY:
                 raise HTTPException(status_code=400, detail="Emergent LLM key not configured")
