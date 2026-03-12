@@ -36,6 +36,12 @@ const webpackConfig = {
     },
     configure: (webpackConfig) => {
 
+      // Remove ForkTsCheckerWebpackPlugin — it uses an ajv version incompatible
+      // with Node 20+ and causes build failures. TypeScript errors still show in IDE.
+      webpackConfig.plugins = webpackConfig.plugins.filter(
+        plugin => plugin.constructor.name !== 'ForkTsCheckerWebpackPlugin'
+      );
+
       // Disable hot reload completely if environment variable is set
       if (config.disableHotReload) {
         // Remove hot reload related plugins
