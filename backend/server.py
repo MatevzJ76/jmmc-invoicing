@@ -88,6 +88,19 @@ EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 # Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+@app.on_event("startup")
+async def ensure_indexes():
+    """Create MongoDB indexes for performance-critical queries."""
+    await db.importBatches.create_index("id",         background=True)
+    await db.invoices.create_index("batchId",         background=True)
+    await db.invoices.create_index("id",              background=True)
+    await db.timeEntries.create_index("batchId",      background=True)
+    await db.timeEntries.create_index("id",           background=True)
+    await db.customers.create_index("id",             background=True)
+    await db.projects.create_index("id",              background=True)
+    await db.invoiceLines.create_index("timeEntryId", background=True)
+    await db.invoiceLines.create_index("invoiceId",   background=True)
 security = HTTPBearer()
 
 # Rate limiting store (simple in-memory) - 10 attempts per 15 minutes
@@ -801,20 +814,31 @@ async def import_from_verification(
 # ============ INVOICE ENDPOINTS ============
 @api_router.get("/batches")
 async def list_batches(current_user: User = Depends(get_current_user)):
-    """Get all import batches with invoice counts and totals"""
+    """Get all import batches with invoice counts and totals — O(3) queries regardless of batch count"""
     batches = await db.importBatches.find({}, {"_id": 0}).to_list(1000)
-    
-    # Add invoice count and total amount for each batch
-    for batch in batches:
-        invoice_count = await db.invoices.count_documents({"batchId": batch.get("id")})
-        batch["invoiceCount"] = invoice_count
-        
-        # Calculate total amount from time entries (not invoices)
-        # This ensures totals are shown even for 'in progress' or 'imported' batches
-        time_entries = await db.timeEntries.find({"batchId": batch.get("id")}, {"value": 1}).to_list(10000)
-        total_amount = sum(entry.get("value", 0) for entry in time_entries)
-        batch["totalAmount"] = round(total_amount, 2)
-    
+
+    if batches:
+        batch_ids = [b.get("id") for b in batches if b.get("id")]
+
+        # Single aggregation: invoice count per batch
+        invoice_counts_agg = await db.invoices.aggregate([
+            {"$match": {"batchId": {"$in": batch_ids}}},
+            {"$group": {"_id": "$batchId", "count": {"$sum": 1}}}
+        ]).to_list(None)
+        invoice_count_map = {item["_id"]: item["count"] for item in invoice_counts_agg}
+
+        # Single aggregation: total value per batch from time entries
+        totals_agg = await db.timeEntries.aggregate([
+            {"$match": {"batchId": {"$in": batch_ids}}},
+            {"$group": {"_id": "$batchId", "total": {"$sum": "$value"}}}
+        ]).to_list(None)
+        total_amount_map = {item["_id"]: round(item["total"] or 0, 2) for item in totals_agg}
+
+        for batch in batches:
+            bid = batch.get("id")
+            batch["invoiceCount"] = invoice_count_map.get(bid, 0)
+            batch["totalAmount"] = total_amount_map.get(bid, 0.0)
+
     return batches
 
 @api_router.get("/batches/{batch_id}")
@@ -840,37 +864,53 @@ async def get_batch_time_entries(batch_id: str, current_user: User = Depends(get
     
     # Get all time entries for this batch
     entries = await db.timeEntries.find({"batchId": batch_id}, {"_id": 0}).to_list(10000)
-    
-    # Add customer names, project names, and invoice information to entries
-    for entry in entries:
-        # Get current customer name (handle null customerId for "No Client" entries)
-        if entry.get("customerId"):
-            customer = await db.customers.find_one({"id": entry["customerId"]})
-            entry["customerName"] = customer["name"] if customer else ""
-        else:
-            entry["customerName"] = ""  # No client
-        
-        # Get original customer name if it exists
-        if entry.get("originalCustomerId"):
-            original_customer = await db.customers.find_one({"id": entry["originalCustomerId"]})
-            entry["originalCustomerName"] = original_customer["name"] if original_customer else ""
-        
-        # Get project name
-        project = await db.projects.find_one({"id": entry["projectId"]})
-        entry["projectName"] = project["name"] if project else ""
-        
-        # Get invoice information if time entry is invoiced
-        if entry.get("status") == "invoiced":
-            # Find invoice line that contains this time entry
-            invoice_line = await db.invoiceLines.find_one({"timeEntryId": entry["id"]})
-            if invoice_line:
-                # Get invoice details
-                invoice = await db.invoices.find_one({"id": invoice_line["invoiceId"]})
-                if invoice:
-                    entry["invoiceStatus"] = invoice.get("status", "")
-                    entry["invoiceNumber"] = invoice.get("invoiceNumber", "")
-                    entry["invoiceId"] = invoice.get("id", "")
-    
+
+    if entries:
+        # --- Batch all lookups: O(5) queries regardless of entry count ---
+
+        # Collect unique IDs
+        customer_ids = list({e["customerId"] for e in entries if e.get("customerId")} |
+                            {e["originalCustomerId"] for e in entries if e.get("originalCustomerId")})
+        project_ids  = list({e["projectId"] for e in entries if e.get("projectId")})
+        invoiced_ids = [e["id"] for e in entries if e.get("status") == "invoiced" and e.get("id")]
+
+        # Fetch customers, projects in parallel
+        customers_cursor = db.customers.find({"id": {"$in": customer_ids}}, {"_id": 0, "id": 1, "name": 1})
+        projects_cursor  = db.projects.find({"id": {"$in": project_ids}},   {"_id": 0, "id": 1, "name": 1})
+
+        customer_map = {c["id"]: c.get("name", "") for c in await customers_cursor.to_list(None)}
+        project_map  = {p["id"]: p.get("name", "") for p in await projects_cursor.to_list(None)}
+
+        # Fetch invoice lines for invoiced entries (1 query)
+        invoice_lines = await db.invoiceLines.find(
+            {"timeEntryId": {"$in": invoiced_ids}},
+            {"_id": 0, "timeEntryId": 1, "invoiceId": 1}
+        ).to_list(None)
+        entry_to_invoice_id = {il["timeEntryId"]: il["invoiceId"] for il in invoice_lines}
+
+        # Fetch invoices (1 query)
+        invoice_ids = list(set(entry_to_invoice_id.values()))
+        invoices = await db.invoices.find(
+            {"id": {"$in": invoice_ids}},
+            {"_id": 0, "id": 1, "status": 1, "invoiceNumber": 1}
+        ).to_list(None)
+        invoice_map = {inv["id"]: inv for inv in invoices}
+
+        # Enrich entries using maps — zero additional queries
+        for entry in entries:
+            entry["customerName"]         = customer_map.get(entry.get("customerId"), "")
+            entry["originalCustomerName"] = customer_map.get(entry.get("originalCustomerId"), "") if entry.get("originalCustomerId") else ""
+            entry["projectName"]          = project_map.get(entry.get("projectId"), "")
+
+            if entry.get("status") == "invoiced":
+                inv_id = entry_to_invoice_id.get(entry.get("id"))
+                if inv_id:
+                    inv = invoice_map.get(inv_id)
+                    if inv:
+                        entry["invoiceStatus"] = inv.get("status", "")
+                        entry["invoiceNumber"] = inv.get("invoiceNumber", "")
+                        entry["invoiceId"]     = inv.get("id", "")
+
     return entries
 
 @api_router.put("/batches/{batch_id}/time-entries")
