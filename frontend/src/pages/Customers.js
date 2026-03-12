@@ -351,7 +351,7 @@ const Customers = () => {
                   <p className="mt-1 text-white font-semibold">
                     Poročanje → Prodaja →<br />Izpis postavk po kupcih
                   </p>
-                  <p className="mt-2 text-slate-300">Izvozi kot <span className="text-white font-medium">.xls</span> in naloži sem.</p>
+                  <p className="mt-2 text-slate-300">Izvozi kot <span className="text-white font-medium">.xls</span> ali <span className="text-white font-medium">.xlsx</span> in naloži sem.</p>
                 </div>
               </div>,
               document.body
