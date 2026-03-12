@@ -321,6 +321,7 @@ const ImportVerification = () => {
         }
         
         return {
+          id: entry.id || '',           // ← needed for AI prompts & per-row operations
           project: entry.projectName || entry.tariff || '',
           customer: entry.customerName || '',
           customerId: entry.customerId || '',
@@ -329,13 +330,13 @@ const ImportVerification = () => {
           employee: entry.employeeName || '',
           comments: entry.notes || '',
           hours: entry.hours || 0,
-          hourlyRate: entry.hourlyRate || 0,  // Add hourlyRate from backend
+          hourlyRate: entry.hourlyRate || 0,
           value: entry.value || 0,
           invoiceNumber: entry.invoiceNumber || '',
-          invoiceStatus: entry.invoiceStatus || '',  // Add invoice status from backend
-          invoiceId: entry.invoiceId || '',  // Add invoice ID from backend
-          status: entry.status || 'uninvoiced',  // Row status: never changes after posting (uninvoiced, ready, internal, free, forfait)
-          entrySource: entry.entrySource || 'imported'  // Entry source: imported or manual
+          invoiceStatus: entry.invoiceStatus || '',
+          invoiceId: entry.invoiceId || '',
+          status: entry.status || 'uninvoiced',
+          entrySource: entry.entrySource || 'imported'
         };
       });
       
@@ -1059,20 +1060,24 @@ const ImportVerification = () => {
 
   const handleRunAllAiPrompts = async () => {
     if (editingRowIndex === null) return;
-    
+
     setAiProcessing(true);
     const rowData = verificationData.rows[editingRowIndex];
     const entryId = rowData.id;
-    
+
+    if (!entryId) {
+      toast.error('Could not find entry ID for this row. Please reload the batch.');
+      setAiProcessing(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('access_token');
-      
-      // Call the new backend endpoint that runs all 4 prompts consecutively
-      // Backend expects array directly, not an object with entry_ids key
+
       const response = await axios.post(
         `${BACKEND_URL}/api/batches/${verificationData.batchId}/run-ai-prompts`,
-        [entryId], // Send array directly
-        { headers: { Authorization: `Bearer ${token}` }, timeout: 150000 } // 150s timeout for 4 prompts
+        [entryId],
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 150000 }
       );
       
       if (response.data.success && response.data.results && response.data.results.length > 0) {
