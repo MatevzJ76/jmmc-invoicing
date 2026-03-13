@@ -4303,22 +4303,180 @@ async def update_tariff(tariff_code: str, tariff_data: dict, current_user: User 
     """Update tariff code data"""
     allowed_fields = ['description', 'value']
     update_data = {k: v for k, v in tariff_data.items() if k in allowed_fields}
-    
+
     if not update_data:
         raise HTTPException(status_code=400, detail="No valid fields to update")
-    
+
     now = datetime.now(timezone.utc).isoformat()
     update_data['updated_at'] = now
-    
+
     result = await db.tariffs.update_one(
         {"code": tariff_code},
         {"$set": update_data}
     )
-    
+
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Tariff not found")
-    
+
     return {"message": "Tariff updated successfully"}
+
+
+@api_router.post("/tariffs/import")
+async def import_tariffs_from_xls(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Import tariff codes from e-računi XLS export (doc-6 format).
+    Columns: Oznaka tarife | Urna postavka | Opis vrste del/tarife
+    Upserts by code — creates new, updates existing.
+    """
+    content = await file.read()
+    try:
+        workbook = xlrd.open_workbook(file_contents=content)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Cannot read XLS file: {e}")
+
+    sheet = workbook.sheet_by_index(0)
+    created = updated = skipped = 0
+    now = datetime.now(timezone.utc).isoformat()
+
+    for row_idx in range(1, sheet.nrows):   # skip header row
+        row = sheet.row_values(row_idx)
+        code_raw = str(row[0]).strip() if row[0] else ""
+        if not code_raw:
+            skipped += 1
+            continue
+
+        # Parse hourly rate — may be float or string like "45,00"
+        try:
+            val_raw = row[1]
+            if isinstance(val_raw, (int, float)):
+                value = float(val_raw)
+            else:
+                value = float(str(val_raw).replace(",", ".").strip() or 0)
+        except Exception:
+            value = 0.0
+
+        description = str(row[2]).strip() if len(row) > 2 and row[2] else ""
+
+        existing = await db.tariffs.find_one({"code": code_raw})
+        if existing:
+            await db.tariffs.update_one(
+                {"code": code_raw},
+                {"$set": {"value": value, "description": description, "updated_at": now}}
+            )
+            updated += 1
+        else:
+            await db.tariffs.insert_one({
+                "code": code_raw,
+                "description": description,
+                "value": value,
+                "created_at": now,
+                "updated_at": now
+            })
+            created += 1
+
+    return {"created": created, "updated": updated, "skipped": skipped,
+            "total": created + updated + skipped}
+
+
+@api_router.post("/articles/import")
+async def import_articles_from_xls(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Import article codes from e-računi XLS export (doc-5 format).
+    Key columns: Šifra artikla(0) | Naziv artikla(1) | Veleprodajna cena brez DDV(3) |
+                 Enota mere(6) | Stopnja DDV(7)
+    Upserts by code — creates new, updates existing.
+    """
+    content = await file.read()
+    try:
+        workbook = xlrd.open_workbook(file_contents=content)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Cannot read XLS file: {e}")
+
+    sheet = workbook.sheet_by_index(0)
+
+    # Detect column indices from header row (row 0) so import is robust to column reordering
+    header = [str(c).strip().lower() for c in sheet.row_values(0)]
+    def col(keywords):
+        for i, h in enumerate(header):
+            if all(k.lower() in h for k in keywords):
+                return i
+        return None
+
+    idx_code  = col(["šifra"])          or 0
+    idx_name  = col(["naziv"])          or 1
+    idx_price = col(["veleprodajn", "brez ddv"]) or col(["veleprodajn"]) or 3
+    idx_unit  = col(["enota"])          or 6
+    idx_vat   = col(["stopnja ddv"])    or 7
+
+    created = updated = skipped = 0
+    now = datetime.now(timezone.utc).isoformat()
+
+    for row_idx in range(1, sheet.nrows):
+        row = sheet.row_values(row_idx)
+        code_raw = str(row[idx_code]).strip() if row[idx_code] else ""
+        # Strip trailing ".0" from codes stored as floats (e.g. 1.0 → "000001")
+        if code_raw.endswith(".0"):
+            try:
+                code_raw = str(int(float(code_raw))).zfill(6)
+            except Exception:
+                pass
+        if not code_raw:
+            skipped += 1
+            continue
+
+        description = str(row[idx_name]).strip() if idx_name < len(row) and row[idx_name] else ""
+
+        try:
+            price_raw = row[idx_price] if idx_price < len(row) else 0
+            price = float(str(price_raw).replace(",", ".").strip() or 0) if price_raw else 0.0
+        except Exception:
+            price = 0.0
+
+        unit_measure = str(row[idx_unit]).strip() if idx_unit < len(row) and row[idx_unit] else "kos"
+        if not unit_measure:
+            unit_measure = "kos"
+
+        try:
+            vat_raw = str(row[idx_vat]).strip() if idx_vat < len(row) and row[idx_vat] else "22"
+            vat = float(vat_raw.replace("%", "").replace(",", ".").strip() or 22)
+        except Exception:
+            vat = 22.0
+
+        existing = await db.articles.find_one({"code": code_raw})
+        if existing:
+            await db.articles.update_one(
+                {"code": code_raw},
+                {"$set": {
+                    "description": description,
+                    "priceWithoutVAT": price,
+                    "unitMeasure": unit_measure,
+                    "vatPercentage": vat,
+                    "updated_at": now
+                }}
+            )
+            updated += 1
+        else:
+            await db.articles.insert_one({
+                "code": code_raw,
+                "description": description,
+                "priceWithoutVAT": price,
+                "unitMeasure": unit_measure,
+                "vatPercentage": vat,
+                "tariffCode": "",
+                "created_at": now,
+                "updated_at": now
+            })
+            created += 1
+
+    return {"created": created, "updated": updated, "skipped": skipped,
+            "total": created + updated + skipped}
+
 
 # Include router
 app.include_router(api_router)

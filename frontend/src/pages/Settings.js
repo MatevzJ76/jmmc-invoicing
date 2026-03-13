@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
@@ -153,7 +153,31 @@ const TariffCodesSection = () => {
   const [saving, setSaving] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTariff, setNewTariff] = useState({ code: '', description: '', value: 0 });
-  const [focusedField, setFocusedField] = useState(null); // Track which field is being edited
+  const [focusedField, setFocusedField] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const tariffFileRef = useRef(null);
+
+  const handleImportTariffs = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await axios.post(`${BACKEND_URL}/api/tariffs/import`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      const { created, updated, skipped } = response.data;
+      toast.success(`Uvoz tarifnih kod uspešen: ${created} dodanih, ${updated} posodobljenih${skipped ? `, ${skipped} preskočenih` : ''}`);
+      await loadTariffs();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Uvoz tarifnih kod ni uspel');
+    } finally {
+      setImporting(false);
+      if (tariffFileRef.current) tariffFileRef.current.value = '';
+    }
+  };
 
   useEffect(() => {
     loadTariffs();
@@ -304,8 +328,8 @@ const TariffCodesSection = () => {
             Manage tariff codes used in XLSX imports
           </p>
 
-          {/* Add New Tariff Button */}
-          <div className="mb-4">
+          {/* Add New Tariff + Import Buttons */}
+          <div className="mb-4 flex gap-2 flex-wrap">
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
               size="sm"
@@ -316,6 +340,25 @@ const TariffCodesSection = () => {
               </svg>
               Add New Tariff
             </Button>
+            <Button
+              onClick={() => tariffFileRef.current?.click()}
+              disabled={importing}
+              size="sm"
+              variant="outline"
+              className="rounded-full border-indigo-400 text-indigo-700 hover:bg-indigo-50"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              {importing ? 'Uvažam...' : 'Uvozi iz e-računi (.xls)'}
+            </Button>
+            <input
+              ref={tariffFileRef}
+              type="file"
+              accept=".xls,.xlsx"
+              className="hidden"
+              onChange={handleImportTariffs}
+            />
           </div>
 
           {/* Add Tariff Form */}
@@ -834,13 +877,37 @@ const ArticleCodesSection = () => {
   const [saving, setSaving] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newArticle, setNewArticle] = useState({ 
-    code: '', 
-    description: '', 
+  const [newArticle, setNewArticle] = useState({
+    code: '',
+    description: '',
     unitMeasure: 'kos',
     priceWithoutVAT: 0,
     vatPercentage: 22
   });
+  const [importing, setImporting] = useState(false);
+  const articleFileRef = useRef(null);
+
+  const handleImportArticles = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await axios.post(`${BACKEND_URL}/api/articles/import`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      const { created, updated, skipped } = response.data;
+      toast.success(`Uvoz artiklov uspešen: ${created} dodanih, ${updated} posodobljenih${skipped ? `, ${skipped} preskočenih` : ''}`);
+      await loadArticles();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Uvoz artiklov ni uspel');
+    } finally {
+      setImporting(false);
+      if (articleFileRef.current) articleFileRef.current.value = '';
+    }
+  };
 
   useEffect(() => {
     loadArticles();
@@ -995,8 +1062,8 @@ const ArticleCodesSection = () => {
             Manage e-računi article codes and pricing
           </p>
 
-          {/* Add New Article Button */}
-          <div className="mb-4">
+          {/* Add New Article + Import Buttons */}
+          <div className="mb-4 flex gap-2 flex-wrap">
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
               size="sm"
@@ -1007,6 +1074,25 @@ const ArticleCodesSection = () => {
               </svg>
               Add New Article
             </Button>
+            <Button
+              onClick={() => articleFileRef.current?.click()}
+              disabled={importing}
+              size="sm"
+              variant="outline"
+              className="rounded-full border-purple-400 text-purple-700 hover:bg-purple-50"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              {importing ? 'Uvažam...' : 'Uvozi iz e-računi (.xls)'}
+            </Button>
+            <input
+              ref={articleFileRef}
+              type="file"
+              accept=".xls,.xlsx"
+              className="hidden"
+              onChange={handleImportArticles}
+            />
           </div>
 
           {/* Add Article Form */}
