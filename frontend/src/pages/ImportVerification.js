@@ -1299,19 +1299,26 @@ const ImportVerification = () => {
         );
         const allTimeEntries = entriesResponse.data;
         
-        // Match displayed rows to time entries and get their IDs
+        // Use row.id directly (populated from DB via loadBatchDataForVerification).
+        // Fall back to fuzzy matching only for rows that somehow lack an id.
+        const entryIdSet = new Set(allTimeEntries.map(e => e.id));
         const selectedEntryIds = [];
         rowsToImport.forEach(row => {
-          // Find matching time entry
-          const matchingEntry = allTimeEntries.find(entry =>
-            entry.customerName === row.customer &&
-            entry.employeeName === row.employee &&
-            entry.notes === row.comments &&
-            entry.date === row.date &&
-            entry.hours === parseFloat(row.hours)
-          );
-          if (matchingEntry) {
-            selectedEntryIds.push(matchingEntry.id);
+          if (row.id && entryIdSet.has(row.id)) {
+            // Fast path: id already known and confirmed in DB
+            selectedEntryIds.push(row.id);
+          } else {
+            // Fallback: match by fields (legacy / edge-case)
+            const matchingEntry = allTimeEntries.find(entry =>
+              entry.customerName === row.customer &&
+              entry.employeeName === row.employee &&
+              entry.notes === row.comments &&
+              entry.date === row.date &&
+              entry.hours === parseFloat(row.hours)
+            );
+            if (matchingEntry) {
+              selectedEntryIds.push(matchingEntry.id);
+            }
           }
         });
         
