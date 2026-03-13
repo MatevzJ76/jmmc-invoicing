@@ -343,7 +343,7 @@ const InvoiceDetail = () => {
     const postedIndex = statusOrder.indexOf('posted');
     
     return {
-      save: currentStatusIndex >= draftIndex || processingButtons.save,
+      save: currentStatusIndex > draftIndex || processingButtons.save,  // disable only for issued/posted
       confirmDraft: currentStatusIndex >= draftIndex || processingButtons.confirmDraft,
       issue: currentStatusIndex >= issuedIndex || processingButtons.issue,
       post: currentStatusIndex >= postedIndex || processingButtons.post
