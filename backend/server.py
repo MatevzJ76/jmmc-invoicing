@@ -875,6 +875,16 @@ async def import_from_verification(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# ============ DEBUG / VERSION ============
+@api_router.get("/version")
+async def get_version():
+    """Returns deployed version info for debugging"""
+    return {
+        "version": "2026-03-13-v2",
+        "model_map_keys": list(LlmChat._MODEL_MAP.keys()),
+        "gpt4o_in_map": "gpt-4o" in LlmChat._MODEL_MAP
+    }
+
 # ============ INVOICE ENDPOINTS ============
 @api_router.get("/batches")
 async def list_batches(current_user: User = Depends(get_current_user)):
