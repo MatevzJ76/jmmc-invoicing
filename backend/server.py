@@ -3370,11 +3370,14 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
                 detail=f"Cannot create invoice - Customer '{customer_name}' has multiple forfait batch entries with tariff 001 - Računovodstvo. Only 1 is allowed."
             )
     
-    # VALIDATION 2: For customers with forfait entries, ensure they have exactly 1 forfait_batch with tariff "001 - Računovodstvo"
+    # VALIDATION 2: For customers with forfait entries, check if a forfait_batch exists.
+    # If no forfait_batch exists for a customer, treat forfait entries as regular billable entries
+    # (include them directly on the invoice rather than blocking).
+    extra_billable = []  # forfait entries that will be invoiced directly (no forfait_batch found)
     for customer_id, customer_forfait_entries in forfait_by_customer.items():
         customer = customer_map.get(customer_id)
         customer_name = customer.get("name", "Unknown") if customer else "Unknown"
-        
+
         # Find forfait_batch entries with tariff "001 - Računovodstvo"
         forfait_batch_001 = []
         if customer_id in forfait_batch_by_customer:
@@ -3382,17 +3385,17 @@ async def compose_filtered_invoices(request: dict, current_user: User = Depends(
                 tariff_code = fb_entry.get("tariff", "")
                 if "001" in tariff_code and "Računovodstvo" in tariff_code:
                     forfait_batch_001.append(fb_entry)
-        
-        # Check: Must have exactly 1 forfait_batch with tariff 001 to link forfait entries
+
         if len(forfait_batch_001) == 0:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Cannot create invoice - Customer '{customer_name}' has forfait entries but no forfait batch entry with tariff 001 - Računovodstvo."
+            # No forfait_batch found — invoice forfait entries directly as regular line items
+            logger.warning(
+                f"Customer '{customer_name}' has {len(customer_forfait_entries)} forfait entries "
+                f"but no forfait_batch row — invoicing them as regular entries."
             )
-    
-    # Group by customer (include ONLY regular entries and forfait_batch entries)
-    # Forfait entries are EXCLUDED from line items - they are only used for linking
-    all_billable_entries = entries + forfait_batch_entries
+            extra_billable.extend(customer_forfait_entries)
+
+    # Group by customer (regular entries + forfait_batch entries + any forfait entries without a batch)
+    all_billable_entries = entries + forfait_batch_entries + extra_billable
     customer_groups = defaultdict(list)
     for entry in all_billable_entries:
         customer_groups[entry["customerId"]].append(entry)
