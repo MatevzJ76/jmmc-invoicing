@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -577,9 +578,21 @@ const CustomerDetail = () => {
                   </div>
                 </>
               )}
+
+              {/* eDavki obveščanje */}
+              <div className="flex items-center gap-3 pt-2">
+                <Checkbox
+                  id="eDavkiObvescanje"
+                  checked={customer?.eDavkiObvescanje || false}
+                  onCheckedChange={(checked) => handleFieldUpdate('eDavkiObvescanje', checked)}
+                />
+                <Label htmlFor="eDavkiObvescanje" className="text-slate-700 font-medium cursor-pointer">
+                  eDavki obveščanje
+                </Label>
+              </div>
             </div>
           </div>
-          
+
           {/* Invoicing Period Section - Highlighted */}
           <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-4 mb-6">
             <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
