@@ -23,6 +23,13 @@ export default function InvoiceModal({ invoiceId, onClose, onRefresh }) {
   const [editStatus,      setEditStatus]      = useState('');
   const [saving,          setSaving]          = useState(false);
   const [savedMsg,        setSavedMsg]        = useState(false);
+  const [assignable,      setAssignable]      = useState([]);
+
+  const ROLE_COLORS_M = { controller:'#2e7d52', revisore:'#c77d3a', admin:'#1c2b3a', supervisor:'#1a6fa3', delegato:'#5a4a8a' };
+  const nameRoleMap   = assignable.reduce((acc, u) => { acc[u.name] = u.role; return acc; }, {});
+  const responsibleColor = editResponsible
+    ? (ROLE_COLORS_M[nameRoleMap[editResponsible]] || '#888')
+    : '#aaa';
 
   const [categoryHint,    setCategoryHint]    = useState(null);
   const [hintActive,      setHintActive]      = useState(false);
@@ -50,6 +57,10 @@ export default function InvoiceModal({ invoiceId, onClose, onRefresh }) {
 
     api.get('/api/categories')
       .then(r => setCategories(r.data?.data || r.data || []))
+      .catch(() => {});
+
+    api.get('/api/users/assignable')
+      .then(r => setAssignable(r.data.data || []))
       .catch(() => {});
   }, [invoiceId]);
 
@@ -187,9 +198,10 @@ export default function InvoiceModal({ invoiceId, onClose, onRefresh }) {
   if (!invoice) return null;
 
   const canVerify = (
+    invoice.status === 'Pending' &&
     !invoice.verified_flag &&
-    ((user.role === 'federico' && invoice.responsible === 'FEDERICO') ||
-     (user.role === 'varga'    && invoice.responsible === 'VARGA'))
+    (user.role === 'controller' || user.role === 'delegato' ||
+     (user.role === 'revisore' && invoice.responsible === user.responsible))
   );
 
   const delegatoMissing = !editResponsible;
@@ -306,7 +318,7 @@ export default function InvoiceModal({ invoiceId, onClose, onRefresh }) {
                         <label style={S.fieldLabel}>Delegato</label>
                         <div style={{...S.adminSelect,background:'#f4f3f1',color:editResponsible?'#1c2b3a':'#aaa',cursor:'default',display:'flex',alignItems:'center',fontWeight:editResponsible?600:400}}>
                           {editResponsible
-                            ? <><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:editResponsible==='FEDERICO'?'#1c2b3a':'#c77d3a',marginRight:8}}/>{editResponsible}</>
+                            ? <><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:responsibleColor,marginRight:8}}/>{editResponsible}</>
                             : '— seleziona categoria —'}
                         </div>
                       </div>
@@ -402,8 +414,8 @@ export default function InvoiceModal({ invoiceId, onClose, onRefresh }) {
                       <div style={S.delegatoChip}>
                         <span style={S.delegatoChipLabel}>Delegato</span>
                         {editResponsible ? (
-                          <span style={{...S.delegatoChipValue, color: editResponsible==='FEDERICO'?'#1c2b3a':'#c77d3a'}}>
-                            <span style={{display:'inline-block',width:7,height:7,borderRadius:'50%',background:editResponsible==='FEDERICO'?'#1c2b3a':'#c77d3a',marginRight:5,verticalAlign:'middle'}}/>
+                          <span style={{...S.delegatoChipValue, color: responsibleColor}}>
+                            <span style={{display:'inline-block',width:7,height:7,borderRadius:'50%',background:responsibleColor,marginRight:5,verticalAlign:'middle'}}/>
                             {editResponsible}
                           </span>
                         ) : (
