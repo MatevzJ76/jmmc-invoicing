@@ -1853,10 +1853,10 @@ const ImportVerification = () => {
                     const LABEL_Y = 80;
                     const TOTAL_H = 84;
                     const TOTAL_W = SLOT * n;
-                    const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
                     // Show label every 3 months; always show first and last
                     const showLabel = (i) => i === 0 || i === n - 1 || i % 3 === 0;
+                    const fmtLabel = (month, year) =>
+                      `${String(month + 1).padStart(2, '0')}/${String(year).slice(2)}`;
 
                     return (
                       <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
@@ -1874,12 +1874,12 @@ const ImportVerification = () => {
                               <g key={i}>
                                 {barH > 0 && (
                                   <rect x={x} y={BOT - barH} width={BAR_W} height={barH} fill="#6366f1" rx="2" opacity="0.82">
-                                    <title>{MN[month]} {year}: €{amount.toLocaleString('sl-SI', { minimumFractionDigits: 2 })}</title>
+                                    <title>{fmtLabel(month, year)}: €{amount.toLocaleString('sl-SI', { minimumFractionDigits: 2 })}</title>
                                   </rect>
                                 )}
                                 {showLabel(i) && (
-                                  <text x={cx} y={LABEL_Y} textAnchor="middle" fontSize="8" fill={amount > 0 ? '#64748b' : '#cbd5e1'}>
-                                    {month === 0 ? `J'${String(year).slice(2)}` : MN[month].slice(0, 3)}
+                                  <text x={cx} y={LABEL_Y} textAnchor="middle" fontSize="6.5" fill={amount > 0 ? '#64748b' : '#cbd5e1'}>
+                                    {fmtLabel(month, year)}
                                   </text>
                                 )}
                               </g>
