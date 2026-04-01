@@ -1867,29 +1867,37 @@ const ImportVerification = () => {
                         <p className="text-xs text-slate-500 mb-2 font-medium">
                           Billing History ({n} {n === 1 ? 'month' : 'months'})
                         </p>
-                        <svg viewBox={`0 0 ${TOTAL_W} ${TOTAL_H}`} style={{ width: '100%', height: '84px' }} preserveAspectRatio="none">
+                        {/* Bars only in SVG — labels as HTML to avoid horizontal stretch */}
+                        <svg viewBox={`0 0 ${TOTAL_W} ${BOT + 2}`} style={{ width: '100%', height: '70px', display: 'block' }} preserveAspectRatio="none">
                           <line x1="0" y1={BOT} x2={TOTAL_W} y2={BOT} stroke="#cbd5e1" strokeWidth="0.8" />
                           {amounts.map((amount, i) => {
                             const barH = amount > 0 ? Math.max(3, (amount / maxAmount) * CHART_H) : 0;
                             const x = i * SLOT + BAR_OFF;
-                            const cx = i * SLOT + SLOT / 2;
                             const { month, year } = months[i];
-                            return (
-                              <g key={i}>
-                                {barH > 0 && (
-                                  <rect x={x} y={BOT - barH} width={BAR_W} height={barH} fill="#6366f1" rx="2" opacity="0.82">
-                                    <title>{fmtLabel(month, year)}: €{amount.toLocaleString('sl-SI', { minimumFractionDigits: 2 })}</title>
-                                  </rect>
-                                )}
-                                {showLabel(i) && (
-                                  <text x={cx} y={LABEL_Y} textAnchor="middle" fontSize="5.5" fontFamily="monospace" fill={amount > 0 ? '#64748b' : '#cbd5e1'}>
-                                    {fmtLabel(month, year)}
-                                  </text>
-                                )}
-                              </g>
-                            );
+                            return barH > 0 ? (
+                              <rect key={i} x={x} y={BOT - barH} width={BAR_W} height={barH} fill="#6366f1" rx="2" opacity="0.82">
+                                <title>{fmtLabel(month, year)}: €{amount.toLocaleString('sl-SI', { minimumFractionDigits: 2 })}</title>
+                              </rect>
+                            ) : null;
                           })}
                         </svg>
+                        {/* HTML labels — not affected by SVG stretching */}
+                        <div className="relative" style={{ height: '14px', marginTop: '1px' }}>
+                          {months.map(({ month, year }, i) => showLabel(i) ? (
+                            <span key={i} style={{
+                              position: 'absolute',
+                              left: `${((i * SLOT + SLOT / 2) / TOTAL_W) * 100}%`,
+                              transform: 'translateX(-50%)',
+                              fontSize: '9px',
+                              fontFamily: 'monospace',
+                              color: amounts[i] > 0 ? '#111827' : '#cbd5e1',
+                              whiteSpace: 'nowrap',
+                              lineHeight: 1,
+                            }}>
+                              {fmtLabel(month, year)}
+                            </span>
+                          ) : null)}
+                        </div>
                       </div>
                     );
                   })()}
