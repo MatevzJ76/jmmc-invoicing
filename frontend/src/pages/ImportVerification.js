@@ -1853,8 +1853,12 @@ const ImportVerification = () => {
                     const LABEL_Y = 80;
                     const TOTAL_H = 84;
                     const TOTAL_W = SLOT * n;
-                    // Show label every 3 months; always show first and last
-                    const showLabel = (i) => i === 0 || i === n - 1 || i % 3 === 0;
+                    // Show label every 3 months; skip last if too close to previous label
+                    const showLabel = (i) => {
+                      if (i % 3 === 0) return true;
+                      if (i === n - 1 && (n - 1) % 3 > 1) return true;
+                      return false;
+                    };
                     const fmtLabel = (month, year) =>
                       `${String(month + 1).padStart(2, '0')}/${String(year).slice(2)}`;
 
@@ -1878,7 +1882,7 @@ const ImportVerification = () => {
                                   </rect>
                                 )}
                                 {showLabel(i) && (
-                                  <text x={cx} y={LABEL_Y} textAnchor="middle" fontSize="6.5" fill={amount > 0 ? '#64748b' : '#cbd5e1'}>
+                                  <text x={cx} y={LABEL_Y} textAnchor="middle" fontSize="5.5" fontFamily="monospace" fill={amount > 0 ? '#64748b' : '#cbd5e1'}>
                                     {fmtLabel(month, year)}
                                   </text>
                                 )}
