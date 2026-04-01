@@ -1200,8 +1200,8 @@ async def delete_time_entry(batch_id: str, entry_id: str, current_user: User = D
     entry = await db.timeEntries.find_one({"id": entry_id})
     if not entry:
         raise HTTPException(status_code=404, detail="Time entry not found")
-    if entry.get("entrySource") != "forfait_batch":
-        raise HTTPException(status_code=403, detail="Only forfait batch entries can be deleted")
+    if entry.get("entrySource") not in ("forfait_batch", "manual"):
+        raise HTTPException(status_code=403, detail="Only manually added entries can be deleted")
     await db.timeEntries.delete_one({"id": entry_id})
     return {"message": "Entry deleted", "entryId": entry_id}
 

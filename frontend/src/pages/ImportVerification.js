@@ -95,12 +95,13 @@ const ImportVerification = () => {
       return;
     }
     
-    // If data only contains batchId and resuming flag (coming from Batch Detail), fetch full data
-    if (data.batchId && data.resuming && !data.rows) {
+    // Always reload from DB when resuming — ensures rows have proper id fields
+    // (session-stored rows may lack ids, causing delete/AI operations to fail)
+    if (data.batchId && data.resuming) {
       loadBatchDataForVerification(data.batchId);
       return;
     }
-    
+
     setVerificationData(data);
     
     // Restore AI-corrected rows from data if available
@@ -935,7 +936,7 @@ const ImportVerification = () => {
     const entryId = editableSuggestions.id;
     const entrySource = editableSuggestions.entrySource;
     if (!entryId) { toast.error('Entry ID missing — please refresh the page and try again'); return; }
-    if (entrySource !== 'forfait_batch') return;
+    if (entrySource !== 'forfait_batch' && entrySource !== 'manual') return;
     if (!window.confirm(`Delete forfait entry for ${editableSuggestions.customer || 'this customer'}?`)) return;
     try {
       const token = localStorage.getItem('access_token');
@@ -3338,7 +3339,7 @@ const ImportVerification = () => {
             {/* Modal Actions */}
             <div className="p-6 border-t border-slate-200 bg-slate-50">
               <div className="flex gap-3">
-                {editableSuggestions.entrySource === 'forfait_batch' && (
+                {(editableSuggestions.entrySource === 'forfait_batch' || editableSuggestions.entrySource === 'manual') && (
                   <Button
                     variant="outline"
                     onClick={handleDeleteForfaitRow}
