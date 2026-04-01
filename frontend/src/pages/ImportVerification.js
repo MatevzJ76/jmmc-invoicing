@@ -936,6 +936,7 @@ const ImportVerification = () => {
     if (!window.confirm(`Delete forfait entry for ${row.customer || 'this customer'}?`)) return;
     try {
       const token = localStorage.getItem('access_token');
+      console.log('🗑️ Deleting forfait entry:', row.id, 'batchId:', verificationData.batchId, 'entrySource:', row.entrySource);
       await axios.delete(
         `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries/${row.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -947,8 +948,9 @@ const ImportVerification = () => {
       await loadBatchDataForVerification(verificationData.batchId);
       toast.success('Forfait entry deleted');
     } catch (error) {
-      console.error('Failed to delete entry:', error);
-      toast.error('Failed to delete entry');
+      const msg = error?.response?.data?.detail || error?.message || 'Unknown error';
+      console.error('Failed to delete entry:', error, 'detail:', msg);
+      toast.error(`Failed to delete entry: ${msg}`);
     }
   };
 
