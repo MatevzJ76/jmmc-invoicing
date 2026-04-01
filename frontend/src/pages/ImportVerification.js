@@ -919,6 +919,8 @@ const ImportVerification = () => {
     // Open edit modal for already-corrected rows
     setEditingRowIndex(index);
     setEditableSuggestions({
+      id: verificationData.rows[index].id || '',
+      entrySource: verificationData.rows[index].entrySource || '',
       description: verificationData.rows[index].comments,
       hours: verificationData.rows[index].hours,
       customerId: verificationData.rows[index].customerId || '',
@@ -930,16 +932,16 @@ const ImportVerification = () => {
   };
   
   const handleDeleteForfaitRow = async () => {
-    if (editingRowIndex === null || editingRowIndex === -1) return;
-    const row = verificationData.rows[editingRowIndex];
-    if (!row || row.entrySource !== 'forfait_batch') return;
-    if (!row.id) { toast.error('Entry ID missing — please refresh the page and try again'); return; }
-    if (!window.confirm(`Delete forfait entry for ${row.customer || 'this customer'}?`)) return;
+    const entryId = editableSuggestions.id;
+    const entrySource = editableSuggestions.entrySource;
+    if (!entryId) { toast.error('Entry ID missing — please refresh the page and try again'); return; }
+    if (entrySource !== 'forfait_batch') return;
+    if (!window.confirm(`Delete forfait entry for ${editableSuggestions.customer || 'this customer'}?`)) return;
     try {
       const token = localStorage.getItem('access_token');
-      console.log('🗑️ Deleting forfait entry:', row.id, 'batchId:', verificationData.batchId, 'entrySource:', row.entrySource);
+      console.log('🗑️ Deleting forfait entry:', entryId, 'entrySource:', entrySource);
       await axios.delete(
-        `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries/${row.id}`,
+        `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries/${entryId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Close modal and reload batch data
@@ -3336,8 +3338,7 @@ const ImportVerification = () => {
             {/* Modal Actions */}
             <div className="p-6 border-t border-slate-200 bg-slate-50">
               <div className="flex gap-3">
-                {editingRowIndex !== null && editingRowIndex !== -1 &&
-                  verificationData?.rows?.[editingRowIndex]?.entrySource === 'forfait_batch' && (
+                {editableSuggestions.entrySource === 'forfait_batch' && (
                   <Button
                     variant="outline"
                     onClick={handleDeleteForfaitRow}
