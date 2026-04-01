@@ -1737,62 +1737,6 @@ const ImportVerification = () => {
                     return null;
                   })()}
                   
-                  {/* Historical Billing Chart */}
-                  {(() => {
-                    const refDate = verificationData?.metadata?.periodFrom
-                      ? new Date(verificationData.metadata.periodFrom)
-                      : new Date();
-                    const refYear = refDate.getFullYear();
-                    const refMonth = refDate.getMonth();
-                    const months = [];
-                    for (let i = 11; i >= 0; i--) {
-                      let m = refMonth - i;
-                      let y = refYear;
-                      while (m < 0) { m += 12; y--; }
-                      months.push({ year: y, month: m });
-                    }
-                    const amountByMonth = {};
-                    historicalInvoices.forEach(inv => {
-                      const d = new Date(inv.date);
-                      if (!isNaN(d)) {
-                        const key = `${d.getFullYear()}-${d.getMonth()}`;
-                        amountByMonth[key] = (amountByMonth[key] || 0) + (inv.amount || 0);
-                      }
-                    });
-                    const amounts = months.map(({ year, month }) => amountByMonth[`${year}-${month}`] || 0);
-                    const maxAmount = Math.max(...amounts, 1);
-                    const hasAny = amounts.some(a => a > 0);
-                    if (!hasAny) return null;
-                    const CHART_H = 48;
-                    const LABEL_H = 13;
-                    const TOTAL_H = CHART_H + LABEL_H;
-                    const BAR_W = 14;
-                    const GAP = 3;
-                    const TOTAL_W = months.length * (BAR_W + GAP) - GAP;
-                    const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                    return (
-                      <div className="mb-3">
-                        <svg viewBox={`0 0 ${TOTAL_W} ${TOTAL_H}`} style={{ width: '100%', height: `${TOTAL_H + 4}px` }} preserveAspectRatio="none">
-                          {amounts.map((amount, i) => {
-                            const barH = amount > 0 ? Math.max(3, (amount / maxAmount) * CHART_H) : 0;
-                            const x = i * (BAR_W + GAP);
-                            const { month } = months[i];
-                            return (
-                              <g key={i}>
-                                {barH > 0 && (
-                                  <rect x={x} y={CHART_H - barH} width={BAR_W} height={barH} fill="#6366f1" rx="2" opacity="0.75">
-                                    <title>€{amount.toFixed(2)}</title>
-                                  </rect>
-                                )}
-                                <text x={x + BAR_W / 2} y={TOTAL_H} textAnchor="middle" fontSize="7.5" fill="#94a3b8">{MN[month]}</text>
-                              </g>
-                            );
-                          })}
-                        </svg>
-                      </div>
-                    );
-                  })()}
-
                   {/* Customer Settings Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                     {/* Hourly Rate */}
@@ -1861,6 +1805,74 @@ const ImportVerification = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Historical Billing Chart */}
+                  {(() => {
+                    const refDate = verificationData?.metadata?.periodFrom
+                      ? new Date(verificationData.metadata.periodFrom)
+                      : new Date();
+                    const refYear = refDate.getFullYear();
+                    const refMonth = refDate.getMonth();
+                    const months = [];
+                    for (let i = 11; i >= 0; i--) {
+                      let m = refMonth - i;
+                      let y = refYear;
+                      while (m < 0) { m += 12; y--; }
+                      months.push({ year: y, month: m });
+                    }
+                    const amountByMonth = {};
+                    historicalInvoices.forEach(inv => {
+                      const d = new Date(inv.date);
+                      if (!isNaN(d)) {
+                        const key = `${d.getFullYear()}-${d.getMonth()}`;
+                        amountByMonth[key] = (amountByMonth[key] || 0) + (inv.amount || 0);
+                      }
+                    });
+                    const amounts = months.map(({ year, month }) => amountByMonth[`${year}-${month}`] || 0);
+                    const maxAmount = Math.max(...amounts, 1);
+                    if (!amounts.some(a => a > 0)) return null;
+                    const SLOT = 35;
+                    const BAR_W = 22;
+                    const BAR_OFF = (SLOT - BAR_W) / 2;
+                    const TOP = 18;
+                    const BOT = 80;
+                    const CHART_H = BOT - TOP;
+                    const LABEL_Y = 93;
+                    const TOTAL_H = 97;
+                    const TOTAL_W = SLOT * 12;
+                    const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    return (
+                      <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500 mb-2 font-medium">Billing History (12 months)</p>
+                        <svg viewBox={`0 0 ${TOTAL_W} ${TOTAL_H}`} style={{ width: '100%', height: '88px' }} preserveAspectRatio="none">
+                          <line x1="0" y1={BOT} x2={TOTAL_W} y2={BOT} stroke="#cbd5e1" strokeWidth="0.8" />
+                          {amounts.map((amount, i) => {
+                            const barH = amount > 0 ? Math.max(4, (amount / maxAmount) * CHART_H) : 0;
+                            const x = i * SLOT + BAR_OFF;
+                            const cx = i * SLOT + SLOT / 2;
+                            const { month } = months[i];
+                            return (
+                              <g key={i}>
+                                {barH > 0 && (
+                                  <>
+                                    <rect x={x} y={BOT - barH} width={BAR_W} height={barH} fill="#6366f1" rx="3" opacity="0.82">
+                                      <title>€{amount.toLocaleString('sl-SI', { minimumFractionDigits: 2 })}</title>
+                                    </rect>
+                                    <text x={cx} y={BOT - barH - 3} textAnchor="middle" fontSize="7" fill="#4f46e5" fontWeight="700">
+                                      {amount >= 1000 ? `${(amount / 1000).toFixed(1)}k` : Math.round(amount)}
+                                    </text>
+                                  </>
+                                )}
+                                <text x={cx} y={LABEL_Y} textAnchor="middle" fontSize="9" fill={amount > 0 ? '#64748b' : '#cbd5e1'}>
+                                  {MN[month]}
+                                </text>
+                              </g>
+                            );
+                          })}
+                        </svg>
+                      </div>
+                    );
+                  })()}
 
                   {/* Historical Invoices Section */}
                   <div className="mt-4">
