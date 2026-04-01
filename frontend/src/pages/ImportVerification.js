@@ -506,15 +506,15 @@ const ImportVerification = () => {
       console.log('✅ Customer data received:', response.data?.name);
       setCustomerSettings(response.data);
       
-      // Filter historical invoices to last 12 months
+      // Filter historical invoices to last 36 months (3 years) for chart + table
       const now = new Date();
-      const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 12, 1);
-      
+      const thirtySixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 36, 1);
+
       const recentInvoices = (response.data.historicalInvoices || [])
         .filter(inv => {
           if (!inv.date) return false;
           const invDate = new Date(inv.date);
-          return invDate >= twelveMonthsAgo;
+          return invDate >= thirtySixMonthsAgo;
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
       
