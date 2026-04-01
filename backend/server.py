@@ -1092,6 +1092,10 @@ async def update_batch_time_entries(batch_id: str, updates: List[dict], current_
                 update_fields['aiCorrectionApplied'] = bool(update_data['aiCorrectionApplied'])
             if 'manuallyEdited' in update_data:
                 update_fields['manuallyEdited'] = bool(update_data['manuallyEdited'])
+            if 'value' in update_data and update_data['value'] is not None:
+                # Allow direct value override (takes precedence over hours/rate recalculation)
+                update_fields['value'] = round(float(update_data['value']), 2)
+
             if 'status' in update_data:
                 # Allow changing status: uninvoiced, invoiced, internal, free, forfait, ready
                 allowed_statuses = ['uninvoiced', 'invoiced', 'internal', 'free', 'forfait', 'ready']

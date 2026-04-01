@@ -924,6 +924,7 @@ const ImportVerification = () => {
       entrySource: verificationData.rows[index].entrySource || '',
       description: verificationData.rows[index].comments,
       hours: verificationData.rows[index].hours,
+      value: verificationData.rows[index].value || 0,
       customerId: verificationData.rows[index].customerId || '',
       customer: verificationData.rows[index].customer || '',
       status: verificationData.rows[index].status || 'uninvoiced',
@@ -1026,7 +1027,11 @@ const ImportVerification = () => {
     if (editableSuggestions.hours !== null && editableSuggestions.hours !== undefined) {
       updatedRows[editingRowIndex].hours = editableSuggestions.hours;
     }
-    
+
+    if (editableSuggestions.value !== null && editableSuggestions.value !== undefined) {
+      updatedRows[editingRowIndex].value = editableSuggestions.value;
+    }
+
     // Apply customer change if provided
     if (editableSuggestions.customerId && editableSuggestions.customerId !== updatedRows[editingRowIndex].customerId) {
       updatedRows[editingRowIndex].customerId = editableSuggestions.customerId;
@@ -1255,6 +1260,7 @@ const ImportVerification = () => {
           index,
           comments: verificationData.rows[index].comments,
           hours: verificationData.rows[index].hours,
+          value: verificationData.rows[index].value,
           customerId: verificationData.rows[index].customerId,
           tariff: verificationData.rows[index].tariff,
           status: verificationData.rows[index].status,
@@ -3056,21 +3062,39 @@ const ImportVerification = () => {
                     />
                   </div>
                   
-                  <div className={`rounded-lg p-4 border ${
-                    (verificationData.rows[editingRowIndex]?.status === 'invoiced') 
-                      ? 'bg-slate-100 border-slate-300 opacity-60' 
-                      : 'bg-green-50 border-green-200'
-                  }`}>
-                    <p className="text-xs font-semibold text-green-800 mb-2">Hours:</p>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={editableSuggestions.hours}
-                      onChange={(e) => setEditableSuggestions({ ...editableSuggestions, hours: parseFloat(e.target.value) })}
-                      className="text-sm bg-white border-green-300 focus:border-green-500 w-32 disabled:opacity-50 disabled:cursor-not-allowed"
-                      placeholder="Hours"
-                      disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
-                    />
+                  <div className="flex gap-3">
+                    <div className={`flex-1 rounded-lg p-4 border ${
+                      (verificationData.rows[editingRowIndex]?.status === 'invoiced')
+                        ? 'bg-slate-100 border-slate-300 opacity-60'
+                        : 'bg-green-50 border-green-200'
+                    }`}>
+                      <p className="text-xs font-semibold text-green-800 mb-2">Hours:</p>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={editableSuggestions.hours}
+                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, hours: parseFloat(e.target.value) })}
+                        className="text-sm bg-white border-green-300 focus:border-green-500 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        placeholder="Hours"
+                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                      />
+                    </div>
+                    <div className={`flex-1 rounded-lg p-4 border ${
+                      (verificationData.rows[editingRowIndex]?.status === 'invoiced')
+                        ? 'bg-slate-100 border-slate-300 opacity-60'
+                        : 'bg-green-50 border-green-200'
+                    }`}>
+                      <p className="text-xs font-semibold text-green-800 mb-2">Value (€):</p>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={editableSuggestions.value}
+                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, value: parseFloat(e.target.value) })}
+                        className="text-sm bg-white border-green-300 focus:border-green-500 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        placeholder="Value"
+                        disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
+                      />
+                    </div>
                   </div>
                   
                   {/* AI Processing Section */}
