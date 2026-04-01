@@ -2,6 +2,90 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "@/index.css";
 import App from "@/App";
+import axios from "axios";
+
+// ── Auto token refresh interceptor ─────────────────────────────────────────
+// When any request returns 401, try to refresh the access token using the
+// stored refresh_token. If the refresh succeeds, retry the original request.
+// If the refresh token is also expired/invalid, redirect to /login.
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+let isRefreshing = false;
+let pendingQueue = []; // { resolve, reject }[]
+
+const processQueue = (error, newToken = null) => {
+  pendingQueue.forEach(({ resolve, reject }) =>
+    error ? reject(error) : resolve(newToken)
+  );
+  pendingQueue = [];
+};
+
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Only handle 401s that haven't already been retried,
+    // and skip the refresh endpoint itself to avoid loops.
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/refresh")
+    ) {
+      if (isRefreshing) {
+        // Queue this request until the refresh completes
+        return new Promise((resolve, reject) => {
+          pendingQueue.push({ resolve, reject });
+        }).then((newToken) => {
+          originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+          return axios(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem("refresh_token");
+      if (!refreshToken) {
+        isRefreshing = false;
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
+      try {
+        const res = await axios.post(
+          `${BACKEND_URL}/api/auth/refresh`,
+          {},
+          { headers: { Authorization: `Bearer ${refreshToken}` } }
+        );
+        const { access_token, refresh_token } = res.data;
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("refresh_token", refresh_token);
+
+        axios.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+        originalRequest.headers["Authorization"] = `Bearer ${access_token}`;
+
+        processQueue(null, access_token);
+        isRefreshing = false;
+        return axios(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        isRefreshing = false;
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+// ───────────────────────────────────────────────────────────────────────────
 import { Toaster } from 'sonner';
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
