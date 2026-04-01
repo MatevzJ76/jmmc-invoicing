@@ -1,3 +1,4 @@
+# cache-bust: 2026-04-01
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.1
 aiosignal==1.4.0
