@@ -108,7 +108,7 @@ api_router = APIRouter(prefix="/api")
 
 @app.on_event("startup")
 async def ensure_indexes():
-    """Create MongoDB indexes for performance-critical queries."""
+    """Create MongoDB indexes and seed default admin user if none exists."""
     await db.importBatches.create_index("id",         background=True)
     await db.invoices.create_index("batchId",         background=True)
     await db.invoices.create_index("id",              background=True)
@@ -118,6 +118,22 @@ async def ensure_indexes():
     await db.projects.create_index("id",              background=True)
     await db.invoiceLines.create_index("timeEntryId", background=True)
     await db.invoiceLines.create_index("invoiceId",   background=True)
+
+    # Seed default admin user if no users exist yet
+    user_count = await db.users.count_documents({})
+    if user_count == 0:
+        admin_hash = ph.hash("Admin2025!")
+        await db.users.insert_one({
+            "id": str(uuid.uuid4()),
+            "email": "admin@local",
+            "username": "Admin",
+            "role": "ADMIN",
+            "status": "active",
+            "passwordHash": admin_hash,
+            "mustReset": False,
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        })
+        logger.info("Seeded default admin user: admin@local")
 security = HTTPBearer()
 
 # Rate limiting store (simple in-memory) - 10 attempts per 15 minutes
