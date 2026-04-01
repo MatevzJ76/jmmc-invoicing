@@ -929,6 +929,29 @@ const ImportVerification = () => {
     setShowEditModal(true);
   };
   
+  const handleDeleteForfaitRow = async () => {
+    if (editingRowIndex === null || editingRowIndex === -1) return;
+    const row = verificationData.rows[editingRowIndex];
+    if (!row || row.entrySource !== 'forfait_batch') return;
+    if (!window.confirm(`Delete forfait entry for ${row.customer || 'this customer'}?`)) return;
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.delete(
+        `${BACKEND_URL}/api/batches/${verificationData.batchId}/time-entries/${row.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Close modal and reload batch data
+      setShowEditModal(false);
+      setEditingRowIndex(null);
+      setEditableSuggestions({ description: '', hours: null, customerId: '', customer: '', status: 'uninvoiced', tariff: '' });
+      await loadBatchDataForVerification(verificationData.batchId);
+      toast.success('Forfait entry deleted');
+    } catch (error) {
+      console.error('Failed to delete entry:', error);
+      toast.error('Failed to delete entry');
+    }
+  };
+
   const handleApplyEdits = async () => {
     if (editingRowIndex === null) return;
     
@@ -3310,6 +3333,16 @@ const ImportVerification = () => {
             {/* Modal Actions */}
             <div className="p-6 border-t border-slate-200 bg-slate-50">
               <div className="flex gap-3">
+                {editingRowIndex !== null && editingRowIndex !== -1 &&
+                  verificationData?.rows?.[editingRowIndex]?.entrySource === 'forfait_batch' && (
+                  <Button
+                    variant="outline"
+                    onClick={handleDeleteForfaitRow}
+                    className="rounded-full border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                  >
+                    Delete
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => {
