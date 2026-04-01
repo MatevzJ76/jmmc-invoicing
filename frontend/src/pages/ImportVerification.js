@@ -1813,13 +1813,16 @@ const ImportVerification = () => {
                       : new Date();
                     const refYear = refDate.getFullYear();
                     const refMonth = refDate.getMonth();
-                    const months = [];
-                    for (let i = 11; i >= 0; i--) {
+
+                    // Build last 36 months (3 years) before invoicing month
+                    const allMonths = [];
+                    for (let i = 35; i >= 0; i--) {
                       let m = refMonth - i;
                       let y = refYear;
                       while (m < 0) { m += 12; y--; }
-                      months.push({ year: y, month: m });
+                      allMonths.push({ year: y, month: m });
                     }
+
                     const amountByMonth = {};
                     historicalInvoices.forEach(inv => {
                       const d = new Date(inv.date);
@@ -1828,44 +1831,57 @@ const ImportVerification = () => {
                         amountByMonth[key] = (amountByMonth[key] || 0) + (inv.amount || 0);
                       }
                     });
-                    const amounts = months.map(({ year, month }) => amountByMonth[`${year}-${month}`] || 0);
+
+                    const allAmounts = allMonths.map(({ year, month }) => amountByMonth[`${year}-${month}`] || 0);
+
+                    // Trim leading months with no data
+                    const firstIdx = allAmounts.findIndex(a => a > 0);
+                    if (firstIdx === -1) return null;
+                    const months = allMonths.slice(firstIdx);
+                    const amounts = allAmounts.slice(firstIdx);
+
                     const maxAmount = Math.max(...amounts, 1);
-                    if (!amounts.some(a => a > 0)) return null;
-                    const SLOT = 35;
-                    const BAR_W = 22;
+                    const n = months.length;
+
+                    // Narrow bars: fixed slot regardless of count
+                    const SLOT = 13;
+                    const BAR_W = 8;
                     const BAR_OFF = (SLOT - BAR_W) / 2;
-                    const TOP = 18;
-                    const BOT = 80;
+                    const TOP = 14;
+                    const BOT = 68;
                     const CHART_H = BOT - TOP;
-                    const LABEL_Y = 93;
-                    const TOTAL_H = 97;
-                    const TOTAL_W = SLOT * 12;
+                    const LABEL_Y = 80;
+                    const TOTAL_H = 84;
+                    const TOTAL_W = SLOT * n;
                     const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+                    // Show label every 3 months; always show first and last
+                    const showLabel = (i) => i === 0 || i === n - 1 || i % 3 === 0;
+
                     return (
                       <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                        <p className="text-xs text-slate-500 mb-2 font-medium">Billing History (12 months)</p>
-                        <svg viewBox={`0 0 ${TOTAL_W} ${TOTAL_H}`} style={{ width: '100%', height: '88px' }} preserveAspectRatio="none">
+                        <p className="text-xs text-slate-500 mb-2 font-medium">
+                          Billing History ({n} {n === 1 ? 'month' : 'months'})
+                        </p>
+                        <svg viewBox={`0 0 ${TOTAL_W} ${TOTAL_H}`} style={{ width: '100%', height: '84px' }} preserveAspectRatio="none">
                           <line x1="0" y1={BOT} x2={TOTAL_W} y2={BOT} stroke="#cbd5e1" strokeWidth="0.8" />
                           {amounts.map((amount, i) => {
-                            const barH = amount > 0 ? Math.max(4, (amount / maxAmount) * CHART_H) : 0;
+                            const barH = amount > 0 ? Math.max(3, (amount / maxAmount) * CHART_H) : 0;
                             const x = i * SLOT + BAR_OFF;
                             const cx = i * SLOT + SLOT / 2;
-                            const { month } = months[i];
+                            const { month, year } = months[i];
                             return (
                               <g key={i}>
                                 {barH > 0 && (
-                                  <>
-                                    <rect x={x} y={BOT - barH} width={BAR_W} height={barH} fill="#6366f1" rx="3" opacity="0.82">
-                                      <title>€{amount.toLocaleString('sl-SI', { minimumFractionDigits: 2 })}</title>
-                                    </rect>
-                                    <text x={cx} y={BOT - barH - 3} textAnchor="middle" fontSize="7" fill="#4f46e5" fontWeight="700">
-                                      {amount >= 1000 ? `${(amount / 1000).toFixed(1)}k` : Math.round(amount)}
-                                    </text>
-                                  </>
+                                  <rect x={x} y={BOT - barH} width={BAR_W} height={barH} fill="#6366f1" rx="2" opacity="0.82">
+                                    <title>{MN[month]} {year}: €{amount.toLocaleString('sl-SI', { minimumFractionDigits: 2 })}</title>
+                                  </rect>
                                 )}
-                                <text x={cx} y={LABEL_Y} textAnchor="middle" fontSize="9" fill={amount > 0 ? '#64748b' : '#cbd5e1'}>
-                                  {MN[month]}
-                                </text>
+                                {showLabel(i) && (
+                                  <text x={cx} y={LABEL_Y} textAnchor="middle" fontSize="8" fill={amount > 0 ? '#64748b' : '#cbd5e1'}>
+                                    {month === 0 ? `J'${String(year).slice(2)}` : MN[month].slice(0, 3)}
+                                  </text>
+                                )}
                               </g>
                             );
                           })}
