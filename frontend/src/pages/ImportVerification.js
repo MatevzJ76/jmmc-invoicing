@@ -1749,7 +1749,7 @@ const ImportVerification = () => {
                     <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
                       <p className="text-xs text-purple-600 mb-1">Invoicing Type</p>
                       <p className="text-sm font-semibold text-purple-900">
-                        {customerSettings.invoicingType || 'Not Set'}
+                        {({'by-hours': 'By Hours Spent', 'fixed-forfait': 'Fixed Forfait', 'hybrid': 'Hybrid'}[customerSettings.invoicingType]) || customerSettings.invoicingType || 'By Hours Spent'}
                       </p>
                     </div>
                     
