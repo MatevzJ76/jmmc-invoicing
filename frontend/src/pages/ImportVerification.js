@@ -248,18 +248,18 @@ const ImportVerification = () => {
   };
   
   const loadBatchDataForVerification = async (batchId) => {
+    setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
-      
-      // Fetch batch details
+      // Read token fresh before each request so we always use the latest
+      // access_token even if the interceptor refreshed it mid-function.
       const batchResponse = await axios.get(`${BACKEND_URL}/api/batches/${batchId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       });
       const batchData = batchResponse.data;
-      
-      // Fetch time entries
+
+      // Fetch time entries — re-read token in case it was refreshed above
       const entriesResponse = await axios.get(`${BACKEND_URL}/api/batches/${batchId}/time-entries`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       });
       const timeEntries = entriesResponse.data;
       
@@ -403,8 +403,10 @@ const ImportVerification = () => {
       // Load customers for dropdowns (parallel, no await needed)
       loadAllCustomers();
 
+      setLoading(false);
     } catch (error) {
       console.error('Failed to load batch data:', error);
+      setLoading(false);
       toast.error('Failed to load batch data');
       navigate('/batches');
     }
@@ -2479,7 +2481,11 @@ const ImportVerification = () => {
                 ) : (
                   <tr>
                     <td colSpan="11" className="px-3 py-8 text-center text-slate-500">
-                      No rows match the current filters
+                      {loading
+                        ? 'Loading rows...'
+                        : verificationData?.rows?.length === 0
+                          ? 'No rows in this batch'
+                          : 'No rows match the current filters'}
                     </td>
                   </tr>
                 )}
