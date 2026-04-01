@@ -926,6 +926,7 @@ const ImportVerification = () => {
       hours: verificationData.rows[index].hours,
       hourlyRate: verificationData.rows[index].hourlyRate || 0,
       value: verificationData.rows[index].value || 0,
+      valueOverridden: false,
       customerId: verificationData.rows[index].customerId || '',
       customer: verificationData.rows[index].customer || '',
       status: verificationData.rows[index].status || 'uninvoiced',
@@ -3079,7 +3080,13 @@ const ImportVerification = () => {
                         type="number"
                         step="0.01"
                         value={editableSuggestions.hours}
-                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, hours: parseFloat(e.target.value) })}
+                        onChange={(e) => {
+                          const newHours = parseFloat(e.target.value) || 0;
+                          const newValue = editableSuggestions.valueOverridden
+                            ? editableSuggestions.value
+                            : Math.round(newHours * (editableSuggestions.hourlyRate || 0) * 100) / 100;
+                          setEditableSuggestions({ ...editableSuggestions, hours: newHours, value: newValue });
+                        }}
                         className="text-sm bg-white border-green-300 focus:border-green-500 w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="Hours"
                         disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
@@ -3095,7 +3102,13 @@ const ImportVerification = () => {
                         type="number"
                         step="0.01"
                         value={editableSuggestions.hourlyRate}
-                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, hourlyRate: parseFloat(e.target.value) })}
+                        onChange={(e) => {
+                          const newRate = parseFloat(e.target.value) || 0;
+                          const newValue = editableSuggestions.valueOverridden
+                            ? editableSuggestions.value
+                            : Math.round((editableSuggestions.hours || 0) * newRate * 100) / 100;
+                          setEditableSuggestions({ ...editableSuggestions, hourlyRate: newRate, value: newValue });
+                        }}
                         className="text-sm bg-white border-green-300 focus:border-green-500 w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="Rate"
                         disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
@@ -3111,7 +3124,7 @@ const ImportVerification = () => {
                         type="number"
                         step="0.01"
                         value={editableSuggestions.value}
-                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, value: parseFloat(e.target.value) })}
+                        onChange={(e) => setEditableSuggestions({ ...editableSuggestions, value: parseFloat(e.target.value) || 0, valueOverridden: true })}
                         className="text-sm bg-white border-green-300 focus:border-green-500 w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="Value"
                         disabled={verificationData.rows[editingRowIndex]?.status === 'invoiced'}
