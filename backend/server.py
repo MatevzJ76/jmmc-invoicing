@@ -2107,7 +2107,8 @@ async def get_all_customers(company_id: Optional[str] = None, current_user: User
         company_name_map = {}
 
     for customer in customers:
-        historical_invoices = customer.get("historicalInvoices", [])
+        # pop() removes historicalInvoices from the response — avoids huge payload
+        historical_invoices = customer.pop("historicalInvoices", [])
         total_amount  = sum(inv.get("amount", 0) for inv in historical_invoices)
         invoice_count = len(historical_invoices)
 
