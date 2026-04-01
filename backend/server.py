@@ -1196,12 +1196,13 @@ async def add_manual_entry(
 @api_router.delete("/batches/{batch_id}/time-entries/{entry_id}")
 async def delete_time_entry(batch_id: str, entry_id: str, current_user: User = Depends(get_current_user)):
     """Delete a single time entry (only forfait_batch entries are allowed to be deleted this way)"""
-    entry = await db.timeEntries.find_one({"id": entry_id, "batchId": batch_id})
+    # Search by entry id only — batchId may differ in legacy entries
+    entry = await db.timeEntries.find_one({"id": entry_id})
     if not entry:
         raise HTTPException(status_code=404, detail="Time entry not found")
     if entry.get("entrySource") != "forfait_batch":
         raise HTTPException(status_code=403, detail="Only forfait batch entries can be deleted")
-    await db.timeEntries.delete_one({"id": entry_id, "batchId": batch_id})
+    await db.timeEntries.delete_one({"id": entry_id})
     return {"message": "Entry deleted", "entryId": entry_id}
 
 @api_router.get("/batches/{batch_id}/verification")

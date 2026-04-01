@@ -933,6 +933,7 @@ const ImportVerification = () => {
     if (editingRowIndex === null || editingRowIndex === -1) return;
     const row = verificationData.rows[editingRowIndex];
     if (!row || row.entrySource !== 'forfait_batch') return;
+    if (!row.id) { toast.error('Entry ID missing — please refresh the page and try again'); return; }
     if (!window.confirm(`Delete forfait entry for ${row.customer || 'this customer'}?`)) return;
     try {
       const token = localStorage.getItem('access_token');
