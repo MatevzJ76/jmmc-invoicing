@@ -7,6 +7,7 @@ import {
 import api from '../utils/api';
 import { useLang } from '../hooks/useLang';
 import { useAuth } from '../hooks/useAuth';
+import { getDelegatoLabel } from '../utils/delegato';
 import InvoiceModal from '../components/InvoiceModal';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
@@ -16,30 +17,36 @@ const fmtCur  = n => n != null
   : '—';
 const fmtDate = d => d ? new Date(d).toLocaleDateString('it-IT') : '—';
 
-const ROLE_COLORS_DB = { controller:'#2e7d52', revisore:'#c77d3a', admin:'#1c2b3a', supervisor:'#1a6fa3', delegato:'#5a4a8a' };
-
 export default function Dashboard() {
   const { t }    = useLang();
   const { user } = useAuth();
   const [stats,          setStats]          = useState(null);
   const [loading,        setLoading]        = useState(true);
   const [selectedInvId,  setSelectedInvId]  = useState(null);
-  const [assignable,     setAssignable]     = useState([]);
-
-  useEffect(() => {
-    api.get('/api/users/assignable').then(r => setAssignable(r.data.data || [])).catch(() => {});
-  }, []);
-
-  const nameRoleMap = assignable.reduce((acc, u) => { acc[u.name] = u.role; return acc; }, {});
+  const [responsibles,   setResponsibles]   = useState([]);
+  const [rifiutate,      setRifiutate]      = useState({ count: 0, totale: 0 });
 
   const loadStats = () => {
     api.get('/api/dashboard/stats')
       .then(r => setStats(r.data))
       .catch(console.error)
       .finally(() => setLoading(false));
+    api.get('/api/invoices/rifiutate-unresolved')
+      .then(r => setRifiutate({ count: r.data?.count || 0, totale: r.data?.totale || 0 }))
+      .catch(() => setRifiutate({ count: 0, totale: 0 }));
   };
 
-  useEffect(() => { loadStats(); }, []);
+  useEffect(() => {
+    loadStats();
+    api.get('/api/users').then(r => {
+      const seen = new Set();
+      const list = (r.data?.data || [])
+        .filter(u => u.active)
+        .map(u => ({ value: (u.responsible || u.name || '').trim(), label: u.name }))
+        .filter(u => u.value && !seen.has(u.value.toLowerCase()) && seen.add(u.value.toLowerCase()));
+      setResponsibles(list);
+    }).catch(() => {});
+  }, []);
 
   if (loading) return <div style={S.loading}>{t('common.loading')}</div>;
   if (!stats)  return <div style={S.error}>{t('common.error')}</div>;
@@ -51,6 +58,13 @@ export default function Dashboard() {
     { label: t('dashboard.pending'),   value: kpis.pending,             icon: '⏳', color: '#c77d3a' },
     { label: t('dashboard.approved'),  value: kpis.approved,            icon: '✅', color: '#2e7d52' },
     { label: t('dashboard.toBePaid'),  value: fmtCur(kpis.pendingAmount), icon: '💳', color: '#1a6fa3' },
+    {
+      label: t('dashboard.rejectedUnresolved'),
+      value: rifiutate.count,
+      sub:   fmtCur(rifiutate.totale),
+      icon:  '❌',
+      color: '#c0392b',
+    },
   ];
 
   const statusChart = {
@@ -85,6 +99,7 @@ export default function Dashboard() {
             <div style={S.kpiIcon}>{k.icon}</div>
             <div style={S.kpiValue}>{k.value}</div>
             <div style={S.kpiLabel}>{k.label}</div>
+            {k.sub && <div style={S.kpiSub}>{k.sub}</div>}
           </div>
         ))}
       </div>
@@ -130,8 +145,8 @@ export default function Dashboard() {
                   <td style={{ ...S.td, color: '#c0392b', fontWeight: 600 }}>{fmtDate(inv.due_date)}</td>
                   <td style={S.td}>{fmtCur(inv.total)}</td>
                   <td style={S.td}>
-                    <span style={{ ...S.badge, background: ROLE_COLORS_DB[nameRoleMap[inv.responsible]] || (inv.responsible ? '#888' : '#ddd') }}>
-                      {inv.responsible || '—'}
+                    <span style={{ ...S.badge, background: String(inv.responsible || '').toUpperCase() === 'FEDERICO' ? '#1c2b3a' : '#c77d3a' }}>
+                      {getDelegatoLabel(inv.responsible, responsibles)}
                     </span>
                   </td>
                 </tr>
@@ -165,6 +180,7 @@ const S = {
   kpiIcon:     { fontSize: 24, marginBottom: 8 },
   kpiValue:    { fontSize: 26, fontWeight: 700, color: '#1c2b3a', fontFamily: 'sans-serif' },
   kpiLabel:    { fontSize: 13, color: '#7a7571', marginTop: 4, fontFamily: 'sans-serif' },
+  kpiSub:      { fontSize: 12, color: '#c0392b', marginTop: 4, fontFamily: 'sans-serif', fontWeight: 600 },
   chartsRow:   { display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' },
   chartCard: {
     background: '#fff', borderRadius: 10, padding: '20px 18px',

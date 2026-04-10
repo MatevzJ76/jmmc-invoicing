@@ -5,7 +5,7 @@ const { requireAuth } = require('./auth');
 const router = express.Router();
 
 // GET /api/audit — full audit log (admin + auditor only)
-router.get('/', requireAuth('admin','auditor'), async (req, res) => {
+router.get('/', requireAuth('admin','supervisor'), async (req, res) => {
   try {
     const { search, userEmail, page = 1, limit = 50 } = req.query;
 
@@ -33,7 +33,7 @@ router.get('/', requireAuth('admin','auditor'), async (req, res) => {
 });
 
 // GET /api/audit/:invoiceId — audit entries for one invoice
-router.get('/:invoiceId', requireAuth('admin','auditor'), async (req, res) => {
+router.get('/:invoiceId', requireAuth('admin','supervisor'), async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('audit_log')

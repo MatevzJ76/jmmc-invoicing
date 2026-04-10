@@ -7,12 +7,14 @@ import Layout        from './components/Layout';
 import Dashboard     from './pages/Dashboard';
 import Invoices      from './pages/Invoices';
 import Distinta      from './pages/Distinta';
-import Categories    from './pages/Categories';
-import AuditLog      from './pages/AuditLog';
-import SysLog        from './pages/SysLog';
-import Users         from './pages/Users';
-import Settings      from './pages/Settings';
-import SupplierHints from './pages/SupplierHints';
+import Categories      from './pages/Categories';
+import AuditLog        from './pages/AuditLog';
+import SysLog          from './pages/SysLog';
+import Users           from './pages/Users';
+import Settings        from './pages/Settings';
+import SupplierHints   from './pages/SupplierHints';
+import Contabilita     from './pages/Contabilita';
+import ChartOfAccounts from './pages/ChartOfAccounts';
 
 function PrivateRoute({ children, roles }) {
   const { user, loading } = useAuth();
@@ -25,17 +27,23 @@ function PrivateRoute({ children, roles }) {
 
 function AppRoutes() {
   const { user } = useAuth();
+  // Revisore non ha dashboard: dopo il login va direttamente alle Fatture.
+  const homeForUser = user?.role === 'revisore' ? '/invoices' : '/';
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+      <Route path="/login" element={user ? <Navigate to={homeForUser} /> : <Login />} />
       <Route path="/" element={
         <PrivateRoute><Layout /></PrivateRoute>
       }>
-        <Route index element={<Dashboard />} />
+        <Route index element={
+          user?.role === 'revisore'
+            ? <Navigate to="/invoices" replace />
+            : <Dashboard />
+        } />
         <Route path="invoices"   element={<Invoices />} />
         <Route path="distinta"   element={<Distinta />} />
         <Route path="categories" element={
-          <PrivateRoute roles={['admin']}><Categories /></PrivateRoute>
+          <PrivateRoute roles={['admin','supervisor']}><Categories /></PrivateRoute>
         } />
         <Route path="audit" element={
           <PrivateRoute roles={['admin','supervisor']}><AuditLog /></PrivateRoute>
@@ -50,7 +58,13 @@ function AppRoutes() {
           <PrivateRoute roles={['admin']}><Settings /></PrivateRoute>
         } />
         <Route path="supplier-hints" element={
-          <PrivateRoute roles={['admin']}><SupplierHints /></PrivateRoute>
+          <PrivateRoute roles={['admin','supervisor']}><SupplierHints /></PrivateRoute>
+        } />
+        <Route path="contabilita" element={
+          <PrivateRoute roles={['admin']}><Contabilita /></PrivateRoute>
+        } />
+        <Route path="contabilita/piano-dei-conti" element={
+          <PrivateRoute roles={['admin']}><ChartOfAccounts /></PrivateRoute>
         } />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />

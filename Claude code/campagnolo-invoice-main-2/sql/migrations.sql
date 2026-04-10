@@ -184,6 +184,19 @@ CREATE INDEX IF NOT EXISTS idx_syslog_level           ON system_log(level);
 CREATE INDEX IF NOT EXISTS idx_syslog_category        ON system_log(category);
 CREATE INDEX IF NOT EXISTS idx_syslog_er_id           ON system_log(er_id);
 
+-- ─── INVOICE TRANSLATIONS (AI PDF translate cache) ──────────
+CREATE TABLE IF NOT EXISTS invoice_translations (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  invoice_id  UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+  lang        TEXT NOT NULL CHECK (lang IN ('it','sl','en')),
+  translation TEXT NOT NULL,
+  model       TEXT,
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  created_by  TEXT,
+  UNIQUE(invoice_id, lang)
+);
+CREATE INDEX IF NOT EXISTS idx_translations_invoice ON invoice_translations(invoice_id);
+
 -- ─── ROW LEVEL SECURITY ──────────────────────────────────────
 ALTER TABLE invoices           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoice_items      ENABLE ROW LEVEL SECURITY;
@@ -275,3 +288,169 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Next step: uncomment and run the SEED: USERS block above
 -- after updating the email addresses.
 -- ============================================================
+
+-- ─── PATCH: add distinta_report to attachment_type constraint ─
+-- Run this separately if the DB was already created with the old constraint:
+ALTER TABLE invoice_attachments
+  DROP CONSTRAINT invoice_attachments_attachment_type_check;
+ALTER TABLE invoice_attachments
+  ADD CONSTRAINT invoice_attachments_attachment_type_check
+  CHECK (attachment_type IN ('original', 'approval_report', 'distinta_report'));
+
+-- ─── PATCH: consolidate payment_order into payment_status ─────
+-- Step 1: migrate existing payment_order values where payment_status is NULL
+UPDATE invoices
+  SET payment_status = CASE payment_order
+    WHEN 'To Be Paid'      THEN 'da_pagare'
+    WHEN 'Payment Ordered' THEN 'in_pagamento'
+    WHEN 'Paid'            THEN 'pagato'
+    ELSE NULL
+  END
+  WHERE payment_status IS NULL AND payment_order IS NOT NULL;
+
+-- Step 2: update CHECK constraint on payment_status
+ALTER TABLE invoices DROP CONSTRAINT IF EXISTS invoices_payment_status_check;
+ALTER TABLE invoices ADD CONSTRAINT invoices_payment_status_check
+  CHECK (payment_status IN ('da_pagare', 'inviato', 'in_pagamento', 'pagato', 'parziale'));
+
+-- Step 3: drop payment_order column and its index
+DROP INDEX IF EXISTS idx_invoices_payment_order;
+ALTER TABLE invoices DROP COLUMN IF EXISTS payment_order;
+
+-- ─── PATCH: remove categories.name — use cost_type as primary label ──
+-- Step 1: drop the UNIQUE constraint on name (conflict key for seed)
+ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_name_key;
+-- Step 2: drop the column
+ALTER TABLE categories DROP COLUMN IF EXISTS name;
+-- Note: seed INSERT now uses ON CONFLICT (cost_type) or plain INSERT
+
+-- ─── PATCH: replace verified_flag with status-based tracking ──────────────
+-- verified_flag removed; status_changed_* columns track who changed status and when;
+-- status_note replaces both verified_comment and status_comment (merged).
+
+-- Step 1: migrate existing status_comment (rejection reasons) into verified_comment
+UPDATE invoices
+  SET verified_comment = status_comment
+  WHERE status = 'Rejected'
+    AND status_comment IS NOT NULL
+    AND (verified_comment IS NULL OR verified_comment = '');
+
+-- Step 2: drop verified_flag and its index
+DROP INDEX IF EXISTS idx_invoices_verified;
+ALTER TABLE invoices DROP COLUMN IF EXISTS verified_flag;
+
+-- Step 3: rename verified_* columns to status_changed_*
+ALTER TABLE invoices RENAME COLUMN verified_by      TO status_changed_by;
+ALTER TABLE invoices RENAME COLUMN verified_by_name TO status_changed_by_name;
+ALTER TABLE invoices RENAME COLUMN verified_at      TO status_changed_at;
+ALTER TABLE invoices RENAME COLUMN verified_comment TO status_note;
+
+-- Step 4: drop old status_comment (merged into status_note)
+ALTER TABLE invoices DROP COLUMN IF EXISTS status_comment;
+
+-- ─── PATCH: add payment_sort_order generated column ───────────
+-- Maps payment_status string → numeric order for correct column sort.
+-- NULL payment_status treated as 'da_pagare' (1).
+-- Logical order: da_pagare(1) < inviato(2) < in_pagamento(3) < parziale(4) < pagato(5)
+ALTER TABLE invoices
+  ADD COLUMN IF NOT EXISTS payment_sort_order SMALLINT
+  GENERATED ALWAYS AS (
+    CASE COALESCE(payment_status, 'da_pagare')
+      WHEN 'da_pagare'    THEN 1
+      WHEN 'inviato'      THEN 2
+      WHEN 'in_pagamento' THEN 3
+      WHEN 'parziale'     THEN 4
+      WHEN 'pagato'       THEN 5
+      ELSE 1
+    END
+  ) STORED;
+
+CREATE INDEX IF NOT EXISTS idx_invoices_payment_sort ON invoices(payment_sort_order);
+
+-- ─── SUPPLIER CATEGORY HINTS ─────────────────────────────────
+CREATE TABLE IF NOT EXISTS supplier_category_hints (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  supplier      TEXT NOT NULL,
+  supplier_code TEXT,
+  category_id   UUID REFERENCES categories(id),
+  cost_type     TEXT,
+  responsible   TEXT,
+  match_pattern TEXT,
+  source        TEXT NOT NULL DEFAULT 'auto' CHECK (source IN ('auto','manual')),
+  usage_count   INTEGER DEFAULT 1,
+  last_used_at  TIMESTAMPTZ DEFAULT NOW(),
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_hints_supplier ON supplier_category_hints(supplier);
+CREATE INDEX IF NOT EXISTS idx_hints_source   ON supplier_category_hints(source);
+
+-- ─── PATCH: add match_pattern + source to existing supplier_category_hints ──
+ALTER TABLE supplier_category_hints ADD COLUMN IF NOT EXISTS match_pattern TEXT;
+ALTER TABLE supplier_category_hints ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'auto';
+
+-- ─── RPC: upsert_supplier_hint (updated for source='auto') ──
+CREATE OR REPLACE FUNCTION upsert_supplier_hint(
+  p_supplier    TEXT,
+  p_category_id UUID,
+  p_cost_type   TEXT DEFAULT NULL,
+  p_responsible TEXT DEFAULT NULL
+) RETURNS void AS $$
+BEGIN
+  INSERT INTO supplier_category_hints (supplier, category_id, cost_type, responsible, source, usage_count, last_used_at)
+  VALUES (p_supplier, p_category_id, p_cost_type, p_responsible, 'auto', 1, NOW())
+  ON CONFLICT (supplier, category_id) WHERE match_pattern IS NULL AND source = 'auto'
+  DO UPDATE SET
+    cost_type    = COALESCE(EXCLUDED.cost_type, supplier_category_hints.cost_type),
+    responsible  = COALESCE(EXCLUDED.responsible, supplier_category_hints.responsible),
+    usage_count  = supplier_category_hints.usage_count + 1,
+    last_used_at = NOW(),
+    updated_at   = NOW();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ─── PATCH: cleanup invoices with cost_type but no responsible ───
+-- Records with category data but no delegato → reset to Nessuna
+UPDATE invoices
+  SET cost_type   = NULL,
+      category_id = NULL
+  WHERE responsible IS NULL
+    AND (cost_type IS NOT NULL OR category_id IS NOT NULL);
+
+-- ─── PATCH: pattern-aware unique constraint on supplier_category_hints ──
+-- Stara full UNIQUE(supplier, category_id) je prepovedovala več pravil z
+-- različnimi match_pattern za isti par supplier+categoria. Zamenjamo jo z
+-- dvema parcialnima indeksoma:
+--   1) maks. ENO pravilo brez patterna na (supplier, category_id)
+--   2) pattern-based pravila morajo biti unikatna po (supplier, category_id, match_pattern)
+ALTER TABLE supplier_category_hints
+  DROP CONSTRAINT IF EXISTS supplier_category_hints_supplier_category_id_key;
+
+CREATE UNIQUE INDEX IF NOT EXISTS supplier_category_hints_no_pattern_uniq
+  ON supplier_category_hints (supplier, category_id)
+  WHERE match_pattern IS NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS supplier_category_hints_with_pattern_uniq
+  ON supplier_category_hints (supplier, category_id, match_pattern)
+  WHERE match_pattern IS NOT NULL;
+
+-- Posodobimo upsert_supplier_hint, da ON CONFLICT cilja nov parcialni indeks.
+-- WHERE klavzula se mora ujemati z indeksom → odstranimo "source = 'auto'".
+CREATE OR REPLACE FUNCTION upsert_supplier_hint(
+  p_supplier    TEXT,
+  p_category_id UUID,
+  p_cost_type   TEXT DEFAULT NULL,
+  p_responsible TEXT DEFAULT NULL
+) RETURNS void AS $$
+BEGIN
+  INSERT INTO supplier_category_hints (supplier, category_id, cost_type, responsible, source, usage_count, last_used_at)
+  VALUES (p_supplier, p_category_id, p_cost_type, p_responsible, 'auto', 1, NOW())
+  ON CONFLICT (supplier, category_id) WHERE match_pattern IS NULL
+  DO UPDATE SET
+    cost_type    = COALESCE(EXCLUDED.cost_type, supplier_category_hints.cost_type),
+    responsible  = COALESCE(EXCLUDED.responsible, supplier_category_hints.responsible),
+    usage_count  = supplier_category_hints.usage_count + 1,
+    last_used_at = NOW(),
+    updated_at   = NOW();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

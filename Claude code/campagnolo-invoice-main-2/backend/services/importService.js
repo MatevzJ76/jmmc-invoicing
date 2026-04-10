@@ -1,23 +1,37 @@
-const supabase   = require('../utils/supabase');
-const erClient   = require('./erClient');
-const { sysLog } = require('../utils/logger');
+const supabase    = require('../utils/supabase');
+const erClient    = require('./erClient');
+const { sysLog, auditLog }  = require('../utils/logger');
+const syncState   = require('../utils/syncState');
 
 /**
  * Main import function — fetches ReceivedInvoiceList then ReceivedInvoiceGet
  * for each invoice to get Items + PaymentRecords. Supports batch processing.
  */
 async function importInvoices(dateFrom, dateTo, options = {}) {
-  const { batchSize = 20, offset = 0 } = options;
+  const { batchSize = 20, offset = 0, importAnno, importDateFrom } = options;
   const today = new Date().toISOString().split('T')[0];
   const from  = dateFrom || process.env.IMPORT_DATE_FROM || '2026-01-01';
   const to    = dateTo   || today;
 
-  await sysLog('INFO', 'IMPORT', 'Import started', { detail: `dateFrom=${from} dateTo=${to} offset=${offset} batchSize=${batchSize}` });
+  // Guard: prevent concurrent imports (scheduler + manual at same time)
+  if (syncState.isRunning()) {
+    throw new Error(`Import already in progress (${syncState.runningWhat()}). Wait for it to finish or cancel it first.`);
+  }
+
+  syncState.clearCancel();
+  syncState.setRunning(true, 'import');
+
+  await sysLog('INFO', 'IMPORT', 'Import started', {
+    detail: `dateFrom=${from} dateTo=${to} offset=${offset} batchSize=${batchSize}` +
+            (importAnno     ? ` importAnno=${importAnno}`           : '') +
+            (importDateFrom ? ` importDateFrom=${importDateFrom}`   : ''),
+  });
 
   let invoiceList;
   try {
     invoiceList = await erClient.fetchInvoiceList(from, to);
   } catch (err) {
+    syncState.setRunning(false); // release lock on early exit
     await sysLog('ERROR', 'IMPORT', 'fetchInvoiceList failed', { error: err });
     throw err;
   }
@@ -27,15 +41,32 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
     return { inserted: 0, updated: 0, errors: 0, remaining: 0, total: 0 };
   }
 
+  // ── Pre-filter by businessYear at list level (avoids unnecessary detail fetches) ──
+  let filteredList = invoiceList;
+  if (importAnno) {
+    filteredList = invoiceList.filter(inv => String(inv.businessYear) === String(importAnno));
+    await sysLog('INFO', 'IMPORT', `BusinessYear filter: ${invoiceList.length} → ${filteredList.length} (anno=${importAnno})`);
+  }
+
   // Slice to current batch
-  const batch     = invoiceList.slice(offset, offset + batchSize);
-  const remaining = Math.max(0, invoiceList.length - offset - batch.length);
+  const batch     = filteredList.slice(offset, offset + batchSize);
+  const remaining = Math.max(0, filteredList.length - offset - batch.length);
 
   await sysLog('INFO', 'IMPORT', `Processing batch ${offset}-${offset + batch.length} of ${invoiceList.length}`);
 
   let inserted = 0, updated = 0, errors = 0;
+  let cancelled = false;
 
   for (const inv of batch) {
+    // Check for cancellation request between each invoice
+    if (syncState.isCancelRequested()) {
+      await sysLog('WARN', 'IMPORT', 'Import cancelled by user request', {
+        detail: `Stopped after inserted=${inserted} updated=${updated} errors=${errors}`,
+      });
+      cancelled = true;
+      break;
+    }
+
     try {
       const erId = String(inv.documentID || '').trim();
       if (!erId) { errors++; continue; }
@@ -52,6 +83,15 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
 
       // Merge: detail overrides list data
       const invData = { ...inv, ...invDetail };
+
+      // ── Filter by dateOfSupplyFrom (after detail fetch, field may only exist in detail) ──
+      if (importDateFrom && invData.dateOfSupplyFrom) {
+        const supplyFrom = String(invData.dateOfSupplyFrom).split('T')[0];
+        if (supplyFrom < importDateFrom) {
+          await sysLog('INFO', 'IMPORT', `Skipped (dateOfSupplyFrom ${supplyFrom} < ${importDateFrom})`, { detail: `er_id=${erId}` });
+          continue;
+        }
+      }
 
       // ── Safe date helper ───────────────────────────────────────────────────
       const safeDate = v => {
@@ -93,7 +133,7 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
         payment_amount:            invData.paymentAmount                ?? null,
         net_amount:                netTotal                             || null,
         vat:                       vatTotal                             || null,
-        total:                     (invData.amountWithVAT ?? invData.paymentAmount ?? (netTotal + vatTotal)) || null,
+        total:                     invData.amountWithVAT                ?? null,
         already_paid:              invData.amountAlreadyPaid            ?? null,
         left_to_pay:               invData.amountLeftToBePaid           ?? null,
         currency:                  invData.paymentCurrency              || 'EUR',
@@ -105,7 +145,6 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
         is_reverse_charge:         invData.isReverseChargeVatDocument   ?? null,
         received_advance_inv_ref:  invData.receivedAdvanceInvoiceRef    || null,
         status:                   'Pending',
-        payment_order:            'To Be Paid',
         imported_at:               new Date().toISOString(),
         updated_at:                new Date().toISOString(),
       };
@@ -113,14 +152,14 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
       // ── Check if invoice already exists ───────────────────────────────────
       const { data: existing } = await supabase
         .from('invoices')
-        .select('id, status, responsible, category_id, verified_flag, payment_order')
+        .select('id, status, responsible, category_id, payment_status, distinta_sent_at, total, already_paid, left_to_pay, due_date, payment_amount, supplier, inv_number')
         .eq('er_id', erId)
         .single();
 
       let invoiceId;
 
       if (existing) {
-        const { status: _s, payment_order: _po, imported_at: _ia, ...apiFields } = invoiceRow;
+        const { status: _s, imported_at: _ia, ...apiFields } = invoiceRow;
         const { error: updateErr } = await supabase
           .from('invoices')
           .update({ ...apiFields, updated_at: new Date().toISOString() })
@@ -129,6 +168,36 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
         if (updateErr) throw updateErr;
         invoiceId = existing.id;
         updated++;
+
+        // ── Audit log: beležimo samo spremenjena polja ─────────────────────
+        const TRACKED = [
+          { field: 'total',          label: 'Totale' },
+          { field: 'already_paid',   label: 'Già pagato' },
+          { field: 'left_to_pay',    label: 'Da pagare' },
+          { field: 'due_date',       label: 'Scadenza' },
+          { field: 'payment_amount', label: 'Importo pagamento' },
+          { field: 'supplier',       label: 'Fornitore' },
+        ];
+        for (const { field, label } of TRACKED) {
+          const oldVal = existing[field];
+          const newVal = invoiceRow[field];
+          const changed = String(oldVal ?? '') !== String(newVal ?? '');
+          if (changed && !(oldVal == null && newVal == null)) {
+            await auditLog({
+              invoiceId:  existing.id,
+              erId,
+              invNumber:  existing.inv_number,
+              supplier:   existing.supplier,
+              total:      existing.total,
+              action:     'Sync e-računi',
+              fieldName:  label,
+              oldValue:   oldVal,
+              newValue:   newVal,
+              userEmail:  'e-računi sync',
+              userName:   'e-računi',
+            });
+          }
+        }
       } else {
         const { data: newInv, error: insertErr } = await supabase
           .from('invoices')
@@ -139,6 +208,21 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
         if (insertErr) throw insertErr;
         invoiceId = newInv.id;
         inserted++;
+
+        // ── Audit log: prvi uvoz ───────────────────────────────────────────
+        await auditLog({
+          invoiceId:  newInv.id,
+          erId,
+          invNumber:  invoiceRow.inv_number,
+          supplier:   invoiceRow.supplier,
+          total:      invoiceRow.total,
+          action:     'Uvoz e-računi',
+          fieldName:  null,
+          oldValue:   null,
+          newValue:   null,
+          userEmail:  'e-računi sync',
+          userName:   'e-računi',
+        });
       }
 
       // ── Upsert invoice_items ───────────────────────────────────────────────
@@ -174,7 +258,21 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
       if (paymentRecords.length > 0 && invoiceId) {
         await supabase.from('payment_records').delete().eq('invoice_id', invoiceId);
 
-        const prRows = paymentRecords.map(pr => ({
+        // Dedupliciraj payment_records po (payment_entry_ts, payment_amount, payment_date)
+        // e-računi API včasih vrne iste zapise večkrat v istem odzivu
+        const seen = new Set();
+        const dedupedPR = paymentRecords.filter(pr => {
+          const key = `${pr.paymentEntryTS}|${pr.paymentAmount}|${pr.paymentDate}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
+        if (dedupedPR.length < paymentRecords.length) {
+          console.warn(`[importService] Deduplicated payment_records: ${paymentRecords.length} → ${dedupedPR.length} for invoice ${inv.documentID}`);
+        }
+
+        const prRows = dedupedPR.map(pr => ({
           invoice_id:        invoiceId,
           payment_amount:    pr.paymentAmount    ?? null,
           payment_currency:  pr.paymentCurrency  || 'EUR',
@@ -190,6 +288,31 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
         }
       }
 
+      // ── Samodejno izračunaj payment_status ────────────────────────────────
+      // Logika (enaka kot sync-payment-status endpoint):
+      //  1. e-računi ima plačilne podatke → vedno prevlada (pagato/parziale/in_pagamento)
+      //  2. Brez plačilnih podatkov → ohrani ročni 'in_pagamento' (JMMC: nalog na banki)
+      //  3. Sicer: inviato če je distinta poslana, drugače da_pagare
+      if (invoiceId) {
+        const alreadyPaid   = Number(invData.amountAlreadyPaid ?? 0);
+        const total         = Number(invData.amountWithVAT ?? 0);
+        const hasPR         = paymentRecords.length > 0;
+        const existingPS    = existing?.payment_status  || null;
+        const distintaSent  = existing?.distinta_sent_at || null;
+
+        let newPS;
+        if      (alreadyPaid >= total && total > 0)  newPS = 'pagato';
+        else if (hasPR && alreadyPaid < total)        newPS = 'parziale';
+        else if (!hasPR && alreadyPaid > 0)           newPS = 'in_pagamento';
+        else if (existingPS === 'in_pagamento')        newPS = 'in_pagamento'; // ročno: nalog na banki
+        else if (distintaSent)                         newPS = 'inviato';
+        else                                           newPS = 'da_pagare';
+
+        await supabase.from('invoices')
+          .update({ payment_status: newPS })
+          .eq('id', invoiceId);
+      }
+
     } catch (err) {
       errors++;
       console.error('[importService] Error processing invoice:', inv.documentID, err.message);
@@ -197,11 +320,50 @@ async function importInvoices(dateFrom, dateTo, options = {}) {
     }
   }
 
-  await sysLog('INFO', 'IMPORT', 'Batch import complete', {
-    detail: `inserted=${inserted} updated=${updated} errors=${errors} remaining=${remaining}`,
+  // ── Repair original_pdf_id for invoices where PDF exists but pointer is missing ──
+  // Runs after every import (covers both new inserts and updated records where
+  // original_pdf_id may have been lost). Lightweight: only touches NULL rows.
+  let repairedPdf = 0;
+  try {
+    const { data: nullRows } = await supabase
+      .from('invoices')
+      .select('id')
+      .is('original_pdf_id', null);
+
+    if (nullRows && nullRows.length > 0) {
+      for (const row of nullRows) {
+        const { data: att } = await supabase
+          .from('invoice_attachments')
+          .select('id')
+          .eq('invoice_id', row.id)
+          .eq('attachment_type', 'original')
+          .order('created_at', { ascending: true })
+          .limit(1);
+
+        if (att && att.length > 0) {
+          await supabase
+            .from('invoices')
+            .update({ original_pdf_id: att[0].id, updated_at: new Date().toISOString() })
+            .eq('id', row.id);
+          repairedPdf++;
+        }
+      }
+      if (repairedPdf > 0) {
+        await sysLog('INFO', 'IMPORT', `Repaired original_pdf_id for ${repairedPdf} invoices`);
+      }
+    }
+  } catch (repairErr) {
+    console.warn('[importService] pdf-id repair failed (non-critical):', repairErr.message);
+  }
+
+  syncState.setRunning(false);
+
+  await sysLog('INFO', 'IMPORT', cancelled ? 'Batch import cancelled' : 'Batch import complete', {
+    detail: `inserted=${inserted} updated=${updated} errors=${errors} remaining=${remaining} repairedPdf=${repairedPdf}` +
+            (cancelled ? ' [CANCELLED]' : ''),
   });
 
-  return { inserted, updated, errors, remaining, total: invoiceList.length };
+  return { inserted, updated, errors, remaining, total: invoiceList.length, cancelled, repairedPdf };
 }
 
 module.exports = { importInvoices };

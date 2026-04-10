@@ -11,11 +11,13 @@ api.interceptors.request.use(cfg => {
   return cfg;
 });
 
-// Redirect to login on 401
+// Redirect to login on 401 — but not during auth calls themselves
 api.interceptors.response.use(
   r => r,
   err => {
-    if (err.response?.status === 401) {
+    const url = err.config?.url || '';
+    const isAuthCall = url.startsWith('/auth/');
+    if (err.response?.status === 401 && !isAuthCall) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

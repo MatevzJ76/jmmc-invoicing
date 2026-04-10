@@ -49,7 +49,7 @@ async function sysLog(level, category, action, opts = {}) {
 
 /**
  * Write a business audit log entry.
- * Used exclusively for verified_flag changes.
+ * Used for status changes and workflow events.
  */
 async function auditLog(opts = {}) {
   try {

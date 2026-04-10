@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useLang } from '../hooks/useLang';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 export default function Login() {
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, loginWithPassword } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
+  const [mode,    setMode]    = useState('google'); // 'google' | 'password'
+  const [email,   setEmail]   = useState('');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
-    // Load Google Identity Services script
+    if (mode !== 'google') return;
     const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
+    script.src   = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.onload = initGoogle;
     document.head.appendChild(script);
-    return () => document.head.removeChild(script);
-  }, []);
+    return () => { try { document.head.removeChild(script); } catch {} };
+  }, [mode]);
 
   function initGoogle() {
     window.google?.accounts.id.initialize({
@@ -32,41 +37,78 @@ export default function Login() {
   }
 
   async function handleCredentialResponse(response) {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       await loginWithGoogle(response.credential);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Accesso negato. Contatta l\'amministratore.');
-    } finally {
-      setLoading(false);
-    }
+      setError(err.response?.data?.error || t('login.accessDenied'));
+    } finally { setLoading(false); }
+  }
+
+  async function handlePasswordLogin(e) {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      await loginWithPassword(email.trim(), password);
+      navigate('/');
+    } catch (err) {
+      setError(err.response?.data?.error || t('login.invalidCreds'));
+    } finally { setLoading(false); }
   }
 
   return (
     <div style={S.page}>
       <div style={S.card}>
-        {/* Logo / Header */}
         <div style={S.header}>
-          <div style={S.logoBox}>
-            <span style={S.logoIcon}>📋</span>
-          </div>
+          <div style={S.logoBox}><span style={S.logoIcon}>📋</span></div>
           <h1 style={S.title}>Invoice Manager</h1>
-          <p style={S.subtitle}>Campagnolo Koper</p>
+          <p style={S.subtitle}>{t('login.title')}</p>
         </div>
 
-        {/* Divider */}
         <div style={S.divider} />
 
-        {/* Login area */}
         <div style={S.loginArea}>
-          <p style={S.hint}>Accedi con il tuo account Google aziendale</p>
+          {/* Tab toggle */}
+          <div style={S.tabs}>
+            <button style={{ ...S.tab, ...(mode === 'google'   ? S.tabActive : {}) }} onClick={() => { setMode('google');   setError(''); }}>{t('login.google')}</button>
+            <button style={{ ...S.tab, ...(mode === 'password' ? S.tabActive : {}) }} onClick={() => { setMode('password'); setError(''); }}>{t('login.emailPwd')}</button>
+          </div>
 
-          {loading ? (
-            <div style={S.loadingText}>Accesso in corso...</div>
-          ) : (
-            <div id="google-btn" style={S.googleBtnWrap} />
+          {mode === 'google' && (
+            <>
+              <p style={S.hint}>{t('login.googleDesc')}</p>
+              {loading
+                ? <div style={S.loadingText}>{t('login.signingIn')}</div>
+                : <div id="google-btn" style={S.googleBtnWrap} />
+              }
+            </>
+          )}
+
+          {mode === 'password' && (
+            <form onSubmit={handlePasswordLogin} style={S.form}>
+              <input
+                style={S.input}
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                autoComplete="username"
+              />
+              <input
+                style={S.input}
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+              <button type="submit" style={S.submitBtn} disabled={loading}>
+                {loading ? t('login.signingIn') : t('login.signIn')}
+              </button>
+            </form>
           )}
 
           {error && (
@@ -77,8 +119,8 @@ export default function Login() {
         </div>
 
         <p style={S.footer}>
-          Solo gli account autorizzati possono accedere.<br />
-          Contatta <strong>admin@jmmc.si</strong> per assistenza.
+          {t('login.authNote')}<br />
+          {t('login.contactAdmin')}
         </p>
       </div>
     </div>
@@ -100,7 +142,7 @@ const S = {
     boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
     textAlign: 'center',
   },
-  header: { marginBottom: 24 },
+  header:    { marginBottom: 24 },
   logoBox: {
     width: 64, height: 64,
     background: 'linear-gradient(135deg, #1c2b3a, #2d4055)',
@@ -113,9 +155,60 @@ const S = {
   subtitle:  { margin: 0, fontSize: 14, color: '#7a7571', fontFamily: 'sans-serif' },
   divider:   { height: 1, background: '#e2e0dd', margin: '24px 0' },
   loginArea: { marginBottom: 24 },
+  tabs: {
+    display: 'flex',
+    borderRadius: 8,
+    overflow: 'hidden',
+    border: '1px solid #e2e0dd',
+    marginBottom: 20,
+  },
+  tab: {
+    flex: 1,
+    padding: '8px 0',
+    background: '#f7f6f4',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: 13,
+    color: '#5a5551',
+    fontFamily: 'sans-serif',
+    transition: 'background 0.15s',
+  },
+  tabActive: {
+    background: '#1c2b3a',
+    color: '#fff',
+    fontWeight: 600,
+  },
   hint:      { margin: '0 0 20px', fontSize: 14, color: '#5a5551', fontFamily: 'sans-serif' },
   googleBtnWrap: { display: 'flex', justifyContent: 'center' },
   loadingText:   { color: '#7a7571', fontSize: 14, fontFamily: 'sans-serif' },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+    textAlign: 'left',
+  },
+  input: {
+    padding: '10px 12px',
+    borderRadius: 8,
+    border: '1px solid #d1cfc9',
+    fontSize: 14,
+    fontFamily: 'sans-serif',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  submitBtn: {
+    padding: '10px 0',
+    background: '#1c2b3a',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    fontFamily: 'sans-serif',
+    cursor: 'pointer',
+    marginTop: 4,
+  },
   errorBox: {
     marginTop: 16,
     padding: '10px 14px',

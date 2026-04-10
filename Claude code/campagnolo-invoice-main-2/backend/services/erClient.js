@@ -28,6 +28,13 @@ async function getERCredentials() {
 
 async function callER(method, params = {}) {
   const { url, user, secretKey, token } = await getERCredentials();
+
+  // Validate credentials before making the call
+  if (!url || !user || !secretKey || !token) {
+    const missing = ['url','user','secretKey','token'].filter(k => !({ url, user, secretKey, token }[k]));
+    throw new Error(`e-računi credentials not configured: missing [${missing.join(', ')}]. Configure them in Settings → e-računi API.`);
+  }
+
   const payload = {
     username:   user,
     secretKey:  secretKey,
@@ -113,38 +120,66 @@ async function fetchInvoiceDetail(documentId) {
   return data;
 }
 
-async function fetchInvoicePDF(documentId) {
+async function fetchInvoicePDFs(documentId) {
   const cleanId = String(documentId).trim().replace(/^'+/, '');
   let data;
   try {
-    data = await callER('ReceivedInvoiceAttachmentGet', { documentID: cleanId });
+    data = await callER('ReceivedInvoiceAttachmentList', { documentID: cleanId });
   } catch (err) {
     const httpStatus = err.response?.status;
     const msg = err.message || '';
-    console.log('[fetchInvoicePDF] skipped', cleanId, 'status:', httpStatus, msg);
+    console.log('[fetchInvoicePDFs] skipped', cleanId, 'status:', httpStatus, msg);
     if (httpStatus >= 500 || msg.includes('500') || msg.includes('status code 5')) {
-      return { fileName: null, fileType: null, contents: null, noAttachment: true };
+      return [];
     }
     throw err;
   }
 
-  const item = Array.isArray(data) ? data[0] : data;
-  if (!item) return { fileName: null, fileType: null, contents: null, noAttachment: true };
+  // Log full raw structure to diagnose multi-attachment responses
+  console.log('[fetchInvoicePDFs] raw type:', typeof data, 'isArray:', Array.isArray(data));
+  console.log('[fetchInvoicePDFs] raw keys:', data ? Object.keys(data) : 'null');
+  console.log('[fetchInvoicePDFs] raw snippet:', JSON.stringify(data).substring(0, 800));
 
-  const att = item?.Attachment || item?.attachment || item;
-  if (!att) return { fileName: null, fileType: null, contents: null, noAttachment: true };
+  // e-računi may wrap multiple attachments inside a single object:
+  // { Attachment: [...] } or { attachments: [...] } or directly an array
+  let items;
+  if (Array.isArray(data)) {
+    items = data;
+  } else if (data?.Attachment && Array.isArray(data.Attachment)) {
+    items = data.Attachment;
+  } else if (data?.attachment && Array.isArray(data.attachment)) {
+    items = data.attachment;
+  } else if (data?.Attachments && Array.isArray(data.Attachments)) {
+    items = data.Attachments;
+  } else if (data?.attachments && Array.isArray(data.attachments)) {
+    items = data.attachments;
+  } else {
+    items = data ? [data] : [];
+  }
 
-  const contents = att.contents || att.Contents || att.fileData || att.data || null;
-  if (!contents) return { fileName: null, fileType: null, contents: null, noAttachment: true };
+  if (!items.length) return [];
 
-  const fileName = att.fileName || att.FileName || att.filename || `Invoice_${cleanId.replace(':', '_')}.pdf`;
-  console.log('[fetchInvoicePDF] OK', cleanId, fileName, 'len:', contents.length);
+  const results = [];
+  for (const item of items) {
+    // item may itself be the attachment, or wrap it under .Attachment / .attachment
+    const att = item?.Attachment || item?.attachment || item;
+    if (!att) continue;
+    const contents = att.contents || att.Contents || att.fileData || att.data || null;
+    if (!contents) continue;
+    const rawName  = att.fileName || att.FileName || att.filename || `Invoice_${cleanId.replace(':', '_')}.pdf`;
+    const fileName = rawName.toLowerCase().endsWith('.pdf') ? rawName : rawName + '.pdf';
+    results.push({ fileName, fileType: 'pdf', contents });
+  }
 
-  return {
-    fileName: fileName.toLowerCase().endsWith('.pdf') ? fileName : fileName + '.pdf',
-    fileType: 'pdf',
-    contents,
-  };
+  console.log('[fetchInvoicePDFs] OK', cleanId, 'count:', results.length);
+  return results;
+}
+
+// Backward-compat single-result wrapper
+async function fetchInvoicePDF(documentId) {
+  const results = await fetchInvoicePDFs(documentId);
+  if (!results.length) return { fileName: null, fileType: null, contents: null, noAttachment: true };
+  return results[0];
 }
 
 async function uploadApprovalPDF(documentId, fileName, base64Contents) {
@@ -187,6 +222,7 @@ module.exports = {
   fetchInvoiceList,
   fetchInvoiceDetail,
   fetchInvoicePDF,
+  fetchInvoicePDFs,
   uploadApprovalPDF,
   updateInvoiceRemarks,
 };

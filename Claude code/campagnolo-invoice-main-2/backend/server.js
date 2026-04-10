@@ -24,7 +24,7 @@ app.use(express.json({ limit: '10mb' })); // PDF base64 can be large
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
@@ -51,7 +51,9 @@ app.use('/api/syslog',         require('./routes/syslog'));
 app.use('/api/users',          require('./routes/users'));
 app.use('/api/settings',       require('./routes/settings'));
 app.use('/api/dashboard',      require('./routes/dashboard'));
-app.use('/api/supplier-hints', require('./routes/supplierHints'));
+app.use('/api/supplier-hints',    require('./routes/supplierHints'));
+app.use('/api/chart-of-accounts', require('./routes/chartOfAccounts'));
+app.use('/api/ai',                require('./routes/ai'));
 
 // ── 404 handler ──────────────────────────────────────────────
 app.use((req, res) => {
@@ -77,11 +79,8 @@ app.listen(PORT, async () => {
   await sysLog('INFO', 'SYSTEM', 'Server started', {
     detail: `port=${PORT} env=${process.env.NODE_ENV} version=${process.env.APP_VERSION}`,
   });
-  // Start auto-import scheduler
-  if (process.env.IMPORT_ENABLED === 'true') {
-    scheduler.start();
-    console.log('[SCHEDULER] Auto-import enabled');
-  }
+  // Start auto-import scheduler — enabled/disabled controlled via Settings UI (import_enabled in DB)
+  scheduler.start();
 });
 
 module.exports = app;

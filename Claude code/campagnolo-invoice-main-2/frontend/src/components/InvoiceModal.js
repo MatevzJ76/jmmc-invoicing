@@ -896,12 +896,19 @@ export default function InvoiceModal({ invoiceId, onClose, onRefresh }) {
                     <div style={S.approvedMeta}>
                       {t('invoice.verifiedBy')}: <strong>{invoice.status_changed_by_name}</strong> ({invoice.status_changed_by})<br/>
                       {t('invoice.verifiedAt')}: <strong>{fmtDT(invoice.status_changed_at)}</strong>
-                      {invoice.distinta_batch_id && (<>
-                        <br/>Batch Distinta: <strong>{invoice.distinta_batch_id}</strong>
-                        {invoice.distinta_sent_at && (<> · {fmtDT(invoice.distinta_sent_at)}</>)}
-                      </>)}
                     </div>
                     {invoice.status_note && <div style={S.comment}>"{invoice.status_note}"</div>}
+                    {(invoice.distinta_batch_id || invoice.distinta_sent_at) && (
+                      <div style={{marginTop:10, padding:'8px 12px', background:'#f0f7f4', borderRadius:6, border:'1px solid #c8e6d0', fontSize:13, fontFamily:'sans-serif'}}>
+                        <div style={{fontWeight:700, color:'#1c5a3a', marginBottom:4}}>📋 Distinta</div>
+                        {invoice.distinta_batch_id && (
+                          <div>Batch: <strong style={{fontFamily:'monospace'}}>{invoice.distinta_batch_id}</strong></div>
+                        )}
+                        {invoice.distinta_sent_at && (
+                          <div>Inviata: <strong>{fmtDT(invoice.distinta_sent_at)}</strong></div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ) : invoice.status === 'Rejected' ? (
                   <>

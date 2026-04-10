@@ -6,25 +6,22 @@ const router = express.Router();
 
 router.get('/stats', requireAuth(), async (req, res) => {
   try {
-    // Build base filter depending on role
-    const roleFilter = {};
-    if (req.user.role === 'federico') roleFilter.responsible = 'FEDERICO';
-    if (req.user.role === 'varga')    roleFilter.responsible = 'VARGA';
-
-    let query = supabase.from('invoices').select('*');
-    if (roleFilter.responsible) query = query.eq('responsible', roleFilter.responsible);
-    const { data: invoices } = await query;
+    // Revisore non ha accesso al dashboard: usa direttamente la pagina Fatture.
+    if (req.user.role === 'revisore') {
+      return res.status(403).json({ error: 'Dashboard non disponibile per il ruolo Revisore' });
+    }
+    const { data: invoices } = await supabase.from('invoices').select('*');
     const all = invoices || [];
 
     // KPIs
     const total    = all.length;
-    const pending  = all.filter(i => !i.verified_flag && i.status === 'Pending').length;
-    const approved = all.filter(i => i.verified_flag).length;
-    const toBePaid = all.filter(i => i.verified_flag && i.payment_order === 'To Be Paid').length;
+    const pending  = all.filter(i => i.status === 'Pending').length;
+    const approved = all.filter(i => i.status === 'Approved').length;
+    const notPaid  = i => !i.payment_status || i.payment_status !== 'pagato';
+    const toBePaid = all.filter(i => i.status === 'Approved' && notPaid(i)).length;
 
-    const totalAmount  = all.reduce((s, i) => s + (i.total || 0), 0);
-    const pendingAmount = all.filter(i => i.payment_order === 'To Be Paid')
-                             .reduce((s, i) => s + (i.left_to_pay || 0), 0);
+    const totalAmount   = all.reduce((s, i) => s + (i.total || 0), 0);
+    const pendingAmount = all.filter(notPaid).reduce((s, i) => s + (i.left_to_pay || 0), 0);
 
     // Due in 7 days
     const today  = new Date();
@@ -32,7 +29,7 @@ router.get('/stats', requireAuth(), async (req, res) => {
     const dueSoon = all.filter(i => {
       if (!i.due_date) return false;
       const d = new Date(i.due_date);
-      return d >= today && d <= in7 && i.payment_order !== 'Paid';
+      return d >= today && d <= in7 && notPaid(i);
     }).sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
 
     // By status (donut chart)
